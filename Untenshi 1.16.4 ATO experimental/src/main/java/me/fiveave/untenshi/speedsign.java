@@ -48,6 +48,7 @@ class speedsign extends SignAction {
                                         lastspsign.remove(p);
                                         lastspsp.remove(p);
                                     }
+//                                    atoforcebrake.put(p, false);
                                 } else {
                                     signimproper(cartevent, p);
                                 }

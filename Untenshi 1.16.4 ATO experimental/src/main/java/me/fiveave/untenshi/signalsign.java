@@ -156,6 +156,7 @@ class signalsign extends SignAction {
                                                 }
                                                 lastresetablesign.put(p, newloc);
                                             }
+//                                            atoforcebrake.put(p, false);
                                         }
                                         break;
                                     // Signal speed limit warn

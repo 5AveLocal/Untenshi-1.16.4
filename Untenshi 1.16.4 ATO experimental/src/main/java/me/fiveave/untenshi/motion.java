@@ -7,6 +7,7 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -46,31 +47,10 @@ class motion {
 
     static void recursion2(Player p) {
         // From Config
-        double accel;
-        double decel;
-        double ebdecel;
-        int[] speedsteps;
-        switch (traintype.get(p)) {
-            default:
-            case "local":
-                ebdecel = 10.4;
-                speedsteps = new int[]{21, 41, 61, 81, 111, 130};
-                accel = plugin.getConfig().getDouble(traintype.get(p) + "accelrate");
-                decel = plugin.getConfig().getDouble(traintype.get(p) + "decelrate");
-                break;
-            case "hsr":
-                ebdecel = 10.4;
-                speedsteps = new int[]{41, 101, 161, 221, 261, 280};
-                accel = plugin.getConfig().getDouble(traintype.get(p) + "accelrate");
-                decel = plugin.getConfig().getDouble(traintype.get(p) + "decelrate");
-                break;
-            case "lrt":
-                ebdecel = 19;
-                speedsteps = new int[]{16, 31, 46, 61, 71, 80};
-                accel = plugin.getConfig().getDouble("localaccelrate") * 4.68 / 3.5;
-                decel = plugin.getConfig().getDouble("localdecelrate") * 3.6 / 3.5;
-                break;
-        }
+        double accel = 0;
+        double decel = 0;
+        double ebdecel = 0;
+        int[] speedsteps = new int[6];
         double oldspeed = speed.get(p);
         double speeddrop = plugin.getConfig().getDouble("speeddroprate") / ticksin1s;
         boolean stationstop = plugin.getConfig().getBoolean("stationsignstop");
@@ -78,31 +58,58 @@ class motion {
         MinecartGroup mg = MinecartGroupStore.get(p.getVehicle());
         TrainProperties tprop = mg.getProperties();
         // From traindata (if available)
+        String seltrainname = "";
         Set<String> allTrains = Objects.requireNonNull(traindata.dataconfig.getConfigurationSection("trains")).getKeys(false);
-        for (Object tname : allTrains) {
-            String tname2 = tname.toString();
+        // Choose most suitable type
+        for (String tname : allTrains) {
             // Override config accels
-            if (mg.getProperties().getDisplayName().contains(tname2)) {
-                String tDataInfo = "trains." + tname2;
-                if (traindata.dataconfig.contains(tDataInfo + ".accel"))
-                    accel = traindata.dataconfig.getDouble(tDataInfo + ".accel");
-                if (tcontains(".decel", tDataInfo))
-                    decel = traindata.dataconfig.getDouble(tDataInfo + ".decel");
-                if (tcontains(".traintype", tDataInfo))
-                    traintype.put(p, traindata.dataconfig.getString(tDataInfo + ".traintype"));
-                if (tcontains(".ebdecel", tDataInfo))
-                    ebdecel = traindata.dataconfig.getDouble(tDataInfo + ".ebdecel") * 2;
-                if (tcontains(".speeds", tDataInfo) && traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").size() == 6) {
-                    for (int i = 0; i < 6; i++) {
-                        speedsteps[i] = traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").get(i);
-                    }
+            if (mg.getProperties().getDisplayName().contains(tname) && tname.length() > seltrainname.length()) {
+                seltrainname = tname;
+            }
+        }
+        // Set data accordingly
+        if (seltrainname.length() > 0) {
+            String tDataInfo = "trains." + seltrainname;
+            if (traindata.dataconfig.contains(tDataInfo + ".accel"))
+                accel = traindata.dataconfig.getDouble(tDataInfo + ".accel");
+            if (tcontains(".decel", tDataInfo))
+                decel = traindata.dataconfig.getDouble(tDataInfo + ".decel");
+            if (tcontains(".traintype", tDataInfo))
+                traintype.put(p, traindata.dataconfig.getString(tDataInfo + ".traintype"));
+            if (tcontains(".ebdecel", tDataInfo))
+                ebdecel = traindata.dataconfig.getDouble(tDataInfo + ".ebdecel") * 2;
+            if (tcontains(".speeds", tDataInfo) && traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").size() == 6) {
+                for (int i = 0; i < 6; i++) {
+                    speedsteps[i] = traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").get(i);
                 }
+            }
+        }
+        // If cannot find most suitable type
+        else {
+            switch (traintype.get(p)) {
+                case "local":
+                    ebdecel = 10.4;
+                    speedsteps = new int[]{21, 41, 61, 81, 111, 130};
+                    accel = plugin.getConfig().getDouble(traintype.get(p) + "accelrate");
+                    decel = plugin.getConfig().getDouble(traintype.get(p) + "decelrate");
+                    break;
+                case "hsr":
+                    ebdecel = 10.4;
+                    speedsteps = new int[]{41, 101, 161, 221, 261, 280};
+                    accel = plugin.getConfig().getDouble(traintype.get(p) + "accelrate");
+                    decel = plugin.getConfig().getDouble(traintype.get(p) + "decelrate");
+                    break;
+                case "lrt":
+                    ebdecel = 19;
+                    speedsteps = new int[]{16, 31, 46, 61, 71, 80};
+                    accel = plugin.getConfig().getDouble("localaccelrate") * 4.68 / 3.5;
+                    decel = plugin.getConfig().getDouble("localdecelrate") * 3.6 / 3.5;
+                    break;
             }
         }
         // Initialize
         accel /= ticksin1s;
         decel /= ticksin1s;
-        lasty.putIfAbsent(p, Objects.requireNonNull(p.getVehicle()).getLocation().getY());
         // Rounding
         DecimalFormat df3 = new DecimalFormat("#.###");
         DecimalFormat df2 = new DecimalFormat("#.##");
@@ -151,30 +158,13 @@ class motion {
         } else if (getmascon(p) >= 1 && getmascon(p) <= 5) {
             ctrltext = ChatColor.GREEN + "P" + getmascon(p);
         }
-        // Slope speed adjust
-        double trainy = p.getVehicle().getLocation().getY();
-        if (lasty.get(p) - trainy > 0) {
-            speed.put(p, speed.get(p) + 0.234919);
-        } else if (lasty.get(p) - trainy < 0) {
-            speed.put(p, speed.get(p) - 0.234919);
-        }
-        // Slope calculation (in construction)
-//        TrackWalkingPoint twp = new TrackWalkingPoint(mg.head().getRailTracker().getState());
-//        int toslanted = 0;
-//        for (int i = 0; i < 100; i++) {
-//            twp.moveFull();
-//            if (twp.state.railBlock().getBlockData() instanceof Rail) {
-//                Rail rail = (Rail) twp.state.railBlock().getBlockData();
-//                if (rail.getShape().equals(Rail.Shape.ASCENDING_EAST) || rail.getShape().equals(Rail.Shape.ASCENDING_WEST) || rail.getShape().equals(Rail.Shape.ASCENDING_SOUTH) || rail.getShape().equals(Rail.Shape.ASCENDING_NORTH)) {
-//                    toslanted = i;
-//                }
-//            }
-//        }
+        // Slope speed adjust (new physics testing in progress)
+        double slopeaccel = getSlopeAccel(mg.head().getEntity().getLocation(), mg.tail().getEntity().getLocation()) / ticksin1s;
+        speed.put(p, speed.get(p) + slopeaccel);
         // Anti-negative speed and force stop when door is open
         if (speed.get(p) < 0 || dooropen.get(p) > 0) {
             speed.put(p, 0.0);
         }
-        lasty.put(p, trainy);
         df3.setRoundingMode(RoundingMode.CEILING);
         // Cancel TC motion-related sign actions
         if (!stationstop) mg.getActions().clear();
@@ -248,8 +238,8 @@ class motion {
             lowerSpeed = shortestDist == signaldist ? Math.min((lastsisp.containsKey(p) ? Math.min(signallimit.get(p), lastsisp.get(p)) : signallimit.get(p)), speedlimit.get(p)) : Math.min((lastspsp.containsKey(p) ? Math.min(signallimit.get(p), lastspsp.get(p)) : signallimit.get(p)), speedlimit.get(p));
             // Get brake distance (reqdist)
             double[] reqdist = new double[10];
-            reqdist[9] = getreqdist(p, ticksin1s * globaldecel(decel, speed.get(p), ebdecel, speedsteps), lowerSpeed);
-            reqdist[8] = getreqdist(p, ticksin1s * globaldecel(decel, speed.get(p), 9, speedsteps), lowerSpeed);
+            reqdist[9] = getreqdist(p, ticksin1s * globaldecel(decel, speed.get(p), ebdecel, speedsteps), lowerSpeed, mg.head().getEntity().getLocation(), mg.tail().getEntity().getLocation());
+            reqdist[8] = getreqdist(p, ticksin1s * globaldecel(decel, speed.get(p), 9, speedsteps), lowerSpeed, mg.head().getEntity().getLocation(), mg.tail().getEntity().getLocation());
             // Pattern run
             if (((shortestDist < reqdist[8] && speed.get(p) > lowerSpeed + 3) || isoverspeed3) && !atsping.get(p)) {
                 atsping.put(p, true);
@@ -293,7 +283,7 @@ class motion {
             current.put(p, -480.0);
         }
         // ATO (Must be placed after actions)
-        atosys(p, accel, decel, ebdecel, speeddrop, speedsteps);
+        atosys(p, accel, decel, ebdecel, speeddrop, speedsteps, mg);
         // Stop position
         if (reqstopping.get(p)) {
             // Get stop location
@@ -363,6 +353,12 @@ class motion {
         }
     }
 
+    private static double getSlopeAccel(Location endpt, Location beginpt) {
+        double height = beginpt.getY() - endpt.getY();
+        double length = distFormula(endpt.getX(), beginpt.getX(), endpt.getZ(), beginpt.getZ());
+        return 3.6 * 9.81 * height / (Math.hypot(height, length));
+    }
+
     static double distFormula(double x1, double x2, double y1, double y2) {
         return Math.hypot(x1 - x2, y1 - y2);
     }
@@ -395,8 +391,8 @@ class motion {
         atospeed.remove(ctrlp);
     }
 
-    static double getreqdist(Player ctrlp, double decel, double lowerSpeed) {
-        return (Math.pow(speed.get(ctrlp), 2) - Math.pow(lowerSpeed, 2)) / (7.2 * decel);
+    static double getreqdist(Player ctrlp, double decel, double lowerSpeed, Location endpt, Location startpt) {
+        return (Math.pow(speed.get(ctrlp), 2) - Math.pow(lowerSpeed, 2)) / (7.2 * Math.max(decel - getSlopeAccel(endpt, startpt), Double.MIN_VALUE));
     }
 
     static double decelswitch(Player ctrlp, double speednow, double speeddrop, double decel, double ebrate, double current, int[] speedsteps) {

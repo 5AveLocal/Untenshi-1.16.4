@@ -25,7 +25,6 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import static me.fiveave.untenshi.events.*;
 import static me.fiveave.untenshi.main.*;
@@ -164,11 +163,12 @@ class cmds implements CommandExecutor, TabCompleter {
                                         atsping.put(sender2, false);
                                         atspnear.put(sender2, false);
                                         overrun.put(sender2, false);
-                                        lasty.put(sender2, Objects.requireNonNull(sender2.getVehicle()).getLocation().getY());
                                         deductdelay.put(sender2, 49);
                                         signaltype.put(sender2, "ats");
                                         reqstopping.put(sender2, false);
                                         atsforced.put(sender2, 0);
+                                        atopisdirect.putIfAbsent(sender2, false);
+                                        atoforcebrake.putIfAbsent(sender2, false);
                                         // Playing = true
                                         playing.put(sender2, true);
                                         motion.recursion1(sender);
