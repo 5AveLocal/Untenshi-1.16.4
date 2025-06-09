@@ -53,6 +53,7 @@ ato: '允許使用 ATO:'
 ato_info1: '[true: 啟用允許使用 ATO]'
 ato_info2: '[false: 停用允許使用 ATO]'
 ato_detectpattern: 發現了 ATO 駕駛 Pattern。
+ato_detectstopaction: 發現了 ATO 停車時動作。
 ato_detectstoptime: 已設定 ATO 停車時間。
 ato_patterncancel: 已取消 ATO Pattern。
 sb_success: 轉向成功。

@@ -53,6 +53,7 @@ ato: 'Usage of ATO:'
 ato_info1: '[true: Enable usage of ATO]'
 ato_info2: '[false: Disable usage of ATO]'
 ato_detectpattern: ATO Driving Pattern Detected.
+ato_detectstopaction: ATO Stop Action Detected.
 ato_detectstoptime: ATO Stopping Time Set.
 ato_patterncancel: ATO Pattern Cancelled.
 sb_success: Switchback successful.

@@ -8,6 +8,7 @@ import com.bergerkiller.bukkit.tc.signactions.SignActionType;
 import com.bergerkiller.bukkit.tc.utils.SignBuildOptions;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Rail;
 
@@ -50,29 +51,35 @@ class stoppos extends SignAction {
     public void execute(SignActionEvent cartevent) {
         if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && cartevent.hasRailedMember() && cartevent.isPowered()) {
             MinecartGroup mg = cartevent.getGroup();
+            String[] l3split = cartevent.getLine(2).split(" ");
+            String l4 = cartevent.getLine(3);
+            Location eventloc = cartevent.getLocation();
             utsvehicle lv = vehicle.get(mg);
-            if (lv != null) {
-                String[] sloc = cartevent.getLine(2).split(" ");
-                String[] sloc2 = cartevent.getLine(3).split(" ");
-                double[] loc = new double[3];
-                int[] loc2 = new int[3];
-                for (int a = 0; a <= 2; a++) {
-                    loc[a] = Double.parseDouble(sloc[a]);
-                    if (!cartevent.getLine(3).isEmpty()) {
-                        loc2[a] = parseInt(sloc2[a]);
-                    }
+            stopPosDefault(lv, l3split, l4);
+        }
+    }
+
+    static void stopPosDefault(utsvehicle lv, String[] l3split, String l4) {
+        if (lv != null) {
+            String[] l4split = l4.split(" ");
+            double[] loc = new double[3];
+            int[] loc2 = new int[3];
+            for (int a = 0; a <= 2; a++) {
+                loc[a] = Double.parseDouble(l3split[a]);
+                if (!l4.isEmpty()) {
+                    loc2[a] = parseInt(l4split[a]);
                 }
-                curveRailPosFix(lv, loc);
-                loc[0] += 0.5;
-                loc[1] += cartyposdiff;
-                loc[2] += 0.5;
-                lv.setStoppos(new Location(cartevent.getWorld(), loc[0], loc[1], loc[2]));
-                if (!cartevent.getLine(3).isEmpty()) {
-                    lv.setStopoutput(loc2);
-                }
-                lv.setReqstopping(true);
-                generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("stoppos_next"));
             }
+            curveRailPosFix(lv, loc);
+            loc[0] += 0.5;
+            loc[1] += cartyposdiff;
+            loc[2] += 0.5;
+            lv.setStoppos(new Location(lv.getSavedworld(), loc[0], loc[1], loc[2]));
+            if (!l4.isEmpty()) {
+                lv.setStopoutput(loc2);
+            }
+            lv.setReqstopping(true);
+            generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("stoppos_next"));
         }
     }
 

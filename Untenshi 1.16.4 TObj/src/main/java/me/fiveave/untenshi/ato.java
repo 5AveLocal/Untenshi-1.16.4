@@ -4,13 +4,19 @@ import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 
+import static me.fiveave.untenshi.atosign.*;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.events.doorControls;
 import static me.fiveave.untenshi.events.toEB;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.motion.*;
+import static me.fiveave.untenshi.signalsign.signalSignInterlock;
+import static me.fiveave.untenshi.signalsign.signalSignWarn;
 import static me.fiveave.untenshi.speedsign.getActualRefPos;
+import static me.fiveave.untenshi.stoppos.stopPosDefault;
 
 class ato {
 
@@ -189,7 +195,7 @@ class ato {
         }
     }
 
-    private static void waitDepart(utsvehicle lv, Location actualSiRefPos, Location cartactualpos) {
+    static void waitDepart(utsvehicle lv, Location actualSiRefPos, Location cartactualpos) {
         if (lv != null && lv.getTrain() != null && lv.getDriverseat().getEntity() != null) {
             boolean notindist = true;
             double[] reqdist = new double[10];
@@ -211,6 +217,114 @@ class ato {
                 Location finalActualSiRefPos = actualSiRefPos;
                 Bukkit.getScheduler().runTaskLater(plugin, () -> waitDepart(lv, finalActualSiRefPos, finalCartactualpos), tickdelay);
             }
+        }
+    }
+
+    static void stopActionClock(utsvehicle lv, ItemMeta mat, int timecount, int stattimecount, boolean lastdoordiropen, boolean lastdoorconfirm, boolean lastinrange) {
+        if (lv.getTrain() != null) {
+            boolean inrange = false;
+            if (mat instanceof BookMeta) {
+                BookMeta bk = (BookMeta) mat;
+                int pgcount = bk.getPageCount();
+                boolean doordiropen = lv.isDoordiropen();
+                boolean doorconfirm = lv.isDoorconfirm();
+                // Test for all pages
+                for (int pgno = 1; pgno <= pgcount; pgno++) {
+                    String str = bk.getPage(pgno);
+                    if (!str.isEmpty()) {
+                        String[] timesplit = str.split(":", 2);
+                        String[] trysplitstr = timesplit[1].split(";");
+                        // Counter reset if status change
+                        if (lastdoordiropen != doordiropen || lastdoorconfirm != doorconfirm) {
+                            stattimecount = 0;
+                        }
+                        if (lv.getStoppos() != null) {
+                            try {
+                                StopPosResult spresult = getStopPosResult(lv);
+                                inrange = spresult.stopdist <= 1.00 && lv.getSpeed() == 0;
+                            } catch (Exception ignored) {
+                            }
+                        }
+                        String status = (doordiropen ? "open" : "clos") + (doorconfirm ? "ed" : "ing") + stattimecount;
+                        // Run book (format: open/clos + ed/ing + timecount)
+                        if (inrange && timesplit[0].equals(status) || timesplit[0].equals("init") && timecount == 0) {
+                            for (String onesplitstr : trysplitstr) {
+                                // Run action string
+                                stopActionCmdRunner(lv, onesplitstr);
+                            }
+                        }
+                    }
+                }
+                if (!(lastinrange && !inrange)) {
+                    // Add to counter, run next tick
+                    int finalStatTimeCount = stattimecount;
+                    boolean finalInrange = inrange;
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> stopActionClock(lv, mat, timecount + 1, finalStatTimeCount + 1, doordiropen, doorconfirm, finalInrange), 1);
+                }
+            }
+        }
+    }
+
+    static void stopActionCmdRunner(utsvehicle lv, String runstr) {
+        String[] splitstr = runstr.split(" ", 2);
+        String actionstr = splitstr[1];
+        String[] actionstrsplit = actionstr.split(" ");
+        switch (splitstr[0]) {
+            case "stoppos":
+                // stoppos <x> <y> <z> (stop position) <x> <y> <z> (redstone output)
+                String[] sl3split = {actionstrsplit[0], actionstrsplit[1], actionstrsplit[2]};
+                String sl4 = "";
+                if (actionstrsplit.length == 6) {
+                    sl4 = actionstrsplit[3] + " " + actionstrsplit[4] + " " + actionstrsplit[5];
+                }
+                stopPosDefault(lv, sl3split, sl4);
+                break;
+            case "atosign":
+                switch (actionstrsplit[0]) {
+                    case "stoptime":
+                        // atosign stoptime <time>
+                        atoSignStopTime(lv, Integer.parseInt(actionstrsplit[1]));
+                        break;
+                    case "dir":
+                        // atosign dir <direction>
+                        atoSignDir(lv, lv.getTrain(), lv.getTrain().head(), actionstrsplit[1], null);
+                        break;
+                    default:
+                        // atosign <target_speed> <x> <y> <z> (target location)
+                        double[] loc = new double[3];
+                        String[] sloc = {actionstrsplit[1], actionstrsplit[2], actionstrsplit[3]};
+                        for (int a = 0; a <= 2; a++) {
+                            loc[a] = Integer.parseInt(sloc[a]);
+                        }
+                        atoSignDefault(lv, Integer.parseInt(actionstrsplit[0]), loc);
+                        break;
+                }
+                break;
+            case "signalsign":
+                switch (actionstrsplit[0]) {
+                    case "warn":
+                        // signalsign warn <x> <y> <z> (target location)
+                        String warnloc = actionstrsplit[1] + " " + actionstrsplit[2] + " " + actionstrsplit[3];
+                        signalSignWarn(lv, null, warnloc);
+                        break;
+                    case "interlock":
+                        // signalsign interlock <signalorder> <priority/del> <x> <y> <z>
+                        String[] ill3 = {actionstrsplit[0], actionstrsplit[1], actionstrsplit[2]};
+                        String illoc = actionstrsplit[3] + " " + actionstrsplit[4] + " " + actionstrsplit[5];
+                        signalSignInterlock(lv, ill3, illoc);
+                        break;
+                }
+                break;
+            case "run":
+                // run <cmd...>
+                String executestr = actionstr;
+                // If is TrainCarts command (support MinecartGroup only)
+                if (actionstrsplit[0].contains("train")) {
+                    // Run for train, add select train parameter at end of command
+                    executestr += " --train " + lv.getTrain().getProperties().getTrainName();
+                }
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), executestr);
+                break;
         }
     }
 }

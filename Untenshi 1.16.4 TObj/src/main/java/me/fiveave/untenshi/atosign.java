@@ -23,6 +23,22 @@ import static me.fiveave.untenshi.utsvehicle.initVehicle;
 
 class atosign extends SignAction {
 
+    static void atoSignStopTime(utsvehicle lv, int val) {
+        lv.setAtoautodep(val >= 0);
+        lv.setAtostoptime(Math.abs(val));
+        generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectstoptime"));
+    }
+
+    static void atoSignDefault(utsvehicle lv, double val, double[] loc) {
+        lv.setOverrun(false);
+        // Direct or indirect pattern?
+        lv.setAtopisdirect(val < 0);
+        lv.setAtospeed(Math.abs(val));
+        curveRailPosFix(lv, loc);
+        lv.setAtodest(new Location(lv.getSavedworld(), loc[0], loc[1], loc[2]));
+        generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectpattern"));
+    }
+
     @Override
     public boolean match(SignActionEvent info) {
         return info.isType("atosign");
@@ -36,6 +52,8 @@ class atosign extends SignAction {
                 MinecartGroup mg = cartevent.getGroup();
                 MinecartMember<?> mm = cartevent.getMember();
                 utsvehicle lv = vehicle.get(mg);
+                Location eventloc = cartevent.getLocation();
+                // Register train if not yet
                 if (lv == null && cartevent.getLine(2).equals("reg")) {
                     initVehicle(mg);
                     utsvehicle lv2 = vehicle.get(mg);
@@ -44,26 +62,30 @@ class atosign extends SignAction {
                 } else if (lv != null && lv.getTrain() != null && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
                     switch (cartevent.getLine(2)) {
                         case "reg":
+                            // Do nothing, train is already registered
                             break;
                         case "stoptime":
                             if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON)) {
                                 int val = parseInt(cartevent.getLine(3));
-                                lv.setAtoautodep(val >= 0);
-                                lv.setAtostoptime(Math.abs(val));
-                                generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectstoptime"));
+                                atoSignStopTime(lv, val);
                             }
                             break;
                         case "dir":
                             // Only activate if train is stopped
                             if (lv.getSpeed() == 0) {
-                                BlockFace bf = BlockFace.valueOf(cartevent.getLine(3).toUpperCase());
-                                if (mm.getDirection().getOppositeFace().equals(bf)) {
-                                    mg.reverse();
-                                    lv.setDriverseat(mg.head());
-                                    generalMsg(lv.getLd(), ChatColor.GOLD, getLang("dir_info") + " " + getLang("dir_" + mg.head().getDirection().toString().toLowerCase()));
-                                    cartevent.setLevers(true);
-                                    Bukkit.getScheduler().runTaskLater(plugin, () -> cartevent.setLevers(false), 4);
+                                String dir = cartevent.getLine(3).toUpperCase();
+                                atoSignDir(lv, mg, mm, dir, cartevent);
+                            }
+                            break;
+                        case "stopaction":
+                            if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON)) {
+                                double[] loc = new double[3];
+                                String[] sloc = cartevent.getLine(3).split(" ");
+                                for (int a = 0; a <= 2; a++) {
+                                    loc[a] = Integer.parseInt(sloc[a]);
                                 }
+                                lv.setStopactionpos(new Location(cartevent.getWorld(), loc[0], loc[1], loc[2]));
+                                generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectstopaction"));
                             }
                             break;
                         default:
@@ -71,24 +93,31 @@ class atosign extends SignAction {
                             if (!lv.isOverrun() && cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON)) {
                                 double[] loc = new double[3];
                                 String[] sloc = cartevent.getLine(3).split(" ");
+                                double val = Double.parseDouble(cartevent.getLine(2));
                                 for (int a = 0; a <= 2; a++) {
                                     loc[a] = Integer.parseInt(sloc[a]);
                                 }
-                                lv.setOverrun(false);
-                                double val = Double.parseDouble(cartevent.getLine(2));
-                                // Direct or indirect pattern?
-                                lv.setAtopisdirect(val < 0);
-                                lv.setAtospeed(Math.abs(val));
-                                curveRailPosFix(lv, loc);
-                                lv.setAtodest(new Location(cartevent.getWorld(), loc[0], loc[1], loc[2]));
-                                generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectpattern"));
-                                break;
+                                atoSignDefault(lv, val, loc);
                             }
+                            break;
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    static void atoSignDir(utsvehicle lv, MinecartGroup mg, MinecartMember<?> mm, String dir, SignActionEvent cartevent) {
+        BlockFace bf = BlockFace.valueOf(dir);
+        if (mm.getDirection().getOppositeFace().equals(bf)) {
+            mg.reverse();
+            lv.setDriverseat(mg.head());
+            generalMsg(lv.getLd(), ChatColor.GOLD, getLang("dir_info") + " " + getLang("dir_" + mg.head().getDirection().toString().toLowerCase()));
+            if (cartevent != null) {
+                cartevent.setLevers(true);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> cartevent.setLevers(false), 4);
+            }
         }
     }
 
@@ -120,6 +149,9 @@ class atosign extends SignAction {
                     break;
                 case "reg":
                     opt.setDescription("register vehicle as Untenshi vehicle");
+                    break;
+                case "stopaction":
+                    opt.setDescription("register stop action for train");
                     break;
                 default:
                     double val = parseInt(e.getLine(2));

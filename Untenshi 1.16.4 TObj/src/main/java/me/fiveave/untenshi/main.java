@@ -54,6 +54,9 @@ public final class main extends JavaPlugin implements Listener {
         } catch (Exception e) {
             result = " (Path does not exist: " + path + ") ";
         }
+        if (result != null && result.equals("null")) {
+            result = " (Path does not exist: " + path + ") ";
+        }
         return result;
     }
 

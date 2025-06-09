@@ -10,14 +10,16 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Objects;
 
-import static me.fiveave.untenshi.ato.atoSys;
-import static me.fiveave.untenshi.ato.openDoorProcedure;
+import static me.fiveave.untenshi.ato.*;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.events.trainSound;
 import static me.fiveave.untenshi.main.*;
@@ -151,6 +153,16 @@ class motion {
         safetySys(lv, mg, isoverspeed0, isoverspeed3);
         // ATO (Must be placed after actions)
         atoSys(lv, mg);
+        // Stop action
+        if (lv.getStopactionpos() != null) {
+            Chest refchest = getChestFromLoc(lv.getStopactionpos());
+            // Train stopping at station
+            if (refchest != null) {
+                ItemMeta mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(0)).getItemMeta();
+                stopActionClock(lv, mat, 0, 0, lv.isDoordiropen(), lv.isDoorconfirm(), false);
+                lv.setStopactionpos(null);
+            }
+        }
         // Stop position
         stopPos(lv, shock);
     }
@@ -398,7 +410,7 @@ class motion {
         }
     }
 
-    private static StopPosResult getStopPosResult(utsvehicle lv) {
+    static StopPosResult getStopPosResult(utsvehicle lv) {
         Location stoppos = lv.getStoppos();
         Location cartactualpos = getDriverseatActualPos(lv);
         double stopdist = distFormula(stoppos, cartactualpos);
@@ -443,7 +455,7 @@ class motion {
 
     private static void catchSignalUpdate(utsvehicle lv) {
         if (lv.getLastsisign() != null && lv.getLastsisp() != maxspeed) {
-            Sign warnsign = (Sign) lv.getTrain().getWorld().getBlockAt(lv.getLastsisign()).getState();
+            Sign warnsign = (Sign) lv.getSavedworld().getBlockAt(lv.getLastsisign()).getState();
             String warnsi = warnsign.getLine(2).split(" ")[1];
             int warnsp = Integer.parseInt(warnsign.getLine(2).split(" ")[2]);
             // Detect difference (saved sign speed != sign speed now)
@@ -845,7 +857,7 @@ class motion {
         return newstr.toString();
     }
 
-    private static class StopPosResult {
+    static class StopPosResult {
         public final double stopdist;
         public final int stopdistcm;
 

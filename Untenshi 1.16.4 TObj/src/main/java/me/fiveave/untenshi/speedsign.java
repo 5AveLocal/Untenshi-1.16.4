@@ -87,8 +87,8 @@ class speedsign extends SignAction {
         return new Location(w, loc.getX() + blkoffset[0] + 0.5, loc.getY() + blkoffset[1] + cartyposdiff, loc.getZ() + blkoffset[2] + 0.5);
     }
 
-    static void signImproper(SignActionEvent cartevent, utsdriver ld) {
-        String s = utshead + ChatColor.RED + getLang("signimproper") + " (" + cartevent.getLocation().getBlockX() + " " + cartevent.getLocation().getBlockY() + " " + cartevent.getLocation().getBlockZ() + ")";
+    static void signImproper(Location loc, utsdriver ld) {
+        String s = utshead + ChatColor.RED + getLang("signimproper") + " (" + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + ")";
         if (ld != null && ld.getP() != null) {
             ld.getP().sendMessage(s);
         }
@@ -97,19 +97,6 @@ class speedsign extends SignAction {
 
     static int getLoc(String str, int i) {
         return parseInt(str.split(" ")[i]);
-    }
-
-    // l[n]: "n"th split text in line 3
-    static String l1(SignActionEvent e) {
-        return e.getLine(2).toLowerCase().split(" ")[0];
-    }
-
-    static String l2(SignActionEvent e) {
-        return e.getLine(2).toLowerCase().split(" ")[1];
-    }
-
-    static String l3(SignActionEvent e) {
-        return e.getLine(2).split(" ")[2];
     }
 
     static boolean limitSpeedIncorrect(CommandSender p, int speedlimit) {
@@ -139,15 +126,15 @@ class speedsign extends SignAction {
         if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && cartevent.hasRailedMember() && cartevent.isPowered()) {
             MinecartGroup mg = cartevent.getGroup();
             String speedsign = cartevent.getLine(2);
+            Location eventloc = cartevent.getLocation();
             utsvehicle lv = vehicle.get(mg);
-            if (lv != null)
             // Speed limit set
-            {
+            if (lv != null) {
                 if (!cartevent.getLine(2).equals("warn")) {
                     try {
                         int intspeed = parseInt(speedsign);
                         if (limitSpeedIncorrect(null, intspeed)) {
-                            signImproper(cartevent, lv.getLd());
+                            signImproper(eventloc, lv.getLd());
                             return;
                         }
                         lv.setSpeedlimit(intspeed);
@@ -164,36 +151,41 @@ class speedsign extends SignAction {
                             lv.setLastspsp(maxspeed);
                         }
                     } catch (NumberFormatException e) {
-                        signImproper(cartevent, lv.getLd());
+                        signImproper(eventloc, lv.getLd());
                     }
                 }
                 // Speed limit warn
                 else {
                     try {
-                        Sign warn = getSignFromLoc(getFullLoc(cartevent.getWorld(), cartevent.getLine(3)));
-                        if (warn != null) {
-                            lv.setLastspsign(warn.getLocation());
-                            int warnsp = parseInt(warn.getLine(2));
-                            lv.setLastspsp(warnsp);
-                            if (warnsp < maxspeed) {
-                                // ATC signal and speed limit min value
-                                if (lv.getSafetysystype().equals("atc")) {
-                                    warnsp = Math.min(Math.min(lv.getLastsisp(), lv.getLastspsp()), lv.getSignallimit());
-                                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_warn") + " " + ChatColor.GOLD + "ATC" + ChatColor.GRAY + " " + warnsp + " km/h");
-                                } else {
-                                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("speedlimit_warn") + " " + warnsp + " km/h");
-                                }
-                            } else {
-                                signImproper(cartevent, lv.getLd());
-                            }
-                        } else {
-                            signImproper(cartevent, lv.getLd());
-                        }
+                        String signloc = cartevent.getLine(3);
+                        speedSignWarn(lv, eventloc, signloc);
                     } catch (NumberFormatException | IndexOutOfBoundsException e) {
-                        signImproper(cartevent, lv.getLd());
+                        signImproper(eventloc, lv.getLd());
                     }
                 }
             }
+        }
+    }
+
+    static void speedSignWarn(utsvehicle lv, Location eventloc, String signloc) {
+        Sign warn = getSignFromLoc(getFullLoc(lv.getSavedworld(), signloc));
+        if (warn != null) {
+            lv.setLastspsign(warn.getLocation());
+            int warnsp = parseInt(warn.getLine(2));
+            lv.setLastspsp(warnsp);
+            if (warnsp < maxspeed) {
+                // ATC signal and speed limit min value
+                if (lv.getSafetysystype().equals("atc")) {
+                    warnsp = Math.min(Math.min(lv.getLastsisp(), lv.getLastspsp()), lv.getSignallimit());
+                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_warn") + " " + ChatColor.GOLD + "ATC" + ChatColor.GRAY + " " + warnsp + " km/h");
+                } else {
+                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("speedlimit_warn") + " " + warnsp + " km/h");
+                }
+            } else if (eventloc != null) {
+                signImproper(eventloc, lv.getLd());
+            }
+        } else if (eventloc != null) {
+            signImproper(eventloc, lv.getLd());
         }
     }
 

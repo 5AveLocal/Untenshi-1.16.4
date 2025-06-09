@@ -44,6 +44,7 @@ class utsvehicle {
     private double speed; // Train speed
     private double atospeed; // ATO target speed
     private Location stoppos; // Stop position at station
+    private Location stopactionpos; // Stop action chest reference position at station
     private Location atodest; // ATO target destination
     private Location lastsisign; // Location of last recognized signal sign
     private Location lastspsign; // Location of last recognized speed limit sign
@@ -148,6 +149,7 @@ class utsvehicle {
         this.setAtoforcebrake(false);
         this.setAtoforceslopebrake(false);
         this.setStoppos(null);
+        this.setStopactionpos(null);
         this.setAtospeed(-1);
         this.setAtodest(null);
         this.setAtostoptime(-1);
@@ -576,5 +578,13 @@ class utsvehicle {
 
     public void setAtoforceslopebrake(boolean atoforceslopebrake) {
         this.atoforceslopebrake = atoforceslopebrake;
+    }
+
+    public Location getStopactionpos() {
+        return stopactionpos;
+    }
+
+    public void setStopactionpos(Location stopactionpos) {
+        this.stopactionpos = stopactionpos;
     }
 }

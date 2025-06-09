@@ -53,6 +53,7 @@ ato: 'ATO 使用許可:'
 ato_info1: '[true: ATO 使用許可オン]'
 ato_info2: '[false: ATO 使用許可オフ]'
 ato_detectpattern: ATO 運転パターン 発見しました。
+ato_detectstopaction: ATO 停車時動作 発見しました。
 ato_detectstoptime: ATO 停車時間 設定しました。
 ato_patterncancel: ATO パターン 取り消しました。
 sb_success: 運転方向の切り替えが成功しました。
