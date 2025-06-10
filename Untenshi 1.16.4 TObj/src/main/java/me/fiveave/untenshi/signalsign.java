@@ -168,7 +168,7 @@ class signalsign extends SignAction {
         });
     }
 
-    private static void readIlBook(utsvehicle lv, ItemMeta mat) {
+    private static void readIlBook(utsvehicle lv, ItemMeta mat, Location refchestloc) {
         if (mat instanceof BookMeta) {
             BookMeta bk = (BookMeta) mat;
             int pgcount = bk.getPageCount();
@@ -187,9 +187,8 @@ class signalsign extends SignAction {
                     break;
                 }
                 Location setloc = getFullLoc(lv.getSavedworld(), str);
-                // Anti duplicating causing interlock pattern to be set twice, thus bugging out, assuming all pages are written
-                Location[] iloccupied = lv.getIlposoccupied();
-                if (iloccupied != null && iloccupied.length > 0 && pgno == 1 && setloc.equals(iloccupied[0])) {
+                // Anti duplicating causing interlock pattern to be set twice, thus bugging out
+                if (lv.getLastilchest() != null && lv.getLastilchest().equals(refchestloc)) {
                     break;
                 }
                 // Null or not? If null just put new
@@ -233,7 +232,7 @@ class signalsign extends SignAction {
                     }
                     // Tag not used then assign
                     if (found) {
-                        readIlBook(lv, mat);
+                        readIlBook(lv, mat, refchest.getLocation());
                         // Add tag for point switches
                         lv.getTrain().getProperties().addTags(tagname);
                         break;
@@ -257,7 +256,7 @@ class signalsign extends SignAction {
             for (int itemno = 0; itemno < 27; itemno++) {
                 try {
                     ItemMeta mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
-                    readIlBook(lv, mat);
+                    readIlBook(lv, mat, fullloc);
                 } catch (Exception ignored) {
                 }
             }
@@ -266,9 +265,10 @@ class signalsign extends SignAction {
             } else {
                 lv.setIlpriority(0);
             }
-            // Set ilenterqueuetime and ilpriority
+            // Set ilenterqueuetime, signalorder and lastilchest
             lv.setSignalorderptn(l3[1]);
             lv.setIlenterqueuetime(System.currentTimeMillis());
+            lv.setLastilchest(fullloc);
         }
     }
 
@@ -301,7 +301,8 @@ class signalsign extends SignAction {
     }
 
     boolean checkType(SignActionEvent e) {
-        return l1(e).equals("warn") || l1(e).equals("interlock") || (l1(e).equals("set") && isSignalType(l2(e)));
+        String[] l3 = e.getLine(2).toLowerCase().split(" ");
+        return l3[0].equals("warn") || l3[0].equals("interlock") || (l3[0].equals("set") && isSignalType(l3[1]));
     }
 
     @Override
@@ -455,40 +456,27 @@ class signalsign extends SignAction {
         }
     }
 
-    // l[n]: "n"th split text in line 3
-    static String l1(SignActionEvent e) {
-        return e.getLine(2).toLowerCase().split(" ")[0];
-    }
-
-    static String l2(SignActionEvent e) {
-        return e.getLine(2).toLowerCase().split(" ")[1];
-    }
-
-    static String l3(SignActionEvent e) {
-        return e.getLine(2).split(" ")[2];
-    }
-
     @Override
     public boolean build(SignChangeActionEvent e) {
         if (noSignPerm(e)) return true;
         Player p = e.getPlayer();
         try {
             SignBuildOptions opt = SignBuildOptions.create().setName(ChatColor.GOLD + "Signal sign");
+            String[] s2 = e.getLine(2).split(" ");
+            String[] s3 = e.getLine(3).split(" ");
             // Check signal name
-            if (!checkType(e) && !l2(e).equals("del")) {
+            if (!checkType(e) && !s2[1].equals("del")) {
                 p.sendMessage(ChatColor.RED + getLang("signal_typewrong"));
                 p.sendMessage(ChatColor.RED + getLang("argwrong"));
                 e.setCancelled(true);
             }
             // Check speed conditions
-            if (l1(e).equals("set")) {
-                int signalspeed = parseInt(l3(e));
+            if (s2[0].equals("set")) {
+                int signalspeed = parseInt(s2[2]);
                 if (limitSpeedIncorrect(p, signalspeed)) e.setCancelled(true);
             }
             // Check line 4 (coord) is int only
-            String[] s2 = e.getLine(2).split(" ");
-            String[] s3 = e.getLine(3).split(" ");
-            switch (l1(e)) {
+            switch (s2[0]) {
                 case "warn":
                     for (String i : s3) {
                         parseInt(i);

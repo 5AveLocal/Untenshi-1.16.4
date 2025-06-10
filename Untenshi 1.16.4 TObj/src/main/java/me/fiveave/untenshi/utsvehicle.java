@@ -48,6 +48,7 @@ class utsvehicle {
     private Location atodest; // ATO target destination
     private Location lastsisign; // Location of last recognized signal sign
     private Location lastspsign; // Location of last recognized speed limit sign
+    private Location lastilchest; // Location of last recognized interlocking chest
     private Location[] rsposlist; // List of positions for "resettable sign"
     private Location[] ilposlist; // List of positions (including both in queue and occupied) for interlocking
     private Location[] ilposoccupied; // Occupied positions for interlocking
@@ -164,6 +165,7 @@ class utsvehicle {
         this.setBeinglogged(false);
         this.setRsoccupiedpos(-1);
         this.setAtoautodep(false);
+        this.setLastilchest(null);
     }
 
     static void initVehicle(MinecartGroup mg) {
@@ -586,5 +588,13 @@ class utsvehicle {
 
     public void setStopactionpos(Location stopactionpos) {
         this.stopactionpos = stopactionpos;
+    }
+
+    public Location getLastilchest() {
+        return lastilchest;
+    }
+
+    public void setLastilchest(Location lastilchest) {
+        this.lastilchest = lastilchest;
     }
 }

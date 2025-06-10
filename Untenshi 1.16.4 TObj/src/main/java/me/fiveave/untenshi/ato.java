@@ -4,6 +4,8 @@ import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -255,6 +257,7 @@ class ato {
                         }
                     }
                 }
+                // Continue unless departed
                 if (!(lastinrange && !inrange)) {
                     // Add to counter, run next tick
                     int finalStatTimeCount = stattimecount;
@@ -324,6 +327,12 @@ class ato {
                     executestr += " --train " + lv.getTrain().getProperties().getTrainName();
                 }
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), executestr);
+                break;
+            case "set":
+                // set <x> <y> <z> <material>
+                Block b = lv.getSavedworld().getBlockAt(Integer.parseInt(actionstrsplit[0]), Integer.parseInt(actionstrsplit[1]), Integer.parseInt(actionstrsplit[2]));
+                b.getChunk().load();
+                b.setType(Material.valueOf(actionstrsplit[3].toUpperCase()));
                 break;
         }
     }
