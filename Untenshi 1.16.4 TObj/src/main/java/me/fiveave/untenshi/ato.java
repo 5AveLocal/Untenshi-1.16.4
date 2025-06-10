@@ -222,9 +222,10 @@ class ato {
         }
     }
 
-    static void stopActionClock(utsvehicle lv, ItemMeta mat, int timecount, int stattimecount, boolean lastdoordiropen, boolean lastdoorconfirm, boolean lastinrange) {
+    static void stopActionClock(utsvehicle lv, ItemMeta mat, int timecount, int stattimecount, boolean lastdoordiropen, boolean lastdoorconfirm, boolean lastreqstopping) {
         if (lv.getTrain() != null) {
-            boolean inrange = false;
+            boolean stopped = lv.getSpeed() == 0;
+            boolean reqstopping = lv.isReqstopping();
             if (mat instanceof BookMeta) {
                 BookMeta bk = (BookMeta) mat;
                 int pgcount = bk.getPageCount();
@@ -240,16 +241,10 @@ class ato {
                         if (lastdoordiropen != doordiropen || lastdoorconfirm != doorconfirm) {
                             stattimecount = 0;
                         }
-                        if (lv.getStoppos() != null) {
-                            try {
-                                StopPosResult spresult = getStopPosResult(lv);
-                                inrange = spresult.stopdist <= 1.00 && lv.getSpeed() == 0;
-                            } catch (Exception ignored) {
-                            }
-                        }
+
                         String status = (doordiropen ? "open" : "clos") + (doorconfirm ? "ed" : "ing") + stattimecount;
                         // Run book (format: open/clos + ed/ing + timecount)
-                        if (inrange && timesplit[0].equals(status) || timesplit[0].equals("init") && timecount == 0) {
+                        if (stopped && timesplit[0].equals(status) || timesplit[0].equals("init") && timecount == 0) {
                             for (String onesplitstr : trysplitstr) {
                                 // Run action string
                                 stopActionCmdRunner(lv, onesplitstr);
@@ -258,11 +253,10 @@ class ato {
                     }
                 }
                 // Continue unless departed
-                if (!(lastinrange && !inrange)) {
+                if (reqstopping || lastreqstopping || stopped) {
                     // Add to counter, run next tick
                     int finalStatTimeCount = stattimecount;
-                    boolean finalInrange = inrange;
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> stopActionClock(lv, mat, timecount + 1, finalStatTimeCount + 1, doordiropen, doorconfirm, finalInrange), 1);
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> stopActionClock(lv, mat, timecount + 1, finalStatTimeCount + 1, doordiropen, doorconfirm, reqstopping), 1);
                 }
             }
         }

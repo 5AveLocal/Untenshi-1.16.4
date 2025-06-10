@@ -159,7 +159,7 @@ class motion {
             // Train stopping at station
             if (refchest != null) {
                 ItemMeta mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(0)).getItemMeta();
-                stopActionClock(lv, mat, 0, 0, lv.isDoordiropen(), lv.isDoorconfirm(), false);
+                stopActionClock(lv, mat, 0, 0, lv.isDoordiropen(), lv.isDoorconfirm(), true);
                 lv.setStopactionpos(null);
             }
         }
