@@ -24,7 +24,7 @@ import static me.fiveave.untenshi.utsvehicle.initVehicle;
 class atosign extends SignAction {
 
     static void atoSignStopTime(utsvehicle lv, int val) {
-        lv.setAtoautodep(val >= 0);
+        lv.setAtoautodep(val >= 0 && (lv.getLd() == null || lv.getLd().isAllowatousage()));
         lv.setAtostoptime(Math.abs(val));
         generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectstoptime"));
     }
@@ -52,14 +52,13 @@ class atosign extends SignAction {
                 MinecartGroup mg = cartevent.getGroup();
                 MinecartMember<?> mm = cartevent.getMember();
                 utsvehicle lv = vehicle.get(mg);
-                Location eventloc = cartevent.getLocation();
                 // Register train if not yet
                 if (lv == null && cartevent.getLine(2).equals("reg")) {
                     initVehicle(mg);
                     utsvehicle lv2 = vehicle.get(mg);
                     lv2.setBrake(8);
                     lv2.setMascon(0);
-                } else if (lv != null && lv.getTrain() != null && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
+                } else if (lv != null && lv.getTrain() != null) {
                     switch (cartevent.getLine(2)) {
                         case "reg":
                             // Do nothing, train is already registered
@@ -72,7 +71,7 @@ class atosign extends SignAction {
                             break;
                         case "dir":
                             // Only activate if train is stopped
-                            if (lv.getSpeed() == 0) {
+                            if (lv.getSpeed() == 0 && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
                                 String dir = cartevent.getLine(3).toUpperCase();
                                 atoSignDir(lv, mg, mm, dir, cartevent);
                             }
@@ -90,7 +89,7 @@ class atosign extends SignAction {
                             break;
                         default:
                             // Only activate if train is not overrun
-                            if (!lv.isOverrun() && cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON)) {
+                            if (!lv.isOverrun() && cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
                                 double[] loc = new double[3];
                                 String[] sloc = cartevent.getLine(3).split(" ");
                                 double val = Double.parseDouble(cartevent.getLine(2));
