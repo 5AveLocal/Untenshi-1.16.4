@@ -102,6 +102,25 @@ class signalcmd implements CommandExecutor, TabCompleter {
         return isclear;
     }
 
+    private static boolean tryItemIsIlClear(Chest refchest, boolean isclear, World world, boolean lossy) {
+        if (refchest != null) {
+            for (int itemno = 0; itemno < 27; itemno++) {
+                ItemMeta mat = null;
+
+                try {
+                    mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
+                } catch (Exception ignored) {
+                }
+                isclear = isIlClear(mat, world, lossy);
+                // If one of them is not clear then result is not clear
+                if (!isclear) {
+                    break;
+                }
+            }
+        }
+        return isclear;
+    }
+
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         try {
             if (sender instanceof BlockCommandSender) {
@@ -174,25 +193,6 @@ class signalcmd implements CommandExecutor, TabCompleter {
             e.printStackTrace();
         }
         return true;
-    }
-
-    private static boolean tryItemIsIlClear(Chest refchest, boolean isclear, World world, boolean lossy) {
-        if (refchest != null) {
-            for (int itemno = 0; itemno < 27; itemno++) {
-                ItemMeta mat = null;
-
-                try {
-                    mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
-                } catch (Exception ignored) {
-                }
-                isclear = isIlClear(mat, world, lossy);
-                // If one of them is not clear then result is not clear
-                if (!isclear) {
-                    break;
-                }
-            }
-        }
-        return isclear;
     }
 
     @Override

@@ -7,8 +7,8 @@ import com.bergerkiller.bukkit.tc.signactions.SignActionType;
 import com.bergerkiller.bukkit.tc.utils.SignBuildOptions;
 import org.bukkit.ChatColor;
 
-import static me.fiveave.untenshi.main.noSignPerm;
-import static me.fiveave.untenshi.main.vehicle;
+import static me.fiveave.untenshi.cmds.generalMsg;
+import static me.fiveave.untenshi.main.*;
 
 class utstrain extends SignAction {
 
@@ -39,7 +39,7 @@ class utstrain extends SignAction {
             opt.setDescription("detect if the train is a Untenshi train");
             return opt.handle(e.getPlayer());
         } catch (Exception exception) {
-            e.getPlayer().sendMessage(ChatColor.RED + "Numbers are not valid!");
+            generalMsg(e.getPlayer(), ChatColor.RED, getLang("signimproper"));
             e.setCancelled(true);
         }
         return true;

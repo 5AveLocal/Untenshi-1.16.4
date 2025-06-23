@@ -466,8 +466,8 @@ class signalsign extends SignAction {
             String[] s3 = e.getLine(3).split(" ");
             // Check signal name
             if (!checkType(e) && !s2[1].equals("del")) {
-                p.sendMessage(ChatColor.RED + getLang("signal_typewrong"));
-                p.sendMessage(ChatColor.RED + getLang("argwrong"));
+                generalMsg(p, ChatColor.RED, getLang("signal_typewrong"));
+                generalMsg(p, ChatColor.RED, getLang("argwrong"));
                 e.setCancelled(true);
             }
             // Check speed conditions
@@ -499,7 +499,7 @@ class signalsign extends SignAction {
                     break;
                 case "set":
                     if (!isSignalType(s3[1].toLowerCase())) {
-                        p.sendMessage(ChatColor.RED + getLang("signal_typewrong"));
+                        generalMsg(p, ChatColor.RED, getLang("signal_typewrong"));
                     }
                     int setspeed = parseInt(s3[2]);
                     if (limitSpeedIncorrect(p, setspeed)) e.setCancelled(true);
@@ -508,7 +508,7 @@ class signalsign extends SignAction {
             }
             return opt.handle(p);
         } catch (Exception exception) {
-            p.sendMessage(ChatColor.RED + getLang("signimproper"));
+            generalMsg(p, ChatColor.RED, getLang("signimproper"));
             e.setCancelled(true);
         }
         return true;

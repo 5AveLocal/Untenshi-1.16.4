@@ -100,20 +100,35 @@ class speedsign extends SignAction {
     }
 
     static boolean limitSpeedIncorrect(CommandSender p, int speedlimit) {
-        boolean retval = false;
-        if (speedlimit > maxspeed) {
+        if (speedlimit < 0 || Math.floorMod(speedlimit, 5) != 0 || speedlimit > maxspeed) {
             if (p != null) {
-                p.sendMessage(getSpeedMax());
+                generalMsg(p, ChatColor.RED, getLang("argwrong"));
             }
-            retval = true;
+            return true;
         }
-        if (speedlimit < 0 || Math.floorMod(speedlimit, 5) != 0) {
-            if (p != null) {
-                generalMsg(p, ChatColor.RESET, getLang("argwrong"));
+        return false;
+    }
+
+    static void speedSignWarn(utsvehicle lv, Location eventloc, String signloc) {
+        Sign warn = getSignFromLoc(getFullLoc(lv.getSavedworld(), signloc));
+        if (warn != null) {
+            lv.setLastspsign(warn.getLocation());
+            int warnsp = parseInt(warn.getLine(2));
+            lv.setLastspsp(warnsp);
+            if (warnsp < maxspeed) {
+                // ATC signal and speed limit min value
+                if (lv.getSafetysystype().equals("atc")) {
+                    warnsp = Math.min(Math.min(lv.getLastsisp(), lv.getLastspsp()), lv.getSignallimit());
+                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_warn") + " " + ChatColor.GOLD + "ATC" + ChatColor.GRAY + " " + warnsp + " km/h");
+                } else {
+                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("speedlimit_warn") + " " + warnsp + " km/h");
+                }
+            } else if (eventloc != null) {
+                signImproper(eventloc, lv.getLd());
             }
-            retval = true;
+        } else if (eventloc != null) {
+            signImproper(eventloc, lv.getLd());
         }
-        return retval;
     }
 
     @Override
@@ -167,28 +182,6 @@ class speedsign extends SignAction {
         }
     }
 
-    static void speedSignWarn(utsvehicle lv, Location eventloc, String signloc) {
-        Sign warn = getSignFromLoc(getFullLoc(lv.getSavedworld(), signloc));
-        if (warn != null) {
-            lv.setLastspsign(warn.getLocation());
-            int warnsp = parseInt(warn.getLine(2));
-            lv.setLastspsp(warnsp);
-            if (warnsp < maxspeed) {
-                // ATC signal and speed limit min value
-                if (lv.getSafetysystype().equals("atc")) {
-                    warnsp = Math.min(Math.min(lv.getLastsisp(), lv.getLastspsp()), lv.getSignallimit());
-                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_warn") + " " + ChatColor.GOLD + "ATC" + ChatColor.GRAY + " " + warnsp + " km/h");
-                } else {
-                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("speedlimit_warn") + " " + warnsp + " km/h");
-                }
-            } else if (eventloc != null) {
-                signImproper(eventloc, lv.getLd());
-            }
-        } else if (eventloc != null) {
-            signImproper(eventloc, lv.getLd());
-        }
-    }
-
     @Override
     public boolean build(SignChangeActionEvent e) {
         if (noSignPerm(e)) return true;
@@ -209,7 +202,7 @@ class speedsign extends SignAction {
             }
             return opt.handle(e.getPlayer());
         } catch (Exception exception) {
-            p.sendMessage(ChatColor.RED + getLang("signimproper"));
+            generalMsg(p, ChatColor.RED, getLang("signimproper"));
             e.setCancelled(true);
         }
         return true;

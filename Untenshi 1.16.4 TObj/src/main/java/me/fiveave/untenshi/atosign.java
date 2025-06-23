@@ -39,6 +39,19 @@ class atosign extends SignAction {
         generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectpattern"));
     }
 
+    static void atoSignDir(utsvehicle lv, MinecartGroup mg, MinecartMember<?> mm, String dir, SignActionEvent cartevent) {
+        BlockFace bf = BlockFace.valueOf(dir);
+        if (mm.getDirection().getOppositeFace().equals(bf)) {
+            mg.reverse();
+            lv.setDriverseat(mg.head());
+            generalMsg(lv.getLd(), ChatColor.GOLD, getLang("dir_info") + " " + getLang("dir_" + mg.head().getDirection().toString().toLowerCase()));
+            if (cartevent != null) {
+                cartevent.setLevers(true);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> cartevent.setLevers(false), 4);
+            }
+        }
+    }
+
     @Override
     public boolean match(SignActionEvent info) {
         return info.isType("atosign");
@@ -107,19 +120,6 @@ class atosign extends SignAction {
         }
     }
 
-    static void atoSignDir(utsvehicle lv, MinecartGroup mg, MinecartMember<?> mm, String dir, SignActionEvent cartevent) {
-        BlockFace bf = BlockFace.valueOf(dir);
-        if (mm.getDirection().getOppositeFace().equals(bf)) {
-            mg.reverse();
-            lv.setDriverseat(mg.head());
-            generalMsg(lv.getLd(), ChatColor.GOLD, getLang("dir_info") + " " + getLang("dir_" + mg.head().getDirection().toString().toLowerCase()));
-            if (cartevent != null) {
-                cartevent.setLevers(true);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> cartevent.setLevers(false), 4);
-            }
-        }
-    }
-
     @Override
     public boolean build(SignChangeActionEvent e) {
         if (noSignPerm(e)) return true;
@@ -134,7 +134,7 @@ class atosign extends SignAction {
                     } else if (Math.abs(stoptimeval) >= 1) {
                         opt.setDescription("set ATO station stopping time for train, train does not depart automatically after doors close");
                     } else {
-                        p.sendMessage(ChatColor.RED + getLang("signimproper"));
+                        generalMsg(p, ChatColor.RED, getLang("argwrong"));
                         e.setCancelled(true);
                     }
                     break;
@@ -142,7 +142,7 @@ class atosign extends SignAction {
                     opt.setDescription("set direction for train");
                     boolean match = Arrays.asList("north", "south", "east", "west", "north_east", "north_west", "south_east", "south_west").contains(e.getLine(3).toLowerCase());
                     if (!match) {
-                        p.sendMessage(ChatColor.RED + getLang("dir_notexist"));
+                        generalMsg(p, ChatColor.RED, getLang("dir_notexist"));
                         e.setCancelled(true);
                     }
                     break;
@@ -156,7 +156,7 @@ class atosign extends SignAction {
                     double val = parseInt(e.getLine(2));
                     opt.setDescription(val >= 0 ? "set ATO indirect pattern for train" : "set ATO direct pattern for train");
                     if (val > maxspeed) {
-                        p.sendMessage(getSpeedMax());
+                        generalMsg(p, ChatColor.RED, getLang("argwrong"));
                         e.setCancelled(true);
                     }
                     for (String i : e.getLine(3).split(" ")) {
@@ -166,7 +166,7 @@ class atosign extends SignAction {
             }
             return opt.handle(p);
         } catch (Exception exception) {
-            p.sendMessage(ChatColor.RED + "The number is not valid!");
+            generalMsg(p, ChatColor.RED, getLang("signimproper"));
             e.setCancelled(true);
         }
         return true;

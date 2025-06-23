@@ -8,7 +8,6 @@ import com.bergerkiller.bukkit.tc.signactions.SignActionType;
 import com.bergerkiller.bukkit.tc.utils.SignBuildOptions;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Rail;
 
@@ -42,23 +41,6 @@ class stoppos extends SignAction {
         }
     }
 
-    @Override
-    public boolean match(SignActionEvent info) {
-        return info.isType("stoppos");
-    }
-
-    @Override
-    public void execute(SignActionEvent cartevent) {
-        if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && cartevent.hasRailedMember() && cartevent.isPowered()) {
-            MinecartGroup mg = cartevent.getGroup();
-            String[] l3split = cartevent.getLine(2).split(" ");
-            String l4 = cartevent.getLine(3);
-            Location eventloc = cartevent.getLocation();
-            utsvehicle lv = vehicle.get(mg);
-            stopPosDefault(lv, l3split, l4);
-        }
-    }
-
     static void stopPosDefault(utsvehicle lv, String[] l3split, String l4) {
         if (lv != null) {
             String[] l4split = l4.split(" ");
@@ -84,6 +66,23 @@ class stoppos extends SignAction {
     }
 
     @Override
+    public boolean match(SignActionEvent info) {
+        return info.isType("stoppos");
+    }
+
+    @Override
+    public void execute(SignActionEvent cartevent) {
+        if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && cartevent.hasRailedMember() && cartevent.isPowered()) {
+            MinecartGroup mg = cartevent.getGroup();
+            String[] l3split = cartevent.getLine(2).split(" ");
+            String l4 = cartevent.getLine(3);
+            Location eventloc = cartevent.getLocation();
+            utsvehicle lv = vehicle.get(mg);
+            stopPosDefault(lv, l3split, l4);
+        }
+    }
+
+    @Override
     public boolean build(SignChangeActionEvent e) {
         if (noSignPerm(e)) return true;
         String[] loc = e.getLine(2).split(" ");
@@ -101,7 +100,7 @@ class stoppos extends SignAction {
             }
             return opt.handle(e.getPlayer());
         } catch (Exception exception) {
-            e.getPlayer().sendMessage(ChatColor.RED + "Numbers are not valid!");
+            generalMsg(e.getPlayer(), ChatColor.RED, getLang("signimproper"));
             e.setCancelled(true);
         }
         return true;

@@ -62,7 +62,7 @@ public final class main extends JavaPlugin implements Listener {
 
     static boolean noSignPerm(SignChangeActionEvent e) {
         if (!e.getPlayer().hasPermission("uts.sign")) {
-            e.getPlayer().sendMessage(ChatColor.RED + getLang("noperm"));
+            generalMsg(e.getPlayer(), ChatColor.RED, getLang("noperm"));
             e.setCancelled(true);
             return true;
         }
@@ -78,11 +78,6 @@ public final class main extends JavaPlugin implements Listener {
                 ld.setPoints(ld.getPoints() + pts);
             }
         }
-    }
-
-
-    static String getSpeedMax() {
-        return ChatColor.RED + getLang("speedmax");
     }
 
     static void restoreInitLd(utsdriver ld) {
