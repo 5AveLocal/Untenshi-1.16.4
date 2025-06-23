@@ -102,10 +102,6 @@ class motion {
                 trainSound(lv, "brake_apply");
             }
         }
-        // If brake cancel accel
-        if (ecnow > 0 && bcptarget > 0) {
-            lv.setCurrent(0);
-        }
         // Slope speed adjust
         HeadAndTailResult result = getHeadAndTailResult(mg);
         double slopeaccel = getSlopeAccel(result.headLoc, result.tailLoc);
