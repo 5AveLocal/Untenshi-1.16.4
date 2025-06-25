@@ -19,6 +19,7 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.ato.*;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.events.trainSound;
@@ -312,7 +313,11 @@ class motion {
                 // settable: Sign to be set
                 Sign settable = getSignFromLoc(oldposlist[signno]);
                 if (settable != null) {
-                    updateSignals(settable, "set " + result.ptnsisi[orderno] + " " + result.ptnsisp[orderno]);
+                    String currentsi = settable.getLine(2).split(" ")[1];
+                    int currentsp = parseInt(settable.getLine(2).split(" ")[2]);
+                    // Check if new speed to be set is lower than current, if yes choose current instead
+                    String str = result.ptnsisp[orderno] < currentsp ? currentsi + " " + currentsp : result.ptnsisi[orderno] + " " + result.ptnsisp[orderno];
+                    updateSignals(settable, "set " + str);
                     // Cannot exceed halfptnlen
                     if (orderno + 1 != result.halfptnlen) {
                         orderno++;
@@ -545,20 +550,20 @@ class motion {
             }
         }
         // Pattern run
-        if (((reqbrake > 8 && lv.getSpeed() > lowerSpeed + 3) || isoverspeed3) && lv.getAtsping() == 0) {
+        if (reqbrake > 8 && lv.getSpeed() > lowerSpeed + 3 || isoverspeed3) {
             // Or SPAD (0 km/h signal) EB
-            if (reqbrake > 9 || lv.getSignallimit() == 0) {
+            if ((reqbrake > 9 || lv.getSignallimit() == 0) && lv.getAtsping() != 2) {
                 lv.setBrake(9);
                 lv.setMascon(0);
                 lv.setAtsping(2);
                 pointCounter(lv.getLd(), ChatColor.RED, lv.getSafetysystype().toUpperCase() + " " + getLang("p_eb") + " ", -5, "");
-            } else {
+            } else if (lv.getAtsping() == 0) {
                 lv.setBrake(8);
                 lv.setMascon(0);
                 lv.setAtsping(1);
                 pointCounter(lv.getLd(), ChatColor.RED, lv.getSafetysystype().toUpperCase() + " " + getLang("p_b8") + " ", -5, "");
             }
-        } else if (lv.getSpeed() <= lowerSpeed + 3 && !isoverspeed0 && !isoverspeed3 && lv.getAtsforced() != 2 && lv.getAtsforced() != -1) {
+        } else if (lv.getSpeed() <= lowerSpeed + 3 && !isoverspeed0 && lv.getAtsforced() != 2 && lv.getAtsforced() != -1) {
             lv.setAtsping(0);
         }
         // Pattern near
