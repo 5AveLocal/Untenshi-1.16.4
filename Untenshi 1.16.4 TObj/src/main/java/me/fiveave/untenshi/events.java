@@ -208,39 +208,43 @@ class events implements Listener {
 
     static void trainSound(utsvehicle lv, String type) {
         if (lv.getTrain() != null) {
-            switch (type) {
-                case "brake_apply":
-                    lv.getTrain().forEach(mm -> mm.getEntity().makeSound(Sound.BLOCK_REDSTONE_TORCH_BURNOUT, 0.025f, 0.75f));
-                    break;
-                case "brake_release":
-                    lv.getTrain().forEach(mm -> mm.getEntity().makeSound(Sound.BLOCK_REDSTONE_TORCH_BURNOUT, 0.025f, 1.5f));
-                    break;
-                case "accel_on":
-                    lv.getTrain().forEach(mm -> mm.getEntity().makeSound(Sound.BLOCK_PISTON_EXTEND, 0.01f, 2f));
-                    break;
-                case "accel_off":
-                    lv.getTrain().forEach(mm -> mm.getEntity().makeSound(Sound.BLOCK_PISTON_CONTRACT, 0.01f, 2f));
-                    break;
-                case "mascon":
-                    if (lv.getLd() != null) {
-                        lv.getLd().getP().playSound(lv.getLd().getP().getLocation(), Sound.BLOCK_WOOD_PLACE, 0.5f, 1.5f);
-                    }
-                    break;
-                case "ebbutton":
-                    if (lv.getLd() != null) {
-                        lv.getLd().getP().playSound(lv.getLd().getP().getLocation(), Sound.BLOCK_WOODEN_TRAPDOOR_CLOSE, 0.5f, 0.75f);
-                    }
-                    break;
-                case "sblever":
-                    if (lv.getLd() != null) {
-                        lv.getLd().getP().playSound(lv.getLd().getP().getLocation(), Sound.BLOCK_FENCE_GATE_CLOSE, 0.5f, 1.25f);
-                    }
-                    break;
-                case "doorbutton":
-                    if (lv.getLd() != null) {
-                        lv.getLd().getP().playSound(lv.getLd().getP().getLocation(), Sound.BLOCK_WOODEN_TRAPDOOR_CLOSE, 0.5f, 1.5f);
-                    }
-                    break;
+            // Prevent 1.21.4 plugin bugging out due to sound playing failure
+            try {
+                switch (type) {
+                    case "brake_apply":
+                        lv.getTrain().forEach(mm -> mm.getEntity().makeSound(Sound.BLOCK_REDSTONE_TORCH_BURNOUT, 0.025f, 0.75f));
+                        break;
+                    case "brake_release":
+                        lv.getTrain().forEach(mm -> mm.getEntity().makeSound(Sound.BLOCK_REDSTONE_TORCH_BURNOUT, 0.025f, 1.5f));
+                        break;
+                    case "accel_on":
+                        lv.getTrain().forEach(mm -> mm.getEntity().makeSound(Sound.BLOCK_PISTON_EXTEND, 0.01f, 2f));
+                        break;
+                    case "accel_off":
+                        lv.getTrain().forEach(mm -> mm.getEntity().makeSound(Sound.BLOCK_PISTON_CONTRACT, 0.01f, 2f));
+                        break;
+                    case "mascon":
+                        if (lv.getLd() != null) {
+                            lv.getLd().getP().playSound(lv.getLd().getP().getLocation(), Sound.BLOCK_WOOD_PLACE, 0.5f, 1.5f);
+                        }
+                        break;
+                    case "ebbutton":
+                        if (lv.getLd() != null) {
+                            lv.getLd().getP().playSound(lv.getLd().getP().getLocation(), Sound.BLOCK_WOODEN_TRAPDOOR_CLOSE, 0.5f, 0.75f);
+                        }
+                        break;
+                    case "sblever":
+                        if (lv.getLd() != null) {
+                            lv.getLd().getP().playSound(lv.getLd().getP().getLocation(), Sound.BLOCK_FENCE_GATE_CLOSE, 0.5f, 1.25f);
+                        }
+                        break;
+                    case "doorbutton":
+                        if (lv.getLd() != null) {
+                            lv.getLd().getP().playSound(lv.getLd().getP().getLocation(), Sound.BLOCK_WOODEN_TRAPDOOR_CLOSE, 0.5f, 1.5f);
+                        }
+                        break;
+                }
+            } catch (Exception ignored) {
             }
         }
     }

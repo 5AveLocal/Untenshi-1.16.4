@@ -198,7 +198,7 @@ class ato {
     }
 
     static void waitDepart(utsvehicle lv, Location actualSiRefPos, Location cartactualpos) {
-        if (lv != null && lv.getTrain() != null && lv.getDriverseat().getEntity() != null) {
+        if (lv != null && lv.getTrain().isValid()) {
             boolean notindist = true;
             double[] reqdist = new double[10];
             getAllReqdist(lv, minSpeedLimit(lv), 0, lv.getSpeeddrop(), reqdist, 0, 0);
@@ -223,7 +223,7 @@ class ato {
     }
 
     static void stopActionClock(utsvehicle lv, ItemMeta mat, int timecount, int stattimecount, boolean lastdoordiropen, boolean lastdoorconfirm, boolean lastreqstopping) {
-        if (lv.getTrain() != null) {
+        if (lv.getTrain().isValid()) {
             boolean stopped = lv.getSpeed() == 0;
             boolean reqstopping = lv.isReqstopping();
             if (mat instanceof BookMeta) {
