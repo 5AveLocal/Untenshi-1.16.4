@@ -116,3 +116,11 @@ tcblocking: 前に塞いでいる TrainCarts のオブジェクトがありま�
 nopoints: 点数が足りないので、運転が終了しました。
 secclear: 区間が空いています。
 secnotclear: 区間が空いていません。
+signselsuccess: サインの選択が成功しました。
+signwrong: サインの選択が間違っています。
+signsetsuccess: サインの設定が成功しました。
+signset5s: 5 秒以内にサインを設定してください。
+signsettimeout: サインの設定がタイムアウトしました。
+signdirset: サインの方向を設定しました。
+signdirwrong: サインの方向が間違っています。
+signreqseldir: サインと方向を選択してください!

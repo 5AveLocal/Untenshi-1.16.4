@@ -116,3 +116,11 @@ tcblocking: 有 TrainCarts 物件在堵塞前方。
 nopoints: 分數不足，駕駛結束。
 secclear: 區間暢通。
 secnotclear: 區間未暢通。
+signselsuccess: 成功選擇指示牌。
+signwrong: 選擇的指示牌錯誤。
+signsetsuccess: 成功設定指示牌。
+signset5s: 請在 5 秒內設定告示牌。
+signsettimeout: 設定告示牌逾時。
+signdirset: 已設定告示牌方向。
+signdirwrong: 告示牌方向錯誤。
+signreqseldir: 請先選擇指示牌及方向!

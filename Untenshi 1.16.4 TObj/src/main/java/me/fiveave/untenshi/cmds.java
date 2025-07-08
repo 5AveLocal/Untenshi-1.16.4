@@ -81,7 +81,7 @@ class cmds implements CommandExecutor, TabCompleter {
                 generalMsg(sender, ChatColor.RED, getLang("playeronlycmd"));
                 return true;
             }
-            if (!sender.hasPermission("uts.main") && !sender.isOp()) {
+            if (!sender.hasPermission("uts.signtool") && !sender.isOp()) {
                 noPerm(sender);
                 return true;
             }

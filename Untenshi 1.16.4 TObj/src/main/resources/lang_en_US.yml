@@ -116,3 +116,11 @@ tcblocking: A TrainCarts object is blocking in front.
 nopoints: Having not enough points, your drive mode has been disabled.
 secclear: Section is clear.
 secnotclear: Section is not clear.
+signselsuccess: Sign successfully selected.
+signwrong: Sign selection is incorrect.
+signsetsuccess: Sign successfully set.
+signset5s: Please set the sign within 5 seconds.
+signsettimeout: Sign setting timeout.
+signdirset: Sign direction set.
+signdirwrong: Sign direction is incorrect.
+signreqseldir: Please select sign and direction first!

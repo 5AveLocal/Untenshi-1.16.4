@@ -1,5 +1,5 @@
 name: Untenshi
-version: 1.11.1_02-TObj
+version: 1.11.2-TObj
 main: me.fiveave.untenshi.main
 api-version: 1.15
 description: Untenshi Plugin
@@ -18,6 +18,9 @@ commands:
   utsdebug:
     description: Untenshi Debugger
     usage: /utsdebug <vehicle_name> <get/set> <variable>
+  utssigntool:
+    description: Untenshi Sign Tool
+    usage: /utssigntool <getsign/setdir/setsign> <dir>
 permissions:
   uts.*:
     description: All Untenshi Perms
@@ -50,4 +53,7 @@ permissions:
     default: op
   uts.debug:
     description: Allow usage of debug mode
+    default: op
+  uts.signtool:
+    description: Allow usage of sign tool
     default: op

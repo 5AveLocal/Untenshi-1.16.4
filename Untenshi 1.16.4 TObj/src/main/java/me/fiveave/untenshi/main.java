@@ -32,6 +32,7 @@ public final class main extends JavaPlugin implements Listener {
     static final double cartyposdiff = 0.0625;
     static final HashMap<MinecartGroup, utsvehicle> vehicle = new HashMap<>();
     static final HashMap<Player, utsdriver> driver = new HashMap<>();
+    static final HashMap<Player, utscmduser> cmduser = new HashMap<>();
     static final String pureutstitle = ChatColor.YELLOW + "[========== " + ChatColor.GREEN + "Untenshi " + ChatColor.YELLOW + "==========]\n";
     static final String utshead = "[" + ChatColor.GREEN + "Untenshi" + ChatColor.WHITE + "] ";
     public static main plugin;
@@ -52,10 +53,10 @@ public final class main extends JavaPlugin implements Listener {
         try {
             result = langdata.dataconfig.getString(path);
         } catch (Exception e) {
-            result = " (Path does not exist: " + path + ") ";
+            result = " (lang not set for " + path + ") ";
         }
-        if (result != null && result.equals("null")) {
-            result = " (Path does not exist: " + path + ") ";
+        if (result == null || result.equals("null")) {
+            result = " (lang not set for " + path + ") ";
         }
         return result;
     }
@@ -161,8 +162,11 @@ public final class main extends JavaPlugin implements Listener {
         Objects.requireNonNull(this.getCommand("utslogger")).setTabCompleter(new driverlog());
         Objects.requireNonNull(this.getCommand("utsdebug")).setExecutor(new debugcmd());
         Objects.requireNonNull(this.getCommand("utsdebug")).setTabCompleter(new debugcmd());
+        Objects.requireNonNull(this.getCommand("utssigntool")).setExecutor(new signtool());
+        Objects.requireNonNull(this.getCommand("utssigntool")).setTabCompleter(new signtool());
         try {
             pm.registerEvents(new events(), this);
+            pm.registerEvents(new signtool(), this);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
