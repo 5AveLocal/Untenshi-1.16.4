@@ -13,6 +13,9 @@ Must be installed in Bukkit-based servers (e.g. Bukkit / Spigot / Paper) with Mi
 `/plugman reload Untenshi` (in Plugman) or other plugin reloading commands can be used unless the plugin is bugged.<br/>
 `/uts help <page>` for list of commands.
 
+## 🛑 Known issues
+Train sounds cannot be played in Minecraft versions 1.21.4 or newer.<br/>
+
 ## ⚠️ Warnings
 Restart is required if Untenshi signs cannot be detected. (The error should contain `zip file closed` in the console)<br/>
 Any misuse of the plugin may cause unexpected behaviour.
