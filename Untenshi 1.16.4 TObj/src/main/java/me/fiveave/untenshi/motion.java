@@ -313,14 +313,19 @@ class motion {
                 // settable: Sign to be set
                 Sign settable = getSignFromLoc(oldposlist[signno]);
                 if (settable != null) {
-                    String currentsi = settable.getLine(2).split(" ")[1];
-                    int currentsp = parseInt(settable.getLine(2).split(" ")[2]);
-                    // Check if new speed to be set is lower than current, if yes choose current instead
-                    String str = result.ptnsisp[orderno] < currentsp ? currentsi + " " + currentsp : result.ptnsisi[orderno] + " " + result.ptnsisp[orderno];
-                    updateSignals(settable, "set " + str);
-                    // Cannot exceed halfptnlen
-                    if (orderno + 1 != result.halfptnlen) {
-                        orderno++;
+                    try {
+                        String currentsi = settable.getLine(2).split(" ")[1];
+                        int currentsp = parseInt(settable.getLine(2).split(" ")[2]);
+                        // Check if new speed to be set is lower than current, if yes choose current instead
+                        String str = result.ptnsisp[orderno] < currentsp ? currentsi + " " + currentsp : result.ptnsisi[orderno] + " " + result.ptnsisp[orderno];
+                        updateSignals(settable, "set " + str);
+                        // Cannot exceed halfptnlen
+                        if (orderno + 1 != result.halfptnlen) {
+                            orderno++;
+                        }
+                    } catch (IndexOutOfBoundsException | NumberFormatException e) {
+                        signImproper(settable.getLocation(), lv.getLd());
+                        throw new RuntimeException(e);
                     }
                 }
             }
