@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.ato.*;
+import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.events.trainSound;
 import static me.fiveave.untenshi.main.*;
@@ -35,7 +36,7 @@ class motion {
                 motionSystem(lv);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLv(lv), tickdelay);
             } catch (Exception e) {
-                e.printStackTrace();
+                errorLog(e, "motion.recursiveClockLv");
                 restoreInitLv(lv);
             }
         } else {
@@ -49,7 +50,7 @@ class motion {
                 driverSystem(ld);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLd(ld), tickdelay);
             } catch (Exception e) {
-                e.printStackTrace();
+                errorLog(e, "motion.recursiveClockLd");
                 restoreInitLd(ld);
             }
         } else if (ld.isFrozen()) {
@@ -111,7 +112,8 @@ class motion {
         double decelnow = decelSwitch(lv, lv.getSpeed(), slopeaccel);
         if (lv.getDooropen() == 0) {
             // If door is closed
-            lv.setSpeed(lv.getSpeed() + accelnow * onetickins // Acceleration
+            lv.setSpeed(lv.getSpeed() //
+                    + accelnow * onetickins // Acceleration
                     - decelnow * onetickins); // Deceleration (speed drop included)
             // Prevent negative speed
             if (lv.getSpeed() < 0) {
@@ -189,9 +191,7 @@ class motion {
             if (spresult.stopdist <= 5 && ld.getLv().getSpeed() != 0) showstoppos = true;
         }
         // Action bar
-        String actionbarmsg = getCtrlText(ld.getLv()) + ChatColor.WHITE + " | " + ChatColor.YELLOW + getLang("speed") + " " + displaySpeed + ChatColor.WHITE + " km/h" + " | "
-                + ChatColor.YELLOW + getLang("points") + " " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(ld.getPoints())) + " | "
-                + (showstoppos ? ChatColor.YELLOW + getLang("stoppos") + " " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(stopdistcm)) + ChatColor.WHITE + " cm" : ChatColor.YELLOW + getLang("door") + " " + doortxt);
+        String actionbarmsg = getCtrlText(ld.getLv()) + ChatColor.WHITE + " | " + ChatColor.YELLOW + getLang("speed") + " " + displaySpeed + ChatColor.WHITE + " km/h" + " | " + ChatColor.YELLOW + getLang("points") + " " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(ld.getPoints())) + " | " + (showstoppos ? ChatColor.YELLOW + getLang("stoppos") + " " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(stopdistcm)) + ChatColor.WHITE + " cm" : ChatColor.YELLOW + getLang("door") + " " + doortxt);
         ld.getP().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(actionbarmsg));
         // Catch point <= 0 and end game
         if (noFreemodeOrATO(ld) && ld.getPoints() <= 0) {

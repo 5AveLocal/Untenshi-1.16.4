@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.lang.Integer.parseInt;
+import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.signalcmd.isIlClear;
@@ -452,7 +453,7 @@ class signalsign extends SignAction {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            errorLog(e, "signalsign.execute");
         }
     }
 

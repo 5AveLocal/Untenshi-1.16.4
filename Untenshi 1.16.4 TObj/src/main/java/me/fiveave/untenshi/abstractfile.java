@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 
 class abstractfile {
@@ -61,7 +62,7 @@ class abstractfile {
                 try {
                     dataconfig.save(file);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    errorLog(e, "abstractfile.reloadConfig");
                 }
                 generalMsg(Bukkit.getConsoleSender(), ChatColor.YELLOW, file.getName() + " has been updated due to missing content");
             }
@@ -75,7 +76,7 @@ class abstractfile {
         try {
             dataconfig.save(file);
         } catch (IOException e) {
-            e.printStackTrace();
+            errorLog(e, "abstractfile.save");
         }
     }
 

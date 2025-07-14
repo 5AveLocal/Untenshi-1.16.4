@@ -24,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
 import static me.fiveave.untenshi.events.*;
 import static me.fiveave.untenshi.main.*;
@@ -345,9 +346,13 @@ class cmds implements CommandExecutor, TabCompleter {
             playerdata.save();
         } catch (Exception e) {
             generalMsg(sender, ChatColor.RED, getLang("error"));
-            e.printStackTrace();
+            errorLog(e, "cmds.onCommand");
         }
         return true;
+    }
+
+    static void errorLog(Exception e, String loc) {
+        plugin.getLogger().log(Level.SEVERE, utshead + loc + "() did not function properly!\n" + e.getCause());
     }
 
     private boolean cannotSetTrain(String[] args, utsdriver ld) {

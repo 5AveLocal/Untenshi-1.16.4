@@ -76,7 +76,6 @@ class stoppos extends SignAction {
             MinecartGroup mg = cartevent.getGroup();
             String[] l3split = cartevent.getLine(2).split(" ");
             String l4 = cartevent.getLine(3);
-            Location eventloc = cartevent.getLocation();
             utsvehicle lv = vehicle.get(mg);
             stopPosDefault(lv, l3split, l4);
         }

@@ -15,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 
 import static java.lang.Integer.parseInt;
+import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.signalsign.*;
@@ -50,7 +51,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                 if (trysplitstr[0].equals("try")) {
                     Location fullloc2 = getFullLoc(world, trysplitstr[2]);
                     Chest refchest2 = getChestFromLoc(fullloc2);
-                    isclear = tryItemIsIlClear(refchest2, isclear, world, lossy);
+                    isclear = tryItemIsIlClear(refchest2, world, lossy);
                     // No reading other locations after try statement
                     break;
                 }
@@ -102,11 +103,11 @@ class signalcmd implements CommandExecutor, TabCompleter {
         return isclear;
     }
 
-    private static boolean tryItemIsIlClear(Chest refchest, boolean isclear, World world, boolean lossy) {
+    private static boolean tryItemIsIlClear(Chest refchest, World world, boolean lossy) {
+        boolean isclear = false;
         if (refchest != null) {
             for (int itemno = 0; itemno < 27; itemno++) {
                 ItemMeta mat = null;
-
                 try {
                     mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
                 } catch (Exception ignored) {
@@ -162,8 +163,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                         case "getilclearlossy":
                             Chest refchest = getChestFromLoc(getFullLoc(world, inputpos));
                             boolean lossy = args[3].equals("getilclearlossy");
-                            boolean isclear = true;
-                            isclear = tryItemIsIlClear(refchest, isclear, world, lossy);
+                            boolean isclear = tryItemIsIlClear(refchest, world, lossy);
                             Block blk = ((BlockCommandSender) sender).getBlock();
                             if (isclear) {
                                 Bukkit.dispatchCommand(sender, String.format("data modify block %s %s %s SuccessCount set value 15", blk.getX(), blk.getY(), blk.getZ()));
@@ -190,7 +190,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                 generalMsg(sender, ChatColor.RESET, getLang("cmdblkonlycmd"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            errorLog(e, "signalcmd.onCommand");
         }
         return true;
     }

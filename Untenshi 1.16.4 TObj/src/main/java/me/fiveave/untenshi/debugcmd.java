@@ -331,7 +331,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 generalMsg(sender, ChatColor.RESET, getLang("playeronlycmd"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            errorLog(e, "debugcmd.onCommand");
         }
         return true;
     }
