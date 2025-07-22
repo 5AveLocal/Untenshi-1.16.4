@@ -460,20 +460,20 @@ class motion {
     }
 
     private static void catchSignalUpdate(utsvehicle lv) {
-        if (lv.getLastsisign() != null && lv.getLastsisp() != maxspeed) {
-            Sign warnsign = (Sign) lv.getSavedworld().getBlockAt(lv.getLastsisign()).getState();
+        Location signalloc = lv.getLastsisign();
+        if (signalloc != null && lv.getLastsisp() != maxspeed) {
+            Sign warnsign = (Sign) lv.getSavedworld().getBlockAt(signalloc).getState();
             String warnsi = warnsign.getLine(2).split(" ")[1];
             int warnsp = Integer.parseInt(warnsign.getLine(2).split(" ")[2]);
-            // Detect difference (saved sign speed != sign speed now)
+            // Detect difference (sign speed now != saved sign speed)
             if (warnsp != lv.getLastsisp()) {
                 lv.setLastsisp(warnsp);
                 String signalmsg = signalName(warnsi);
                 // If red light
                 if (lv.getAtsforced() == 2 && lv.getSignallimit() == 0) {
-                    // Remove lastsisign and lastsisp as need to detect further signal warnings
+                    // Update signal limit and resettable sign
                     lv.setSignallimit(warnsp);
-                    lv.setLastsisign(null);
-                    lv.setLastsisp(maxspeed);
+                    shiftRs(lv, signalloc);
                 }
                 String speedlimittxt = warnsp >= maxspeed ? getLang("speedlimit_del") : warnsp + " km/h";
                 generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_change") + " " + signalmsg + ChatColor.GRAY + " " + speedlimittxt);

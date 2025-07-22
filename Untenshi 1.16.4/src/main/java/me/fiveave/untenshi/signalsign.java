@@ -301,6 +301,25 @@ class signalsign extends SignAction {
         return false;
     }
 
+    static void shiftRs(utsvehicle lv, Location loc) {
+        // Array copy (move passed signals to the back)
+        Location[] oldloc = lv.getRsposlist();
+        Location[] newloc;
+        // Expand oldloc into newloc by 1 index
+        newloc = new Location[oldloc.length + 1];
+        // Length > 0 then copy from n to n + 1
+        if (oldloc.length != 0) {
+            System.arraycopy(oldloc, 0, newloc, 1, oldloc.length);
+        }
+        newloc[0] = loc;
+        // Remove variables
+        lv.setLastsisign(null);
+        lv.setLastsisp(maxspeed);
+        lv.setRsposlist(newloc);
+        // Make blocked section longer by 1
+        lv.setRsoccupiedpos(lv.getRsoccupiedpos() + 1);
+    }
+
     boolean checkType(SignActionEvent e) {
         String[] l3 = e.getLine(2).toLowerCase().split(" ");
         return l3[0].equals("warn") || l3[0].equals("interlock") || (l3[0].equals("set") && isSignalType(l3[1]));
@@ -364,43 +383,12 @@ class signalsign extends SignAction {
                                     if (lv.getLd() != null) {
                                         generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_set") + " " + signalmsg + ChatColor.GRAY + " " + temp);
                                     }
-                                    // If red light need to wait signal change, if not then delete variable
-                                    if (signalspeed != 0) {
-                                        signalOrderPtnResult result = getSignalOrderPtnResult(lv);
-                                        // Array copy (move passed signals to the back)
-                                        Location[] oldloc = lv.getRsposlist();
-                                        Location[] newloc;
-                                        // Expand oldloc into newloc by 1 index
-                                        newloc = new Location[oldloc.length + 1];
-                                        // Length > 0 then copy from n to n + 1
-                                        if (oldloc.length != 0) {
-                                            System.arraycopy(oldloc, 0, newloc, 1, oldloc.length);
-                                        }
-                                        newloc[0] = cartevent.getLocation();
-                                        // Remove variables
-                                        lv.setLastsisign(null);
-                                        lv.setLastsisp(maxspeed);
-                                        lv.setRsposlist(newloc);
-                                        // Set 0th (this) sign with new signal and speed
-                                        // settable: Sign to be set
-                                        Sign settable;
-                                        try {
-                                            settable = getSignFromLoc(newloc[0]);
-                                            if (settable != null) {
-                                                String defaultsi = settable.getLine(3).split(" ")[1];
-                                                int defaultsp = parseInt(settable.getLine(3).split(" ")[2]);
-                                                // Check if new speed to be set is larger than default, if yes choose default instead
-                                                String str = result.ptnsisp[0] > defaultsp ? defaultsi + " " + defaultsp : result.ptnsisi[0] + " " + result.ptnsisp[0];
-                                                Bukkit.getScheduler().runTaskLater(plugin, () -> updateSignals(settable, "set " + str), 1);
-                                            }
-                                        } catch (Exception ignored) {
-                                        }
-                                        // Make blocked section longer by 1
-                                        lv.setRsoccupiedpos(lv.getRsoccupiedpos() + 1);
-                                    }
+                                    // Update resettable sign
+                                    Location loc = cartevent.getLocation();
+                                    shiftRs(lv, loc);
                                     // Prevent non-resettable ATS Run caused by red light but without receiving warning
-                                    else if (lv.getLastsisign() == null) {
-                                        lv.setLastsisign(cartevent.getLocation());
+                                    if (signalspeed == 0 && lv.getLastsisign() == null) {
+                                        lv.setLastsisign(loc);
                                         lv.setLastsisp(signalspeed);
                                     }
                                 }
