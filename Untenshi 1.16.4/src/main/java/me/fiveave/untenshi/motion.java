@@ -411,6 +411,7 @@ class motion {
                 } else {
                     lv.setReqstopping(false);
                     lv.setOverrun(false);
+                    lv.setStopactionpos(null);
                 }
             }
         }
