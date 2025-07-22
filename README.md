@@ -14,7 +14,7 @@ Must be installed in Bukkit-based servers (e.g. Bukkit / Spigot / Paper) with Mi
 `/uts help <page>` for list of commands.
 
 ## 🛑 Known issues
-Train sounds cannot be played in Minecraft versions 1.21.4 or newer.<br/>
+None<br/>
 
 ## ⚠️ Warnings
 Restart is required if Untenshi signs cannot be detected. (The error should contain `zip file closed` in the console)<br/>
