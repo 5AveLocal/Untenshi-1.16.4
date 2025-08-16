@@ -317,11 +317,22 @@ class motion {
                         String currentsi = settable.getLine(2).split(" ")[1];
                         int currentsp = parseInt(settable.getLine(2).split(" ")[2]);
                         // Check if new speed to be set is lower than current, if yes choose current instead
-                        String str = result.ptnsisp[orderno] < currentsp ? currentsi + " " + currentsp : result.ptnsisi[orderno] + " " + result.ptnsisp[orderno];
-                        updateSignals(settable, "set " + str);
-                        // Cannot exceed halfptnlen
-                        if (orderno + 1 != result.halfptnlen) {
+                        String sistr = result.ptnsisp[orderno] < currentsp ? currentsi : result.ptnsisi[orderno];
+                        int sp = Math.max(result.ptnsisp[orderno], currentsp);
+                        updateSignals(settable, "set " + sistr + " " + sp);
+                        // Orderno must not exceed halfptnlen
+                        if (orderno + 1 < result.halfptnlen) {
                             orderno++;
+                        }
+                        // If next signal is lower than this
+                        if (result.ptnsisp[orderno] <= sp) {
+                            // For next orderno, must be higher than this
+                            for (int i = orderno; i < result.halfptnlen; i++) {
+                                if (result.ptnsisp[i] >= sp) {
+                                    orderno = i;
+                                    break;
+                                }
+                            }
                         }
                     } catch (IndexOutOfBoundsException | NumberFormatException e) {
                         signImproper(settable.getLocation(), lv.getLd());
