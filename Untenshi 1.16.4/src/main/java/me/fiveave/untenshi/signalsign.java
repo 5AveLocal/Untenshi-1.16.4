@@ -25,6 +25,7 @@ import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
+import static me.fiveave.untenshi.motion.minSpeedLimit;
 import static me.fiveave.untenshi.signalcmd.isIlClear;
 import static me.fiveave.untenshi.speedsign.*;
 import static me.fiveave.untenshi.utsvehicle.initVehicle;
@@ -273,7 +274,7 @@ class signalsign extends SignAction {
         }
     }
 
-    static boolean signalSignWarn(utsvehicle lv, Location eventloc, String l4) {
+    static void signalSignWarn(utsvehicle lv, Location eventloc, String l4) {
         String signalmsg;
         if (lv.getAtsforced() != 2 && (lv.getSafetysystype().equals("ats-p") || lv.getSafetysystype().equals("atc"))) {
             Sign warn = getSignFromLoc(getFullLoc(lv.getSavedworld(), l4));
@@ -283,22 +284,25 @@ class signalsign extends SignAction {
                 String warnsi = warn.getLine(2).split(" ")[1];
                 int warnsp = parseInt(warn.getLine(2).split(" ")[2]);
                 lv.setLastsisp(warnsp);
+                lv.setSafetysystype(warn.getLine(2).split(" ")[1].equals("atc") ? "atc" : "ats-p");
                 signalmsg = signalName(warnsi);
                 if (signalmsg.isEmpty() && eventloc != null) {
                     signImproper(eventloc, lv.getLd());
-                    return true;
+                    return;
                 }
                 // ATC signal and speed limit min value
                 if (lv.getSafetysystype().equals("atc")) {
                     warnsp = Math.min(Math.min(lv.getLastsisp(), lv.getLastspsp()), lv.getSpeedlimit());
                 }
                 String temp2 = warnsp >= maxspeed ? getLang("speedlimit_del") : warnsp + " km/h";
-                generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_warn") + " " + signalmsg + ChatColor.GRAY + " " + temp2);
+                // Do not show same signal if using ATC
+                if (!lv.getSafetysystype().equals("atc") || warnsp != minSpeedLimit(lv)) {
+                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_warn") + " " + signalmsg + ChatColor.GRAY + " " + temp2);
+                }
             } else if (eventloc != null) {
                 signImproper(eventloc, lv.getLd());
             }
         }
-        return false;
     }
 
     static void shiftRs(utsvehicle lv, Location loc) {
@@ -366,6 +370,7 @@ class signalsign extends SignAction {
                                         // Check if that location exists in any other train, then delete that record
                                         deleteOthersRs(lv, currentloc);
                                     }
+                                    int oldsignallimit = lv.getSignallimit();
                                     // Set values and signal name
                                     lv.setSignallimit(signalspeed);
                                     lv.setSafetysystype(l3[1].equals("atc") ? "atc" : "ats-p");
@@ -380,7 +385,7 @@ class signalsign extends SignAction {
                                         shownspeed = Math.min(lv.getSignallimit(), lv.getSpeedlimit());
                                     }
                                     String temp = shownspeed >= maxspeed ? getLang("speedlimit_del") : shownspeed + " km/h";
-                                    if (lv.getLd() != null) {
+                                    if (lv.getLd() != null && (!lv.getSafetysystype().equals("atc") || shownspeed != Math.min(oldsignallimit, lv.getSpeedlimit()))) {
                                         generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_set") + " " + signalmsg + ChatColor.GRAY + " " + temp);
                                     }
                                     // Update resettable sign
@@ -425,7 +430,7 @@ class signalsign extends SignAction {
                         case "warn":
                             if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && cartevent.hasRailedMember() && cartevent.isPowered()) {
                                 String l4 = cartevent.getLine(3);
-                                if (signalSignWarn(lv, eventloc, l4)) break;
+                                signalSignWarn(lv, eventloc, l4);
                             }
                             break;
                         case "interlock":

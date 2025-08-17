@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
+import static me.fiveave.untenshi.motion.minSpeedLimit;
 
 class speedsign extends SignAction {
 
@@ -117,7 +118,7 @@ class speedsign extends SignAction {
             lv.setLastspsp(warnsp);
             if (warnsp < maxspeed) {
                 // ATC signal and speed limit min value
-                if (lv.getSafetysystype().equals("atc")) {
+                if (lv.getSafetysystype().equals("atc") && warnsp != minSpeedLimit(lv)) {
                     warnsp = Math.min(Math.min(lv.getLastsisp(), lv.getLastspsp()), lv.getSignallimit());
                     generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_warn") + " " + ChatColor.GOLD + "ATC" + ChatColor.GRAY + " " + warnsp + " km/h");
                 } else {
@@ -128,6 +129,29 @@ class speedsign extends SignAction {
             }
         } else if (eventloc != null) {
             signImproper(eventloc, lv.getLd());
+        }
+    }
+
+    static void speedSignSet(utsvehicle lv, Location eventloc, int speed) {
+        if (limitSpeedIncorrect(null, speed)) {
+            signImproper(eventloc, lv.getLd());
+            return;
+        }
+        int oldspeedlimit = lv.getSpeedlimit();
+        lv.setSpeedlimit(speed);
+        // ATC signal and speed limit min value
+        if (lv.getSafetysystype().equals("atc")) {
+            speed = Math.min(lv.getSignallimit(), lv.getSpeedlimit());
+            if (speed != Math.min(oldspeedlimit, lv.getSignallimit())) {
+                String temp = speed >= maxspeed ? getLang("speedlimit_del") : speed + " km/h";
+                generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_set") + " " + ChatColor.GOLD + "ATC" + ChatColor.GRAY + " " + temp);
+            }
+        } else {
+            generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("speedlimit_set") + " " + (speed == maxspeed ? ChatColor.GREEN + getLang("speedlimit_del") : speed + " km/h"));
+        }
+        if (speed != 0) {
+            lv.setLastspsign(null);
+            lv.setLastspsp(maxspeed);
         }
     }
 
@@ -147,24 +171,7 @@ class speedsign extends SignAction {
             if (lv != null) {
                 if (!cartevent.getLine(2).equals("warn")) {
                     try {
-                        int intspeed = parseInt(speedsign);
-                        if (limitSpeedIncorrect(null, intspeed)) {
-                            signImproper(eventloc, lv.getLd());
-                            return;
-                        }
-                        lv.setSpeedlimit(intspeed);
-                        // ATC signal and speed limit min value
-                        if (lv.getSafetysystype().equals("atc")) {
-                            intspeed = Math.min(lv.getSignallimit(), lv.getSpeedlimit());
-                            String temp = intspeed >= maxspeed ? getLang("speedlimit_del") : intspeed + " km/h";
-                            generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_set") + " " + ChatColor.GOLD + "ATC" + ChatColor.GRAY + " " + temp);
-                        } else {
-                            generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("speedlimit_set") + " " + (intspeed == maxspeed ? ChatColor.GREEN + getLang("speedlimit_del") : intspeed + " km/h"));
-                        }
-                        if (parseInt(speedsign) != 0) {
-                            lv.setLastspsign(null);
-                            lv.setLastspsp(maxspeed);
-                        }
+                        speedSignSet(lv, eventloc, parseInt(speedsign));
                     } catch (NumberFormatException e) {
                         signImproper(eventloc, lv.getLd());
                     }

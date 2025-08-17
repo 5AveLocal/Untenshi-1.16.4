@@ -479,6 +479,7 @@ class motion {
             int warnsp = Integer.parseInt(warnsign.getLine(2).split(" ")[2]);
             // Detect difference (sign speed now != saved sign speed)
             if (warnsp != lv.getLastsisp()) {
+                int oldsignallimit = lv.getLastsisp();
                 lv.setLastsisp(warnsp);
                 String signalmsg = signalName(warnsi);
                 // If red light
@@ -487,8 +488,13 @@ class motion {
                     lv.setSignallimit(warnsp);
                     shiftRs(lv, signalloc);
                 }
+                if (lv.getSafetysystype().equals("atc")) {
+                    warnsp = Math.min(warnsp, lv.getSpeedlimit());
+                }
                 String speedlimittxt = warnsp >= maxspeed ? getLang("speedlimit_del") : warnsp + " km/h";
-                generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_change") + " " + signalmsg + ChatColor.GRAY + " " + speedlimittxt);
+                if (!lv.getSafetysystype().equals("atc") || warnsp != Math.min(oldsignallimit, lv.getSpeedlimit())) {
+                    generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_change") + " " + signalmsg + ChatColor.GRAY + " " + speedlimittxt);
+                }
             }
         }
     }

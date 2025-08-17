@@ -94,10 +94,9 @@ public final class main extends JavaPlugin implements Listener {
                     tprop.clearOwners();
                 } catch (Exception ignored) {
                 }
-                ld.getLv().setSpeed(0.0);
                 ld.getLv().setDooropen(0);
                 ld.getLv().setMascon(0);
-                ld.getLv().setBrake(8);
+                ld.getLv().setBrake(9);
             }
             // Clear Inventory
             for (int i = 0; i < 41; i++) {

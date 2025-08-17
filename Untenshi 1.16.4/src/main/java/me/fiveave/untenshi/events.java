@@ -364,5 +364,6 @@ class events implements Listener {
         if (ld.isPlaying()) {
             restoreInitLd(ld);
         }
+        driver.remove(p);
     }
 }

@@ -352,7 +352,8 @@ class cmds implements CommandExecutor, TabCompleter {
     }
 
     static void errorLog(Exception e, String loc) {
-        plugin.getLogger().log(Level.SEVERE, utshead + loc + "() did not function properly!\n" + e.getCause());
+        plugin.getLogger().log(Level.SEVERE, utshead + loc + "() did not function properly!\n");
+        e.printStackTrace();
     }
 
     private boolean cannotSetTrain(String[] args, utsdriver ld) {

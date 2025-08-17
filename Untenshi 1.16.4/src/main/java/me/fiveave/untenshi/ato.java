@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.*;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.events.doorControls;
@@ -17,7 +18,7 @@ import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.motion.*;
 import static me.fiveave.untenshi.signalsign.signalSignInterlock;
 import static me.fiveave.untenshi.signalsign.signalSignWarn;
-import static me.fiveave.untenshi.speedsign.getActualRefPos;
+import static me.fiveave.untenshi.speedsign.*;
 import static me.fiveave.untenshi.stoppos.stopPosDefault;
 
 class ato {
@@ -280,7 +281,7 @@ class ato {
                 switch (actionstrsplit[0]) {
                     case "stoptime":
                         // atosign stoptime <time>
-                        atoSignStopTime(lv, Integer.parseInt(actionstrsplit[1]));
+                        atoSignStopTime(lv, parseInt(actionstrsplit[1]));
                         break;
                     case "dir":
                         // atosign dir <direction>
@@ -291,18 +292,28 @@ class ato {
                         double[] loc = new double[3];
                         String[] sloc = {actionstrsplit[1], actionstrsplit[2], actionstrsplit[3]};
                         for (int a = 0; a <= 2; a++) {
-                            loc[a] = Integer.parseInt(sloc[a]);
+                            loc[a] = parseInt(sloc[a]);
                         }
-                        atoSignDefault(lv, Integer.parseInt(actionstrsplit[0]), loc);
+                        atoSignDefault(lv, parseInt(actionstrsplit[0]), loc);
                         break;
+                }
+                break;
+            case "speedsign":
+                if (!actionstrsplit[0].equals("warn")) {
+                    // speedsign <speed>
+                    speedSignSet(lv, null, parseInt(actionstrsplit[0]));
+                } else {
+                    // speedsign warn <x> <y> <z> (target location)
+                    String warnloc = actionstrsplit[1] + " " + actionstrsplit[2] + " " + actionstrsplit[3];
+                    speedSignWarn(lv, null, warnloc);
                 }
                 break;
             case "signalsign":
                 switch (actionstrsplit[0]) {
                     case "warn":
                         // signalsign warn <x> <y> <z> (target location)
-                        String warnloc = actionstrsplit[1] + " " + actionstrsplit[2] + " " + actionstrsplit[3];
-                        signalSignWarn(lv, null, warnloc);
+                        String warnloc2 = actionstrsplit[1] + " " + actionstrsplit[2] + " " + actionstrsplit[3];
+                        signalSignWarn(lv, null, warnloc2);
                         break;
                     case "interlock":
                         // signalsign interlock <signalorder> <priority/del> <x> <y> <z>
@@ -324,7 +335,7 @@ class ato {
                 break;
             case "set":
                 // set <x> <y> <z> <material>
-                Block b = lv.getSavedworld().getBlockAt(Integer.parseInt(actionstrsplit[0]), Integer.parseInt(actionstrsplit[1]), Integer.parseInt(actionstrsplit[2]));
+                Block b = lv.getSavedworld().getBlockAt(parseInt(actionstrsplit[0]), parseInt(actionstrsplit[1]), parseInt(actionstrsplit[2]));
                 b.getChunk().load();
                 b.setType(Material.valueOf(actionstrsplit[3].toUpperCase()));
                 break;
