@@ -248,7 +248,7 @@ class ato {
                         if (stopped && timesplit[0].equals(status) || timesplit[0].equals("init") && timecount == 0) {
                             for (String onesplitstr : trysplitstr) {
                                 // Run action string
-                                stopActionCmdRunner(lv, onesplitstr);
+                                actionCmdRunner(lv, onesplitstr);
                             }
                         }
                     }
@@ -263,7 +263,7 @@ class ato {
         }
     }
 
-    static void stopActionCmdRunner(utsvehicle lv, String runstr) {
+    static void actionCmdRunner(utsvehicle lv, String runstr) {
         String[] splitstr = runstr.split(" ", 2);
         String actionstr = splitstr[1];
         String[] actionstrsplit = actionstr.split(" ");
@@ -325,13 +325,8 @@ class ato {
                 break;
             case "run":
                 // run <cmd...>
-                String executestr = actionstr;
-                // If is TrainCarts command (support MinecartGroup only)
-                if (actionstrsplit[0].contains("train")) {
-                    // Run for train, add select train parameter at end of command
-                    executestr += " --train " + lv.getTrain().getProperties().getTrainName();
-                }
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), executestr);
+                String newexecutestr = getActionCmdExecuteStr(lv, actionstrsplit, actionstr);
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), newexecutestr);
                 break;
             case "set":
                 // set <x> <y> <z> <material>
@@ -340,5 +335,17 @@ class ato {
                 b.setType(Material.valueOf(actionstrsplit[3].toUpperCase()));
                 break;
         }
+    }
+
+    private static String getActionCmdExecuteStr(utsvehicle lv, String[] actionstrsplit, String actionstr) {
+        String newexecutestr;
+        // If is TrainCarts command (support MinecartGroup only)
+        if (actionstrsplit[0].contains("train")) {
+            // Run for train, add select train parameter at end of command
+            newexecutestr = actionstr + " --train " + lv.getTrain().getProperties().getTrainName();
+        } else {
+            newexecutestr = "execute at " + lv.getTrain().head().getEntity().getEntity().getUniqueId() + " run " + actionstr;
+        }
+        return newexecutestr;
     }
 }

@@ -459,9 +459,15 @@ class motion {
         }
         boolean fullyopen = lv.getDooropen() == 3 * ticksin1s;
         if (!lv.isDoorconfirm() && (lv.getDooropen() == 0 || fullyopen)) {
-            tprop.setPlayersEnter(fullyopen);
-            tprop.setPlayersExit(fullyopen);
             lv.setDoorconfirm(true);
+        }
+        // Open / close at half
+        boolean canenter = tprop.getPlayersEnter();
+        boolean canexit = tprop.getPlayersExit();
+        boolean opencondition = lv.getDooropen() > 1.5 * ticksin1s;
+        if (opencondition != canenter || opencondition != canexit) {
+            tprop.setPlayersEnter(opencondition);
+            tprop.setPlayersExit(opencondition);
         }
     }
 

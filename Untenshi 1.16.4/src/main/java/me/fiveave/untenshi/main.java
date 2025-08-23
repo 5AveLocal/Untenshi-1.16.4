@@ -96,7 +96,7 @@ public final class main extends JavaPlugin implements Listener {
                 }
                 ld.getLv().setDooropen(0);
                 ld.getLv().setMascon(0);
-                ld.getLv().setBrake(9);
+                ld.getLv().setBrake(8);
             }
             // Clear Inventory
             for (int i = 0; i < 41; i++) {

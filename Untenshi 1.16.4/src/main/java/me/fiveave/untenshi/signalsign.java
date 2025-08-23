@@ -115,7 +115,11 @@ class signalsign extends SignAction {
             Location[] oldoccupied = lv.getIlposoccupied();
             for (int i2 = 0; i2 < oldoccupied.length; i2++) {
                 if (targetloc.equals(oldoccupied[i2])) {
-                    Location[] newoccupied = new Location[oldoccupied.length - (1 + i2)];
+                    int resetlen = 1 + i2;
+                    Location[] resetlocs = new Location[resetlen];
+                    System.arraycopy(oldoccupied, 0, resetlocs, 0, resetlen);
+                    resetSignals(lv.getSavedworld(), resetlocs);
+                    Location[] newoccupied = new Location[oldoccupied.length - resetlen];
                     System.arraycopy(oldoccupied, 1 + i2, newoccupied, 0, newoccupied.length);
                     lv.setIlposoccupied(newoccupied);
                     break;
