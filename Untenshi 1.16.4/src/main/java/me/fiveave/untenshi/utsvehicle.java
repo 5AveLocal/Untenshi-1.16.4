@@ -1,7 +1,9 @@
 package me.fiveave.untenshi;
 
+import com.bergerkiller.bukkit.tc.CollisionMode;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
+import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -169,6 +171,13 @@ class utsvehicle {
     }
 
     static void initVehicle(MinecartGroup mg) {
+        // TrainCarts settings
+        TrainProperties tprop = mg.getProperties();
+        tprop.setSlowingDown(false);
+        tprop.setKeepChunksLoaded(true);
+        tprop.setCollision(tprop.getCollision().cloneAndSetMiscMode(CollisionMode.CANCEL));
+        tprop.setCollision(tprop.getCollision().cloneAndSetPlayerMode(CollisionMode.CANCEL));
+        // Untenshi section
         utsvehicle lv = vehicle.get(mg);
         if (lv == null) {
             vehicle.put(mg, new utsvehicle(mg));

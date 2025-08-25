@@ -156,13 +156,7 @@ class cmds implements CommandExecutor, TabCompleter {
                                     // Detect owner
                                     if ((tprop.getOwners().size() == 1 && tprop.getOwners().contains(p.getName().toLowerCase()) || tprop.getOwners().isEmpty())) {
                                         // Train settings
-                                        tprop.setSlowingDown(false);
                                         tprop.setOwner(p.getName(), true);
-                                        tprop.setSpeedLimit(0);
-                                        mg.setForwardForce(0);
-                                        // Anti collision
-                                        tprop.setCollision(tprop.getCollision().cloneAndSetMiscMode(CollisionMode.CANCEL));
-                                        tprop.setCollision(tprop.getCollision().cloneAndSetPlayerMode(CollisionMode.CANCEL));
                                         // Set train group for player
                                         if (selcart instanceof Minecart) {
                                             MinecartMember<?> mem = MinecartMemberStore.getFromEntity(selcart);
