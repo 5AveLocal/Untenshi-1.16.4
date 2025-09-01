@@ -207,7 +207,7 @@ class motion {
         // Check conditions to change signal
         int furthestoccupied = oldposlist.length - 1;
         boolean ispriority = true;
-        // Prevent front train being blocked at train at back due to lack of iloccupied
+        // Prevent front train being blocked due to train at back due to lack of iloccupied
         // Ignore blocked status until first signal is found,
         // no worries for direct collision as if rs exists, train will be blocked;
         // if rs does not exist (by interlock del), there must be an other location

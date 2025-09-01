@@ -32,6 +32,7 @@ permissions:
       uts.pa: true
       uts.ato: true
       uts.debug: true
+      uts.signtool: true
     default: op
   uts.main:
     description: Allow Untenshi usage (basic perm)

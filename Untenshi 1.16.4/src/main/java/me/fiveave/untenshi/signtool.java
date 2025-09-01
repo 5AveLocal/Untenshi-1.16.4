@@ -58,7 +58,7 @@ class signtool implements CommandExecutor, TabCompleter, Listener {
                 generalMsg(sender, ChatColor.RED, getLang("playeronlycmd"));
                 return true;
             }
-            if (!sender.hasPermission("uts.") && !sender.isOp()) {
+            if (!sender.hasPermission("uts.signtool") && !sender.isOp()) {
                 noPerm(sender);
                 return true;
             }
