@@ -102,7 +102,7 @@ class motion {
                 trainSound(lv, "brake_release");
             }
         } else if (bcptarget > bcpnow) {
-            double selbcppertick = (lv.getMascon() == 9 ? ebbcppertick : bcppertick);
+            double selbcppertick = (lv.getBrake() == 9 ? ebbcppertick : bcppertick);
                 lv.setBcpressure((bcptarget - bcpnow) > selbcppertick ? bcpnow + selbcppertick : bcptarget);
                 if (bcpnow + selbcppertick > 0 && bcpnow + selbcppertick < bcptarget) {
                     trainSound(lv, "brake_apply");
