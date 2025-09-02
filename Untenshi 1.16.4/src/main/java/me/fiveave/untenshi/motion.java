@@ -76,6 +76,7 @@ class motion {
         double ecnow = lv.getCurrent();
         // Set current for current mascon
         double ectarget = getCurrentFromNotch(lv.getMascon());
+        double currentpertick = lv.getCurrentpertick();
         // Set real current
         if (ectarget < ecnow) {
             lv.setCurrent((ecnow - ectarget) > currentpertick ? ecnow - currentpertick : ectarget);
@@ -92,6 +93,8 @@ class motion {
         double bcpnow = lv.getBcpressure();
         // Set pressure for current brake
         double bcptarget = getPressureFromBrake(lv.getBrake());
+        double bcppertick = lv.getBcppertick();
+        double ebbcppertick = lv.getEbbcppertick();
         // Set real pressure
         if (bcptarget < bcpnow) {
             lv.setBcpressure((bcpnow - bcptarget) > bcppertick ? bcpnow - bcppertick : bcptarget);
@@ -99,10 +102,11 @@ class motion {
                 trainSound(lv, "brake_release");
             }
         } else if (bcptarget > bcpnow) {
-            lv.setBcpressure((bcptarget - bcpnow) > bcppertick ? bcpnow + bcppertick : bcptarget);
-            if (bcpnow + bcppertick > 0 && bcpnow + bcppertick < bcptarget) {
-                trainSound(lv, "brake_apply");
-            }
+            double selbcppertick = (lv.getMascon() == 9 ? ebbcppertick : bcppertick);
+                lv.setBcpressure((bcptarget - bcpnow) > selbcppertick ? bcpnow + selbcppertick : bcptarget);
+                if (bcpnow + selbcppertick > 0 && bcpnow + selbcppertick < bcptarget) {
+                    trainSound(lv, "brake_apply");
+                }
         }
         // Slope speed adjust
         HeadAndTailResult result = getHeadAndTailResult(mg);
@@ -451,20 +455,19 @@ class motion {
     }
 
     private static void doorLogic(utsvehicle lv, TrainProperties tprop) {
-        // Door (enter and exit train)
-        if (lv.isDoordiropen() && lv.getDooropen() < 3 * ticksin1s) {
-            lv.setDooropen(lv.getDooropen() + 1);
+        // Door (enter and exit train, open = 1, close = 0)
+        if (lv.isDoordiropen() && lv.getDooropen() < 1) {
+            lv.setDooropen(lv.getDooropen() + lv.getDooropenspeed());
         } else if (!lv.isDoordiropen() && lv.getDooropen() > 0) {
-            lv.setDooropen(lv.getDooropen() - 1);
+            lv.setDooropen(lv.getDooropen() - lv.getDoorclosespeed());
         }
-        boolean fullyopen = lv.getDooropen() == 3 * ticksin1s;
-        if (!lv.isDoorconfirm() && (lv.getDooropen() == 0 || fullyopen)) {
+        if (!lv.isDoorconfirm() && (lv.getDooropen() == 0 || lv.getDooropen() == 1)) {
             lv.setDoorconfirm(true);
         }
         // Open / close at half
         boolean canenter = tprop.getPlayersEnter();
         boolean canexit = tprop.getPlayersExit();
-        boolean opencondition = lv.getDooropen() > 1.5 * ticksin1s;
+        boolean opencondition = lv.getDooropen() > 0.5;
         if (opencondition != canenter || opencondition != canexit) {
             tprop.setPlayersEnter(opencondition);
             tprop.setPlayersExit(opencondition);
@@ -677,7 +680,7 @@ class motion {
         // Use while loop as using formula is tedious
         while (current > 0) {
             speed += (accelSwitch(lv, speed, (int) (getNotchFromCurrent(current))) + slopeaccel) * onetickins;
-            current -= currentpertick;
+            current -= lv.getCurrentpertick();
         }
         return speed;
     }
@@ -797,14 +800,15 @@ class motion {
         return Math.min(lv.getSpeedlimit(), lv.getSignallimit());
     }
 
-    static double getBrakeInitTime(double bcp, double bcptarget) {
+    static double getBrakeInitTime(double bcp, double bcptarget, double bcppertick) {
         return (bcptarget - bcp) / bcppertick * onetickins;
     }
 
     static AfterBrakeInitResult getAfterBrakeInitResult(utsvehicle lv, double upperSpeed, double decel, double slopeaccel, double bcp, double bcptarget) {
+        double bcppertick = lv.getBcppertick();
         double ticksfrom0 = bcp / bcppertick;
         double ticksatend = bcptarget / bcppertick;
-        double timeleft = getBrakeInitTime(bcp, bcptarget);
+        double timeleft = getBrakeInitTime(bcp, bcptarget, bcppertick);
         double avgrate = bcp > 0 ? (80 * (ticksatend + ticksfrom0) * onetickins + 27) / 35 : (80 * (Math.pow(ticksatend, 2) - 1) * onetickins + 27 * (ticksatend - 1)) / 35 / ticksatend; // average rate by mean value theorem, separate cases for bcp < 0 or not
         double estlowerspeed = Math.max(0, upperSpeed - (decel * avgrate / 7 - slopeaccel) * timeleft); // estimated lower speed, rough result only for avgRangeDecel, prevent negative
         double avgdecel = avgRangeDecel(decel, Math.max(0, upperSpeed + slopeaccel), estlowerspeed, avgrate, lv.getSpeedsteps()) - slopeaccel; // gives better estimation than globalDecel, inaccuracy is negligible?

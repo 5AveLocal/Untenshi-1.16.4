@@ -4,4 +4,9 @@ trains:
     decel: 3.5
     ebdecel: 5.2
     speeds: [ 21, 41, 61, 81, 111, 130 ]
+    currentpertick: 13.333333
+    bcppertick: 13.333333
+    ebbcppertick: 24.000000
+    dooropenspeed: 0.333333
+    doorclosetime: 0.333333
     twohandled: false

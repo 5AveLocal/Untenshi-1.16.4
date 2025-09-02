@@ -1,6 +1,5 @@
 package me.fiveave.untenshi;
 
-import com.bergerkiller.bukkit.tc.CollisionMode;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroupStore;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
@@ -347,6 +346,7 @@ class cmds implements CommandExecutor, TabCompleter {
 
     static void errorLog(Exception e, String loc) {
         plugin.getLogger().log(Level.SEVERE, utshead + loc + "() did not function properly!\n");
+        //noinspection CallToPrintStackTrace
         e.printStackTrace();
     }
 

@@ -17,6 +17,16 @@ class utsvehicle {
     private double decel; // Deceleration from traindata.yml
     private double ebdecel; // EB Deceleration from traindata.yml
     private double speeddrop; // Natural speed drop rate
+    private double currentpertick; // Current change rate
+    private double bcppertick; // Brake cylinder pressure change rate
+    private double ebbcppertick; // EB brake cylinder pressure change rate
+    private double current; // Electric current
+    private double bcpressure; // Brake cylinder pressure
+    private double speed; // Train speed
+    private double atospeed; // ATO target speed
+    private double dooropen; // Door open status
+    private double dooropenspeed; // Opening door speed (to reach 1 = open)
+    private double doorclosespeed; // Closing door speed (to reach 0 = close)
     private int[] speedsteps; // Speed steps for acceleration and deceleration
     private utsdriver ld; // Driver
     private World savedworld; // World
@@ -27,7 +37,6 @@ class utsvehicle {
     private int atsforced; // ATS (ATC) forced status (-1: TrainCarts forced stop, 0: normal, 1: EB applied, 2: ATS Run)
     private int lastsisp; // Speed limit of last recognized signal sign
     private int lastspsp; // Speed limit of last recognized speed limit sign
-    private int dooropen; // Door open status (0 (closed) - 30 (open))
     private int[] stopoutput; // Redstone output position after stopping at station
     private int atostoptime; // ATO stopping time at station
     /*  rs = "resettable sign" means signal signs that will be reset after train moves out of signal blocks
@@ -41,10 +50,6 @@ class utsvehicle {
      */
     private int rsoccupiedpos; // Furthest occupied position in rsposlist
     private int ilpriority; // Priority for interlocking
-    private double current; // Electric current
-    private double bcpressure; // Brake cylinder pressure
-    private double speed; // Train speed
-    private double atospeed; // ATO target speed
     private Location stoppos; // Stop position at station
     private Location stopactionpos; // Stop action chest reference position at station
     private Location atodest; // ATO target destination
@@ -102,6 +107,11 @@ class utsvehicle {
         double tempaccel = 0;
         double tempdecel = 0;
         double tempebdecel = 0;
+        double tempcurrentpertick = 0;
+        double tempbcppertick = 0;
+        double tempebbcppertick = 0;
+        double tempdooropenspeed = 0;
+        double tempdoorclosespeed = 0;
         int[] tempspeedsteps = new int[6];
         boolean twohandled = false;
         String tDataInfo = "trains." + seltrainname;
@@ -111,6 +121,16 @@ class utsvehicle {
             tempdecel = traindata.dataconfig.getDouble(tDataInfo + ".decel");
         if (traindata.dataconfig.contains(tDataInfo + ".ebdecel"))
             tempebdecel = traindata.dataconfig.getDouble(tDataInfo + ".ebdecel");
+        if (traindata.dataconfig.contains(tDataInfo + ".currentpertick"))
+            tempcurrentpertick = traindata.dataconfig.getDouble(tDataInfo + ".currentpertick");
+        if (traindata.dataconfig.contains(tDataInfo + ".bcppertick"))
+            tempbcppertick = traindata.dataconfig.getDouble(tDataInfo + ".bcppertick");
+        if (traindata.dataconfig.contains(tDataInfo + ".ebbcppertick"))
+            tempebbcppertick = traindata.dataconfig.getDouble(tDataInfo + ".ebbcppertick");
+        if (traindata.dataconfig.contains(tDataInfo + ".dooropenspeed"))
+            tempdooropenspeed = traindata.dataconfig.getDouble(tDataInfo + ".dooropenspeed");
+        if (traindata.dataconfig.contains(tDataInfo + ".doorclosespeed"))
+            tempdoorclosespeed = traindata.dataconfig.getDouble(tDataInfo + ".doorclosespeed");
         if (traindata.dataconfig.contains(tDataInfo + ".speeds") && traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").size() == 6) {
             for (int i = 0; i < 6; i++) {
                 tempspeedsteps[i] = traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").get(i);
@@ -127,6 +147,11 @@ class utsvehicle {
         this.setDecel(tempdecel);
         this.setEbdecel(tempebdecel);
         this.setSpeedsteps(tempspeedsteps);
+        this.setCurrentpertick(tempcurrentpertick);
+        this.setBcppertick(tempbcppertick);
+        this.setEbbcppertick(tempebbcppertick);
+        this.setDooropenspeed(tempdooropenspeed);
+        this.setDoorclosespeed(tempdoorclosespeed);
         this.setTwohandled(twohandled);
         this.setSpeed(0.0);
         this.setSignallimit(maxspeed);
@@ -235,11 +260,11 @@ class utsvehicle {
         this.lastspsp = lastspsp;
     }
 
-    public int getDooropen() {
+    public double getDooropen() {
         return dooropen;
     }
 
-    public void setDooropen(int dooropen) {
+    public void setDooropen(double dooropen) {
         this.dooropen = dooropen;
     }
 
@@ -605,5 +630,45 @@ class utsvehicle {
 
     public void setLastilchest(Location lastilchest) {
         this.lastilchest = lastilchest;
+    }
+
+    public double getCurrentpertick() {
+        return currentpertick;
+    }
+
+    public void setCurrentpertick(double currentpertick) {
+        this.currentpertick = currentpertick;
+    }
+
+    public double getBcppertick() {
+        return bcppertick;
+    }
+
+    public void setBcppertick(double bcppertick) {
+        this.bcppertick = bcppertick;
+    }
+
+    public double getEbbcppertick() {
+        return ebbcppertick;
+    }
+
+    public void setEbbcppertick(double ebbcppertick) {
+        this.ebbcppertick = ebbcppertick;
+    }
+
+    public double getDoorclosespeed() {
+        return doorclosespeed;
+    }
+
+    public void setDoorclosespeed(double doorclosespeed) {
+        this.doorclosespeed = doorclosespeed;
+    }
+
+    public double getDooropenspeed() {
+        return dooropenspeed;
+    }
+
+    public void setDooropenspeed(double dooropenspeed) {
+        this.dooropenspeed = dooropenspeed;
     }
 }
