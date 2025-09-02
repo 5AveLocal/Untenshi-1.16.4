@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Untenshi 1.16.4">
+    <output-path>$PROJECT_DIR$/Untenshi 1.16.4/jars</output-path>
+    <root id="archive" name="Untenshi 1.16.4.jar">
+      <element id="module-output" name="Untenshi" />
+    </root>
+  </artifact>
+</component>

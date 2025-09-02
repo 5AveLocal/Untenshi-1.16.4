@@ -457,9 +457,11 @@ class motion {
     private static void doorLogic(utsvehicle lv, TrainProperties tprop) {
         // Door (enter and exit train, open = 1, close = 0)
         if (lv.isDoordiropen() && lv.getDooropen() < 1) {
-            lv.setDooropen(lv.getDooropen() + lv.getDooropenspeed());
+            double openvalue = lv.getDooropen() + lv.getDooropenspeed() / ticksin1s;
+            lv.setDooropen(openvalue > 1 ? 1 : openvalue);
         } else if (!lv.isDoordiropen() && lv.getDooropen() > 0) {
-            lv.setDooropen(lv.getDooropen() - lv.getDoorclosespeed());
+            double closevalue = lv.getDooropen() - lv.getDoorclosespeed() / ticksin1s;
+            lv.setDooropen(closevalue < 0 ? 0 : closevalue);
         }
         if (!lv.isDoorconfirm() && (lv.getDooropen() == 0 || lv.getDooropen() == 1)) {
             lv.setDoorconfirm(true);

@@ -9,8 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import static me.fiveave.untenshi.cmds.errorLog;
@@ -19,52 +17,59 @@ import static me.fiveave.untenshi.cmds.generalMsg;
 class abstractfile {
     protected final main plugin;
     final FileConfiguration oldconfig;
+    private final String fileName;
     FileConfiguration dataconfig;
     private File file;
 
     abstractfile(main plugin, String fileName) {
         this.plugin = plugin;
+        this.fileName = fileName;
         file = new File(plugin.getDataFolder(), fileName);
-        dataconfig = YamlConfiguration.loadConfiguration(file);
-        oldconfig = YamlConfiguration.loadConfiguration(file);
         saveDefaultConfig();
+        // Load the current config first
+        dataconfig = YamlConfiguration.loadConfiguration(file);
+        // Then load a copy for comparison
+        oldconfig = YamlConfiguration.loadConfiguration(file);
         reloadConfig();
     }
 
     void reloadConfig() {
-        // Default config from plugin itself
-        // dataconfig and oldconfig from local files
-        InputStream stream = plugin.getResource(file.getName());
+        InputStream stream = plugin.getResource(fileName);
         if (stream != null) {
             YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(stream));
-            if (file.exists() && !dataconfig.getKeys(true).containsAll(defaultConfig.getKeys(true))) {
-                plugin.saveResource(file.getName(), true);
-                // Get actual data
-                dataconfig = YamlConfiguration.loadConfiguration(file);
-                // Whole required list
-                Set<String> setstr = new HashSet<>(oldconfig.getKeys(true));
-                // 1st node != not 1st node then remove 1st node
-                if (!oldconfig.getKeys(true).equals(oldconfig.getKeys(false))) {
-                    setstr.removeAll(oldconfig.getKeys(false));
+            // Check if config requires updates
+            boolean updatereq = false;
+            for (String key : defaultConfig.getKeys(true)) {
+                if (!dataconfig.contains(key)) {
+                    updatereq = true;
+                    break;
                 }
-                // Add back defaults
-                dataconfig.addDefaults(defaultConfig);
-                // Put new data config to default values
-                setstr.forEach(str -> {
-                    if (!Objects.equals(oldconfig.get(str), dataconfig.get(str))) {
-                        if (oldconfig.get(str) != null) {
-                            dataconfig.set(str, oldconfig.get(str));
-                        }
+            }
+
+            if (updatereq) {
+                // Backup current values
+                Set<String> currentKeys = oldconfig.getKeys(true);
+                // Reload default config (including all new keys)
+                plugin.saveResource(fileName, true);
+                dataconfig = YamlConfiguration.loadConfiguration(file);
+                // Restore old values
+                for (String key : currentKeys) {
+                    if (oldconfig.get(key) != null) {
+                        dataconfig.set(key, oldconfig.get(key));
                     }
-                });
-                // Save file
-                plugin.saveResource(file.getName(), true);
+                }
+                // Add new default values
+                for (String key : defaultConfig.getKeys(true)) {
+                    if (!currentKeys.contains(key) && defaultConfig.get(key) != null) {
+                        dataconfig.set(key, defaultConfig.get(key));
+                    }
+                }
                 try {
                     dataconfig.save(file);
+                    generalMsg(Bukkit.getConsoleSender(), ChatColor.YELLOW, fileName + " has been updated with new config options");
                 } catch (IOException e) {
                     errorLog(e, "abstractfile.reloadConfig");
                 }
-                generalMsg(Bukkit.getConsoleSender(), ChatColor.YELLOW, file.getName() + " has been updated due to missing content");
             }
         }
     }
@@ -82,12 +87,10 @@ class abstractfile {
 
     void saveDefaultConfig() {
         if (file == null) {
-            assert false;
-            file = new File(plugin.getDataFolder(), file.getName());
+            file = new File(plugin.getDataFolder(), fileName);
         }
         if (!file.exists()) {
-            plugin.saveResource(file.getName(), false);
-            dataconfig = YamlConfiguration.loadConfiguration(file);
+            plugin.saveResource(fileName, false);
         }
     }
 }

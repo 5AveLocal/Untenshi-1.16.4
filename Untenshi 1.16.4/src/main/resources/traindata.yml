@@ -8,5 +8,5 @@ trains:
     bcppertick: 13.333333
     ebbcppertick: 24.000000
     dooropenspeed: 0.333333
-    doorclosetime: 0.333333
+    doorclosespeed: 0.333333
     twohandled: false
