@@ -62,101 +62,101 @@ class signtool implements CommandExecutor, TabCompleter, Listener {
                 noPerm(sender);
                 return true;
             }
-                Player p = (Player) sender;
-                initCmdUser(p);
-                utscmduser cu = cmduser.get(p);
-                if (args.length > 0) {
-                    switch (args[0].toLowerCase()) {
-                        case "getsign":
-                            Block block = p.getTargetBlock(Collections.singleton(Material.AIR), 5);
-                            Location loc = block.getLocation();
-                            Sign sign = getSignFromLoc(block.getLocation());
-                            if (sign != null) {
-                                switch (sign.getLine(1)) {
-                                    case "speedsign":
-                                        try {
-                                            Integer.parseInt(sign.getLine(2));
-                                            cu.setSigntype("speedsign");
-                                            cu.setSignloc(loc);
-                                            generalMsg(p, ChatColor.GREEN, getLang("signselsuccess"));
-                                            break;
-                                        } catch (Exception ignored) {
-                                        }
+            Player p = (Player) sender;
+            initCmdUser(p);
+            utscmduser cu = cmduser.get(p);
+            if (args.length > 0) {
+                switch (args[0].toLowerCase()) {
+                    case "getsign":
+                        Block block = p.getTargetBlock(Collections.singleton(Material.AIR), 5);
+                        Location loc = block.getLocation();
+                        Sign sign = getSignFromLoc(block.getLocation());
+                        if (sign != null) {
+                            switch (sign.getLine(1)) {
+                                case "speedsign":
+                                    try {
+                                        Integer.parseInt(sign.getLine(2));
+                                        cu.setSigntype("speedsign");
+                                        cu.setSignloc(loc);
+                                        generalMsg(p, ChatColor.GREEN, getLang("signselsuccess"));
                                         break;
-                                    case "signalsign":
-                                        if (sign.getLine(2).split(" ")[0].equals("set")) {
-                                            cu.setSigntype("signalsign");
-                                            cu.setSignloc(loc);
-                                            generalMsg(p, ChatColor.GREEN, getLang("signselsuccess"));
-                                            break;
-                                        }
-                                    default:
-                                        generalMsg(p, ChatColor.RED, getLang("signwrong"));
+                                    } catch (Exception ignored) {
+                                    }
+                                    break;
+                                case "signalsign":
+                                    if (sign.getLine(2).split(" ")[0].equals("set")) {
+                                        cu.setSigntype("signalsign");
+                                        cu.setSignloc(loc);
+                                        generalMsg(p, ChatColor.GREEN, getLang("signselsuccess"));
                                         break;
-                                }
-                            } else {
-                                generalMsg(p, ChatColor.RED, getLang("signwrong"));
+                                    }
+                                default:
+                                    generalMsg(p, ChatColor.RED, getLang("signwrong"));
+                                    break;
                             }
-                            break;
-                        case "setdir":
-                            if (args.length > 1) {
-                                switch (args[1].toLowerCase()) {
-                                    case "east":
-                                    case "west":
-                                    case "north":
-                                    case "south":
-                                    case "northeast":
-                                    case "northwest":
-                                    case "southeast":
-                                    case "southwest":
-                                    case "left":
-                                    case "right":
-                                    case "upwards":
-                                    case "downwards":
-                                    case "forward":
-                                    case "backwards":
-                                    case "none":
-                                    case "e":
-                                    case "w":
-                                    case "n":
-                                    case "s":
-                                    case "ne":
-                                    case "nw":
-                                    case "se":
-                                    case "sw":
-                                    case "l":
-                                    case "r":
-                                    case "u":
-                                    case "d":
-                                    case "f":
-                                    case "b":
-                                        cu.setSigndir(args[1].toLowerCase());
-                                        generalMsg(p, ChatColor.GREEN, getLang("signdirset"));
-                                        break;
-                                    default:
-                                        generalMsg(p, ChatColor.RED, getLang("signdirwrong"));
-                                        break;
-                                }
-                            } else {
-                                generalMsg(p, ChatColor.RED, getLang("signdirwrong"));
+                        } else {
+                            generalMsg(p, ChatColor.RED, getLang("signwrong"));
+                        }
+                        break;
+                    case "setdir":
+                        if (args.length > 1) {
+                            switch (args[1].toLowerCase()) {
+                                case "east":
+                                case "west":
+                                case "north":
+                                case "south":
+                                case "northeast":
+                                case "northwest":
+                                case "southeast":
+                                case "southwest":
+                                case "left":
+                                case "right":
+                                case "upwards":
+                                case "downwards":
+                                case "forward":
+                                case "backwards":
+                                case "none":
+                                case "e":
+                                case "w":
+                                case "n":
+                                case "s":
+                                case "ne":
+                                case "nw":
+                                case "se":
+                                case "sw":
+                                case "l":
+                                case "r":
+                                case "u":
+                                case "d":
+                                case "f":
+                                case "b":
+                                    cu.setSigndir(args[1].toLowerCase());
+                                    generalMsg(p, ChatColor.GREEN, getLang("signdirset"));
+                                    break;
+                                default:
+                                    generalMsg(p, ChatColor.RED, getLang("signdirwrong"));
+                                    break;
                             }
-                            break;
-                        case "setsign":
-                            if (cu.getSignloc() != null && cu.getSigntype() != null && cu.getSigndir() != null) {
-                                generalMsg(p, ChatColor.YELLOW, getLang("signset5s"));
-                                cu.setSignplacing(true);
-                                waitPlaceSignClock(p, 0);
-                            } else {
-                                generalMsg(p, ChatColor.RED, getLang("signreqseldir"));
-                            }
-                            break;
-                        default:
-                            generalMsg(sender, ChatColor.RED, getLang("argwrong"));
-                            break;
-                    }
-                } else {
-                    generalMsg(sender, ChatColor.RED, getLang("argwrong"));
+                        } else {
+                            generalMsg(p, ChatColor.RED, getLang("signdirwrong"));
+                        }
+                        break;
+                    case "setsign":
+                        if (cu.getSignloc() != null && cu.getSigntype() != null && cu.getSigndir() != null) {
+                            generalMsg(p, ChatColor.YELLOW, getLang("signset5s"));
+                            cu.setSignplacing(true);
+                            waitPlaceSignClock(p, 0);
+                        } else {
+                            generalMsg(p, ChatColor.RED, getLang("signreqseldir"));
+                        }
+                        break;
+                    default:
+                        generalMsg(sender, ChatColor.RED, getLang("argwrong"));
+                        break;
                 }
+            } else {
+                generalMsg(sender, ChatColor.RED, getLang("argwrong"));
+            }
         } catch (Exception e) {
             errorLog(e, "signtool.onCommand");
         }

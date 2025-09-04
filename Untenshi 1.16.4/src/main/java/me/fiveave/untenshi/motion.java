@@ -80,14 +80,10 @@ class motion {
         // Set real current
         if (ectarget < ecnow) {
             lv.setCurrent((ecnow - ectarget) > currentpertick ? ecnow - currentpertick : ectarget);
-            if (ecnow > 0 && ecnow - currentpertick > 0) {
-                trainSound(lv, "accel_off");
-            }
+            trainSound(lv, "accel_off");
         } else if (ectarget > ecnow) {
             lv.setCurrent((ectarget - ecnow) > currentpertick ? ecnow + currentpertick : ectarget);
-            if (ecnow + currentpertick > 0 && ecnow + currentpertick < ectarget) {
-                trainSound(lv, "accel_on");
-            }
+            trainSound(lv, "accel_on");
         }
         // Brake cylinder pressure
         double bcpnow = lv.getBcpressure();
@@ -98,15 +94,11 @@ class motion {
         // Set real pressure
         if (bcptarget < bcpnow) {
             lv.setBcpressure((bcpnow - bcptarget) > bcppertick ? bcpnow - bcppertick : bcptarget);
-            if (bcpnow > 0 && bcpnow - bcppertick > 0) {
-                trainSound(lv, "brake_release");
-            }
+            trainSound(lv, "brake_release");
         } else if (bcptarget > bcpnow) {
             double selbcppertick = (lv.getBrake() == 9 ? ebbcppertick : bcppertick);
-                lv.setBcpressure((bcptarget - bcpnow) > selbcppertick ? bcpnow + selbcppertick : bcptarget);
-                if (bcpnow + selbcppertick > 0 && bcpnow + selbcppertick < bcptarget) {
-                    trainSound(lv, "brake_apply");
-                }
+            lv.setBcpressure((bcptarget - bcpnow) > selbcppertick ? bcpnow + selbcppertick : bcptarget);
+            trainSound(lv, "brake_apply");
         }
         // Slope speed adjust
         HeadAndTailResult result = getHeadAndTailResult(mg);

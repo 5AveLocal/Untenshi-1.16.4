@@ -74,6 +74,12 @@ class cmds implements CommandExecutor, TabCompleter {
         return false;
     }
 
+    static void errorLog(Exception e, String loc) {
+        plugin.getLogger().log(Level.SEVERE, utshead + loc + "() did not function properly!\n");
+        //noinspection CallToPrintStackTrace
+        e.printStackTrace();
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         try {
@@ -342,12 +348,6 @@ class cmds implements CommandExecutor, TabCompleter {
             errorLog(e, "cmds.onCommand");
         }
         return true;
-    }
-
-    static void errorLog(Exception e, String loc) {
-        plugin.getLogger().log(Level.SEVERE, utshead + loc + "() did not function properly!\n");
-        //noinspection CallToPrintStackTrace
-        e.printStackTrace();
     }
 
     private boolean cannotSetTrain(String[] args, utsdriver ld) {

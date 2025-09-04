@@ -54,14 +54,16 @@ class abstractfile {
                 dataconfig = YamlConfiguration.loadConfiguration(file);
                 // Restore old values
                 for (String key : currentKeys) {
-                    if (oldconfig.get(key) != null) {
-                        dataconfig.set(key, oldconfig.get(key));
+                    Object oldobj = oldconfig.get(key);
+                    if (oldobj != null) {
+                        dataconfig.set(key, oldobj);
                     }
                 }
                 // Add new default values
                 for (String key : defaultConfig.getKeys(true)) {
-                    if (!currentKeys.contains(key) && defaultConfig.get(key) != null) {
-                        dataconfig.set(key, defaultConfig.get(key));
+                    Object newobj = defaultConfig.get(key);
+                    if (!currentKeys.contains(key) && newobj != null) {
+                        dataconfig.set(key, newobj);
                     }
                 }
                 try {

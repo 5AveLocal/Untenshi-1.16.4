@@ -103,6 +103,21 @@ class debugcmd implements CommandExecutor, TabCompleter {
             case "bcpressure":
                 lv.setBcpressure(Double.parseDouble(args[3]));
                 break;
+            case "currentpertick":
+                lv.setCurrentpertick(Double.parseDouble(args[3]));
+                break;
+            case "bcppertick":
+                lv.setBcppertick(Double.parseDouble(args[3]));
+                break;
+            case "ebbcppertick":
+                lv.setEbbcppertick(Double.parseDouble(args[3]));
+                break;
+            case "dooropenspeed":
+                lv.setDooropenspeed(Double.parseDouble(args[3]));
+                break;
+            case "doorclosespeed":
+                lv.setDoorclosespeed(Double.parseDouble(args[3]));
+                break;
             case "reqstopping":
                 lv.setReqstopping(Boolean.parseBoolean(args[3]));
                 break;
@@ -222,6 +237,21 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 break;
             case "bcpressure":
                 retstr = String.valueOf(lv.getBcpressure());
+                break;
+            case "currentpertick":
+                retstr = String.valueOf(lv.getCurrentpertick());
+                break;
+            case "bcppertick":
+                retstr = String.valueOf(lv.getBcppertick());
+                break;
+            case "ebbcppertick":
+                retstr = String.valueOf(lv.getEbbcppertick());
+                break;
+            case "dooropenspeed":
+                retstr = String.valueOf(lv.getDooropenspeed());
+                break;
+            case "doorclosespeed":
+                retstr = String.valueOf(lv.getDoorclosespeed());
                 break;
             case "reqstopping":
                 retstr = String.valueOf(lv.isReqstopping());
@@ -354,7 +384,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 ta.addAll(Arrays.asList("get", "set"));
                 break;
             case 3:
-                ta.addAll(Arrays.asList("speed", "mascon", "brake", "speedlimit", "signallimit", "atospeed", "atodest", "stoppos", "stopoutput", "lastspsp", "lastspsign", "lastsisp", "lastsisign", "rslist", "ilposlist", "ilposoccupied", "ilpriority", "ilenterqueuetime", "atsforced", "atsping", "atspnear", "ld", "accel", "decel", "ebdecel", "speeddrop", "current", "bcpressure", "reqstopping", "overrun", "fixstoppos", "dooropen", "doordiropen", "doorconfirm", "atopisdirect", "atoforcebrake", "atoautodep"));
+                ta.addAll(Arrays.asList("speed", "mascon", "brake", "speedlimit", "signallimit", "atospeed", "atodest", "stoppos", "stopoutput", "lastspsp", "lastspsign", "lastsisp", "lastsisign", "rslist", "ilposlist", "ilposoccupied", "ilpriority", "ilenterqueuetime", "atsforced", "atsping", "atspnear", "ld", "accel", "decel", "ebdecel", "speeddrop", "current", "bcpressure", "currentpertick", "bcppertick", "ebbcppertick", "dooropenspeed", "doorclosespeed", "reqstopping", "overrun", "fixstoppos", "dooropen", "doordiropen", "doorconfirm", "atopisdirect", "atoforcebrake", "atoautodep"));
                 break;
         }
         ta.forEach(a -> {
