@@ -18,6 +18,7 @@ import java.util.Arrays;
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
+import static me.fiveave.untenshi.events.toB8;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.stoppos.curveRailPosFix;
 import static me.fiveave.untenshi.utsvehicle.initVehicle;
@@ -70,8 +71,7 @@ class atosign extends SignAction {
                 if (lv == null && cartevent.getLine(2).equals("reg")) {
                     initVehicle(mg);
                     utsvehicle lv2 = vehicle.get(mg);
-                    lv2.setBrake(8);
-                    lv2.setMascon(0);
+                    toB8(lv2);
                 } else if (lv != null && lv.getTrain() != null) {
                     switch (cartevent.getLine(2)) {
                         case "reg":
@@ -132,7 +132,7 @@ class atosign extends SignAction {
                     int stoptimeval = parseInt(e.getLine(3));
                     if (stoptimeval >= 1) {
                         opt.setDescription("set ATO station stopping time for train, train departs automatically after doors close");
-                    } else if (Math.abs(stoptimeval) >= 1) {
+                    } else if (stoptimeval <= -1) {
                         opt.setDescription("set ATO station stopping time for train, train does not depart automatically after doors close");
                     } else {
                         generalMsg(p, ChatColor.RED, getLang("argwrong"));

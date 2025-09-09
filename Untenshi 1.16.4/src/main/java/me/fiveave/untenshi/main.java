@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import static me.fiveave.untenshi.cmds.generalMsg;
+import static me.fiveave.untenshi.events.toB8;
 import static me.fiveave.untenshi.motion.noFreemodeOrATO;
 import static me.fiveave.untenshi.signalsign.resetSignals;
 
@@ -82,9 +83,10 @@ public final class main extends JavaPlugin implements Listener {
     static void restoreInitLd(utsdriver ld) {
         // Get train group and stop train and open doors
         if (ld.isPlaying()) {
-            if (ld.getLv().getAtodest() == null || ld.getLv().getAtospeed() == -1) {
+            utsvehicle lv = ld.getLv();
+            if (lv.getAtodest() == null || lv.getAtospeed() == -1) {
                 try {
-                    MinecartGroup mg = ld.getLv().getTrain();
+                    MinecartGroup mg = lv.getTrain();
                     TrainProperties tprop = mg.getProperties();
                     tprop.setSpeedLimit(0);
                     mg.setForwardForce(0);
@@ -92,9 +94,9 @@ public final class main extends JavaPlugin implements Listener {
                     tprop.clearOwners();
                 } catch (Exception ignored) {
                 }
-                ld.getLv().setDooropen(0);
-                ld.getLv().setMascon(0);
-                ld.getLv().setBrake(8);
+
+                lv.setDooropen(0);
+                toB8(lv);
             }
             // Clear Inventory
             for (int i = 0; i < 41; i++) {
@@ -103,7 +105,7 @@ public final class main extends JavaPlugin implements Listener {
             // Reset inventory
             ld.getP().getInventory().setContents(ld.getInv());
             ld.getP().updateInventory();
-            ld.getLv().setLd(null);
+            lv.setLd(null);
             try {
                 driver.put(ld.getP(), new utsdriver(ld.getP(), ld.isFreemode(), ld.isAllowatousage()));
             } catch (Exception ignored) {

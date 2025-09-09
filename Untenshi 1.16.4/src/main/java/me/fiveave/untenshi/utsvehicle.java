@@ -115,22 +115,14 @@ class utsvehicle {
         int[] tempspeedsteps = new int[6];
         boolean twohandled = false;
         String tDataInfo = "trains." + seltrainname;
-        if (traindata.dataconfig.contains(tDataInfo + ".accel"))
-            tempaccel = traindata.dataconfig.getDouble(tDataInfo + ".accel");
-        if (traindata.dataconfig.contains(tDataInfo + ".decel"))
-            tempdecel = traindata.dataconfig.getDouble(tDataInfo + ".decel");
-        if (traindata.dataconfig.contains(tDataInfo + ".ebdecel"))
-            tempebdecel = traindata.dataconfig.getDouble(tDataInfo + ".ebdecel");
-        if (traindata.dataconfig.contains(tDataInfo + ".currentpertick"))
-            tempcurrentpertick = traindata.dataconfig.getDouble(tDataInfo + ".currentpertick");
-        if (traindata.dataconfig.contains(tDataInfo + ".bcppertick"))
-            tempbcppertick = traindata.dataconfig.getDouble(tDataInfo + ".bcppertick");
-        if (traindata.dataconfig.contains(tDataInfo + ".ebbcppertick"))
-            tempebbcppertick = traindata.dataconfig.getDouble(tDataInfo + ".ebbcppertick");
-        if (traindata.dataconfig.contains(tDataInfo + ".dooropenspeed"))
-            tempdooropenspeed = traindata.dataconfig.getDouble(tDataInfo + ".dooropenspeed");
-        if (traindata.dataconfig.contains(tDataInfo + ".doorclosespeed"))
-            tempdoorclosespeed = traindata.dataconfig.getDouble(tDataInfo + ".doorclosespeed");
+        tempaccel = getDoubleIfExists(tDataInfo, ".accel", tempaccel);
+        tempdecel = getDoubleIfExists(tDataInfo, ".decel", tempdecel);
+        tempebdecel = getDoubleIfExists(tDataInfo, ".ebdecel", tempebdecel);
+        tempcurrentpertick = getDoubleIfExists(tDataInfo, ".currentpertick", tempcurrentpertick);
+        tempbcppertick = getDoubleIfExists(tDataInfo, ".bcppertick", tempbcppertick);
+        tempebbcppertick = getDoubleIfExists(tDataInfo, ".ebbcppertick", tempebbcppertick);
+        tempdooropenspeed = getDoubleIfExists(tDataInfo, ".dooropenspeed", tempdooropenspeed);
+        tempdoorclosespeed = getDoubleIfExists(tDataInfo, ".doorclosespeed", tempdoorclosespeed);
         if (traindata.dataconfig.contains(tDataInfo + ".speeds") && traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").size() == 6) {
             for (int i = 0; i < 6; i++) {
                 tempspeedsteps[i] = traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").get(i);
@@ -193,6 +185,12 @@ class utsvehicle {
         this.setRsoccupiedpos(-1);
         this.setAtoautodep(false);
         this.setLastilchest(null);
+    }
+
+    private static double getDoubleIfExists(String tDataInfo, String x, double data) {
+        if (traindata.dataconfig.contains(tDataInfo + x))
+            data = traindata.dataconfig.getDouble(tDataInfo + x);
+        return data;
     }
 
     static void initVehicle(MinecartGroup mg) {

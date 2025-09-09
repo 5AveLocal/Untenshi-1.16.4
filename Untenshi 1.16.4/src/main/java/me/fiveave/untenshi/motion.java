@@ -23,6 +23,7 @@ import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.ato.*;
 import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
+import static me.fiveave.untenshi.events.toB8;
 import static me.fiveave.untenshi.events.trainSound;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.signalsign.*;
@@ -585,8 +586,7 @@ class motion {
                 lv.setAtsping(2);
                 pointCounter(lv.getLd(), ChatColor.RED, lv.getSafetysystype().toUpperCase() + " " + getLang("p_eb") + " ", -5, "");
             } else if (lv.getAtsping() == 0) {
-                lv.setBrake(8);
-                lv.setMascon(0);
+                toB8(lv);
                 lv.setAtsping(1);
                 pointCounter(lv.getLd(), ChatColor.RED, lv.getSafetysystype().toUpperCase() + " " + getLang("p_b8") + " ", -5, "");
             }

@@ -30,6 +30,10 @@ import static me.fiveave.untenshi.utscmduser.initCmdUser;
 
 class signtool implements CommandExecutor, TabCompleter, Listener {
 
+    List<String> alldirlist = Arrays.asList("b", "backwards", "d", "downwards", "e", "east", "f", "forward",
+            "l", "left", "n", "ne", "none", "north", "northeast", "northwest", "nw", "r", "right",
+            "s", "se", "south", "southeast", "southwest", "sw", "u", "upwards", "w", "west");
+
     static void editPlaceSign(utscmduser cu, Block blk) {
         Location loc = blk.getLocation();
         if (isLocOfSign(loc)) {
@@ -100,42 +104,13 @@ class signtool implements CommandExecutor, TabCompleter, Listener {
                         break;
                     case "setdir":
                         if (args.length > 1) {
-                            switch (args[1].toLowerCase()) {
-                                case "east":
-                                case "west":
-                                case "north":
-                                case "south":
-                                case "northeast":
-                                case "northwest":
-                                case "southeast":
-                                case "southwest":
-                                case "left":
-                                case "right":
-                                case "upwards":
-                                case "downwards":
-                                case "forward":
-                                case "backwards":
-                                case "none":
-                                case "e":
-                                case "w":
-                                case "n":
-                                case "s":
-                                case "ne":
-                                case "nw":
-                                case "se":
-                                case "sw":
-                                case "l":
-                                case "r":
-                                case "u":
-                                case "d":
-                                case "f":
-                                case "b":
-                                    cu.setSigndir(args[1].toLowerCase());
-                                    generalMsg(p, ChatColor.GREEN, getLang("signdirset"));
-                                    break;
-                                default:
-                                    generalMsg(p, ChatColor.RED, getLang("signdirwrong"));
-                                    break;
+                            boolean matchdir = alldirlist.contains(args[1].toLowerCase());
+                            if (matchdir) {
+                                cu.setSigndir(args[1].toLowerCase());
+                                generalMsg(p, ChatColor.GREEN, getLang("signdirset"));
+                            } else {
+                                generalMsg(p, ChatColor.RED, getLang("signdirwrong"));
+
                             }
                         } else {
                             generalMsg(p, ChatColor.RED, getLang("signdirwrong"));
@@ -221,7 +196,7 @@ class signtool implements CommandExecutor, TabCompleter, Listener {
             return result;
         } else if (arglength == 2) {
             if (args[0].equalsIgnoreCase("setdir")) {
-                ta.addAll(Arrays.asList("east", "west", "north", "south", "northeast", "northwest", "southeast", "southwest", "left", "right", "upwards", "downwards", "forward", "backwards", "none", "e", "w", "n", "s", "ne", "nw", "se", "sw", "l", "r", "u", "d", "f", "b"));
+                ta.addAll(alldirlist);
             } else {
                 ta.add("");
             }

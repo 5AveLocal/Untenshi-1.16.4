@@ -44,6 +44,11 @@ class events implements Listener {
         trainSound(lv, "ebbutton");
     }
 
+    static void toB8(utsvehicle lv) {
+        lv.setMascon(0);
+        lv.setBrake(8);
+    }
+
     static void switchBack(utsvehicle lv) {
         utsdriver ld = lv.getLd();
         if (lv.getSpeed() == 0) {

@@ -12,8 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.*;
 import static me.fiveave.untenshi.cmds.generalMsg;
-import static me.fiveave.untenshi.events.doorControls;
-import static me.fiveave.untenshi.events.toEB;
+import static me.fiveave.untenshi.events.*;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.motion.*;
 import static me.fiveave.untenshi.signalsign.signalSignInterlock;
@@ -174,8 +173,7 @@ class ato {
         lv.setFixstoppos(false);
         doorControls(lv, true);
         if (lv.getAtospeed() != -1) {
-            lv.setMascon(0);
-            lv.setBrake(8);
+            toB8(lv);
         }
         lv.setAtodest(null);
         lv.setAtospeed(-1);
