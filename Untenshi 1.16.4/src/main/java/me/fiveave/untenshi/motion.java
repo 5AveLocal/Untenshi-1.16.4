@@ -196,10 +196,10 @@ class motion {
     }
 
     private static void interlocking(utsvehicle lv) {
-        if (lv.getIlposlist() == null || lv.getIlposlist().length == 0) {
+        Location[] oldposlist = lv.getIlposlist();
+        if (oldposlist == null || oldposlist.length == 0) {
             return;
         }
-        Location[] oldposlist = lv.getIlposlist();
         // Check conditions to change signal
         int furthestoccupied = oldposlist.length - 1;
         boolean ispriority = true;
@@ -310,8 +310,9 @@ class motion {
                 Sign settable = getSignFromLoc(oldposlist[signno]);
                 if (settable != null) {
                     try {
-                        String currentsi = settable.getLine(2).split(" ")[1];
-                        int currentsp = parseInt(settable.getLine(2).split(" ")[2]);
+                        String[] settablesplit = settable.getLine(2).split(" ");
+                        String currentsi = settablesplit[1];
+                        int currentsp = parseInt(settablesplit[2]);
                         // Check if new speed to be set is lower than current, if yes choose current instead
                         String sistr = result.ptnsisp[orderno] < currentsp ? currentsi : result.ptnsisi[orderno];
                         int sp = Math.max(result.ptnsisp[orderno], currentsp);
