@@ -45,7 +45,7 @@ class driverlog implements CommandExecutor, TabCompleter {
                         generalMsg(sender, ChatColor.RED, getLang("driverlog_notuts"));
                     }
                 } else {
-                    sender.sendMessage(pureutstitle + ChatColor.YELLOW + "[" + getLang("help_usage") + " " + ChatColor.GOLD + "/utslogger <vehicle>" + ChatColor.YELLOW + "]");
+                    sender.sendMessage(PURE_UTS_TITLE + ChatColor.YELLOW + "[" + getLang("help_usage") + " " + ChatColor.GOLD + "/utslogger <vehicle>" + ChatColor.YELLOW + "]");
                 }
             } else {
                 cmds.noPerm(sender);
@@ -89,7 +89,7 @@ class driverlog implements CommandExecutor, TabCompleter {
             String s = String.format("%s,%1.2f,%d,%d,%d,%d", timestampnow, lv.getSpeed(), lv.getMascon(), lv.getBrake(), lv.getSpeedlimit(), lv.getSignallimit());
             try {
                 write(lv, timestamp, s);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> logging(sender, lv, timestamp), tickdelay);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> logging(sender, lv, timestamp), TICK_DELAY);
             } catch (Exception e) {
                 lv.setBeinglogged(false);
                 generalMsg(sender, ChatColor.RED, getLang("driverlog_off") + ChatColor.GRAY + " (" + lv.getTrain().getProperties().getTrainName() + ")");

@@ -145,7 +145,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                                 if (signalmsg.isEmpty()) {
                                     generalMsg(sender, ChatColor.RESET, ChatColor.RED + getLang("signal_typewrong"));
                                 }
-                                String showspeed = parseInt(warnsp) >= maxspeed ? getLang("speedlimit_del") : warnsp + " km/h";
+                                String showspeed = parseInt(warnsp) >= MAX_SPEED ? getLang("speedlimit_del") : warnsp + " km/h";
                                 generalMsg(sender, ChatColor.YELLOW, getLang("signal_warn") + " " + signalmsg + ChatColor.GRAY + " " + showspeed);
                             }
                             break;

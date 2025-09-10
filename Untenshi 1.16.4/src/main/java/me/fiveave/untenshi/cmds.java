@@ -35,18 +35,18 @@ class cmds implements CommandExecutor, TabCompleter {
     final String helpformat = " " + ChatColor.WHITE + "-" + ChatColor.GREEN + " ";
 
     static void helpSectionTitle(CommandSender sender, ChatColor color, String arg) {
-        sender.sendMessage(pureutstitle + color + " ----- " + getLang("help_" + arg + "title") + " -----");
+        sender.sendMessage(PURE_UTS_TITLE + color + " ----- " + getLang("help_" + arg + "title") + " -----");
     }
 
     static void generalMsg(CommandSender sender, ChatColor color, String s) {
         if (sender != null) {
-            sender.sendMessage(utshead + color + s);
+            sender.sendMessage(UTS_HEAD + color + s);
         }
     }
 
     static void generalMsg(utsdriver ld, ChatColor color, String s) {
         if (ld != null) {
-            ld.getP().sendMessage(utshead + color + s);
+            ld.getP().sendMessage(UTS_HEAD + color + s);
         }
     }
 
@@ -75,7 +75,7 @@ class cmds implements CommandExecutor, TabCompleter {
     }
 
     static void errorLog(Exception e, String loc) {
-        plugin.getLogger().log(Level.SEVERE, utshead + loc + "() did not function properly!\n");
+        plugin.getLogger().log(Level.SEVERE, UTS_HEAD + loc + "() did not function properly!\n");
         //noinspection CallToPrintStackTrace
         e.printStackTrace();
     }
@@ -166,7 +166,7 @@ class cmds implements CommandExecutor, TabCompleter {
                                         if (selcart instanceof Minecart) {
                                             MinecartMember<?> mem = MinecartMemberStore.getFromEntity(selcart);
                                             if (!selcart.getPassengers().isEmpty() && selcart.getPassengers().get(0) instanceof Player) {
-                                                Bukkit.getScheduler().runTaskLater(plugin, () -> CartProperties.setEditing((Player) selcart.getPassengers().get(0), mem.getProperties()), tickdelay);
+                                                Bukkit.getScheduler().runTaskLater(plugin, () -> CartProperties.setEditing((Player) selcart.getPassengers().get(0), mem.getProperties()), TICK_DELAY);
                                             }
                                             MinecartGroup mg2 = mem.getGroup();
                                             initVehicle(mg2);
@@ -214,7 +214,7 @@ class cmds implements CommandExecutor, TabCompleter {
                                     break label;
                             }
                         }
-                        sender.sendMessage(pureutstitle + ChatColor.YELLOW + "[" + getLang("help_usage") + " " + ChatColor.GOLD + "/uts activate <true/false>" + ChatColor.YELLOW + "]\n" + getLang("activate_info1") + "\n" + getLang("activate_info2"));
+                        sender.sendMessage(PURE_UTS_TITLE + ChatColor.YELLOW + "[" + getLang("help_usage") + " " + ChatColor.GOLD + "/uts activate <true/false>" + ChatColor.YELLOW + "]\n" + getLang("activate_info1") + "\n" + getLang("activate_info2"));
                         break;
                     case "ac":
                         if (reqActivate(ld)) {
@@ -233,19 +233,19 @@ class cmds implements CommandExecutor, TabCompleter {
                     case "freemode":
                         if (reqDeactivate(ld)) break;
                         if (cannotSetTrain(args, ld) || !args[1].equalsIgnoreCase("true") && !args[1].equalsIgnoreCase("false")) {
-                            sender.sendMessage(pureutstitle + ChatColor.YELLOW + "[" + getLang("help_usage") + " " + ChatColor.GOLD + "/uts freemode <true/false>" + ChatColor.YELLOW + "]\n" + getLang("freemode_info1") + "\n" + getLang("freemode_info2"));
+                            sender.sendMessage(PURE_UTS_TITLE + ChatColor.YELLOW + "[" + getLang("help_usage") + " " + ChatColor.GOLD + "/uts freemode <true/false>" + ChatColor.YELLOW + "]\n" + getLang("freemode_info1") + "\n" + getLang("freemode_info2"));
                         } else {
                             ld.setFreemode(Boolean.parseBoolean(args[1].toLowerCase()));
-                            sender.sendMessage(pureutstitle + ChatColor.YELLOW + getLang("freemode") + " " + (ld.isFreemode() ? ChatColor.GREEN + getLang("activate_on") : ChatColor.RED + getLang("activate_off")));
+                            sender.sendMessage(PURE_UTS_TITLE + ChatColor.YELLOW + getLang("freemode") + " " + (ld.isFreemode() ? ChatColor.GREEN + getLang("activate_on") : ChatColor.RED + getLang("activate_off")));
                         }
                         break;
                     case "allowato":
                         if (reqDeactivate(ld)) break;
                         if (cannotSetTrain(args, ld) || !args[1].equalsIgnoreCase("true") && !args[1].equalsIgnoreCase("false")) {
-                            sender.sendMessage(pureutstitle + ChatColor.YELLOW + "[" + getLang("help_usage") + " " + ChatColor.GOLD + "/uts allowato <true/false>" + ChatColor.YELLOW + "]\n" + getLang("ato_info1") + "\n" + getLang("ato_info2"));
+                            sender.sendMessage(PURE_UTS_TITLE + ChatColor.YELLOW + "[" + getLang("help_usage") + " " + ChatColor.GOLD + "/uts allowato <true/false>" + ChatColor.YELLOW + "]\n" + getLang("ato_info1") + "\n" + getLang("ato_info2"));
                         } else {
                             ld.setAllowatousage(Boolean.parseBoolean(args[1].toLowerCase()));
-                            sender.sendMessage(pureutstitle + ChatColor.YELLOW + getLang("ato") + " " + (ld.isAllowatousage() ? ChatColor.GREEN + getLang("activate_on") : ChatColor.RED + getLang("activate_off")));
+                            sender.sendMessage(PURE_UTS_TITLE + ChatColor.YELLOW + getLang("ato") + " " + (ld.isAllowatousage() ? ChatColor.GREEN + getLang("activate_on") : ChatColor.RED + getLang("activate_off")));
                         }
                         break;
                     case "switchends":
@@ -283,8 +283,8 @@ class cmds implements CommandExecutor, TabCompleter {
                                         generalMsg(ld.getP(), ChatColor.YELLOW, getLang("se_success"));
                                         ld.setFrozen(false);
                                         ld.getLv().setDriverseat(finalMm2);
-                                    }, tickdelay);
-                                }, tickdelay);
+                                    }, TICK_DELAY);
+                                }, TICK_DELAY);
                                 break;
                             }
                             generalMsg(sender, ChatColor.RED, getLang("se_failed"));
@@ -371,7 +371,7 @@ class cmds implements CommandExecutor, TabCompleter {
     }
 
     void helpMsg(CommandSender sender) {
-        sender.sendMessage(pureutstitle + helphead + "help <page>" + helpformat + getLang("help_show"));
+        sender.sendMessage(PURE_UTS_TITLE + helphead + "help <page>" + helpformat + getLang("help_show"));
     }
 
     @Override

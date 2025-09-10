@@ -24,16 +24,17 @@ import static me.fiveave.untenshi.signalsign.resetSignals;
 
 public final class main extends JavaPlugin implements Listener {
 
-    static final int ticksin1s = 20;
-    static final double onetickins = 1.0 / ticksin1s;
-    static final int tickdelay = (int) (20 * onetickins);
-    static final int maxspeed = 360;
-    static final double cartyposdiff = 0.0625;
+    // ALL_CAPS for never changing final variables
+    static final int TICKS_IN_1_S = 20;
+    static final double ONE_TICK_IN_S = 0.05;
+    static final int TICK_DELAY = 1;
+    static final int MAX_SPEED = 360;
+    static final double CART_Y_POS_DIFF = 0.0625;
     static final HashMap<MinecartGroup, utsvehicle> vehicle = new HashMap<>();
     static final HashMap<Player, utsdriver> driver = new HashMap<>();
     static final HashMap<Player, utscmduser> cmduser = new HashMap<>();
-    static final String pureutstitle = ChatColor.YELLOW + "[========== " + ChatColor.GREEN + "Untenshi " + ChatColor.YELLOW + "==========]\n";
-    static final String utshead = "[" + ChatColor.GREEN + "Untenshi" + ChatColor.WHITE + "] ";
+    static final String PURE_UTS_TITLE = ChatColor.YELLOW + "[========== " + ChatColor.GREEN + "Untenshi " + ChatColor.YELLOW + "==========]\n";
+    static final String UTS_HEAD = "[" + ChatColor.GREEN + "Untenshi" + ChatColor.WHITE + "] ";
     public static main plugin;
     static abstractfile config;
     static abstractfile langdata;

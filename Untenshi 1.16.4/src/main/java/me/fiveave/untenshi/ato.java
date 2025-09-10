@@ -51,7 +51,7 @@ class ato {
             int finalmascon = 0;
             int finalbrake = 0;
             // Find either ATO, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
-            if (lv.getLastsisign() != null && lv.getLastsisp() != maxspeed) {
+            if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
                 Location actualSiRefPos = getActualRefPos(lv.getLastsisign(), mg.getWorld());
                 slopeaccelsi = getSlopeAccel(actualSiRefPos, result.tailLoc);
                 reqsidist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastsisp(), speeddrop, 6, slopeaccelsi, 0)
@@ -59,7 +59,7 @@ class ato {
                 signaldist = distFormula(actualSiRefPos, result.headLoc);
                 signaldistdiff = signaldist - reqsidist;
             }
-            if (lv.getLastspsign() != null && lv.getLastspsp() != maxspeed) {
+            if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED) {
                 Location actualSpRefPos = getActualRefPos(lv.getLastspsign(), mg.getWorld());
                 slopeaccelsp = getSlopeAccel(actualSpRefPos, result.tailLoc);
                 reqspdist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastspsp(), speeddrop, 6, slopeaccelsp, 0)
@@ -68,12 +68,12 @@ class ato {
                 speeddistdiff = speeddist - reqspdist;
             }
             double priority = (atodistdiff < signaldistdiff) ? (Math.min(atodistdiff, speeddistdiff)) : (Math.min(signaldistdiff, speeddistdiff));
-            if (lv.getLastsisign() != null && lv.getLastsisp() != maxspeed && priority == signaldistdiff) {
+            if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED && priority == signaldistdiff) {
                 lowerSpeed = lv.getLastsisp();
                 distnow = signaldist;
                 slopeaccelsel = slopeaccelsi;
             }
-            if (lv.getLastspsign() != null && lv.getLastspsp() != maxspeed && priority == speeddistdiff) {
+            if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED && priority == speeddistdiff) {
                 lowerSpeed = lv.getLastspsp();
                 distnow = speeddist;
                 slopeaccelsel = slopeaccelsp;
@@ -90,7 +90,7 @@ class ato {
             double safeslopeaccelsel = Math.max(slopeaccelsel, 0); // Non-negative slope acceleration
             double saspeed = lv.getSpeed() + safeslopeaccelsel; // Speed with slope acceleration
             // Actual controlling part, extra tick to prevent huge shock on stopping
-            getAllReqdist(lv, lv.getSpeed(), lowerSpeed, speeddrop, reqdist, slopeaccelsel, onetickins);
+            getAllReqdist(lv, lv.getSpeed(), lowerSpeed, speeddrop, reqdist, slopeaccelsel, ONE_TICK_IN_S);
             // Require accel? (no need to prepare for braking for next object and ATO target destination + additional thinking distance)
             boolean allowaccel = (lv.getMascon() > 0 || currentlimit - lv.getSpeed() > 5 && (lowerSpeed - lv.getSpeed() > 5 || tempdist > speed1s(lv)) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
                     && potentialspeed <= currentlimit // Will not go over speed limit
@@ -102,7 +102,7 @@ class ato {
                 finalmascon = 5;
             }
             // Require braking? (with additional thinking time, if thinking distance is less than 1 m then consider as 1 m (prevent hard braking at low speeds))
-            if (tempdist < reqdist[6] + Math.max(1, 2 * onetickins * getThinkingDistance(lv, lv.getSpeed(), lowerSpeed, decel, 6, slopeaccelsel, onetickins))) {
+            if (tempdist < reqdist[6] + Math.max(1, 2 * ONE_TICK_IN_S * getThinkingDistance(lv, lv.getSpeed(), lowerSpeed, decel, 6, slopeaccelsel, ONE_TICK_IN_S))) {
                 lv.setAtoforcebrake(true);
             }
             // Direct pattern or forced?
@@ -216,7 +216,7 @@ class ato {
                 // Return as final variables
                 Location finalCartactualpos = cartactualpos;
                 Location finalActualSiRefPos = actualSiRefPos;
-                Bukkit.getScheduler().runTaskLater(plugin, () -> waitDepart(lv, finalActualSiRefPos, finalCartactualpos), tickdelay);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> waitDepart(lv, finalActualSiRefPos, finalCartactualpos), TICK_DELAY);
             }
         }
     }

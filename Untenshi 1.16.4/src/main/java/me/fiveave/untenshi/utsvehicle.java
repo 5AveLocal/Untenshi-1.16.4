@@ -146,8 +146,8 @@ class utsvehicle {
         this.setDoorclosespeed(tempdoorclosespeed);
         this.setTwohandled(twohandled);
         this.setSpeed(0.0);
-        this.setSignallimit(maxspeed);
-        this.setSpeedlimit(maxspeed);
+        this.setSignallimit(MAX_SPEED);
+        this.setSpeedlimit(MAX_SPEED);
         this.setDooropen(0);
         this.setDoordiropen(false);
         this.setDoorconfirm(false);
@@ -175,8 +175,8 @@ class utsvehicle {
         this.setAtostoptime(-1);
         this.setLastsisign(null);
         this.setLastspsign(null);
-        this.setLastsisp(maxspeed);
-        this.setLastspsp(maxspeed);
+        this.setLastsisp(MAX_SPEED);
+        this.setLastspsp(MAX_SPEED);
         this.setIlposlist(null);
         this.setIlposoccupied(null);
         this.setIlenterqueuetime(-1);

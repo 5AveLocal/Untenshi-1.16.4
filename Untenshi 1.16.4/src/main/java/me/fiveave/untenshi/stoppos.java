@@ -54,7 +54,7 @@ class stoppos extends SignAction {
             }
             curveRailPosFix(lv, loc);
             loc[0] += 0.5;
-            loc[1] += cartyposdiff;
+            loc[1] += CART_Y_POS_DIFF;
             loc[2] += 0.5;
             lv.setStoppos(new Location(lv.getSavedworld(), loc[0], loc[1], loc[2]));
             if (!l4.isEmpty()) {

@@ -35,7 +35,7 @@ class motion {
         if (lv.getTrain() != null && !lv.getTrain().isEmpty()) {
             try {
                 motionSystem(lv);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLv(lv), tickdelay);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLv(lv), TICK_DELAY);
             } catch (Exception e) {
                 errorLog(e, "motion.recursiveClockLv");
                 restoreInitLv(lv);
@@ -49,13 +49,13 @@ class motion {
         if (ld.isPlaying() && ld.getP().isInsideVehicle() && MinecartGroup.get(ld.getP().getVehicle()).equals(ld.getLv().getTrain())) {
             try {
                 driverSystem(ld);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLd(ld), tickdelay);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLd(ld), TICK_DELAY);
             } catch (Exception e) {
                 errorLog(e, "motion.recursiveClockLd");
                 restoreInitLd(ld);
             }
         } else if (ld.isFrozen()) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLd(ld), tickdelay);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLd(ld), TICK_DELAY);
         } else if (!ld.getP().isInsideVehicle() || !MinecartGroup.get(ld.getP().getVehicle()).equals(ld.getLv().getTrain())) { // Not in (same) vehicle
             restoreInitLd(ld);
         }
@@ -110,8 +110,8 @@ class motion {
         if (lv.getDooropen() == 0) {
             // If door is closed
             lv.setSpeed(lv.getSpeed() //
-                    + accelnow * onetickins // Acceleration
-                    - decelnow * onetickins); // Deceleration (speed drop included)
+                    + accelnow * ONE_TICK_IN_S // Acceleration
+                    - decelnow * ONE_TICK_IN_S); // Deceleration (speed drop included)
             // Prevent negative speed
             if (lv.getSpeed() < 0) {
                 lv.setSpeed(0.0);
@@ -373,7 +373,7 @@ class motion {
             // Get stop location
             StopPosResult spresult = getStopPosResult(lv);
             // Start Overrun (prevent escaping overrun over 144 km/h)
-            if (!lv.isOverrun() && (spresult.stopdist - onetickins * speed1s(lv) < 0 || spresult.stopdist < 1)) {
+            if (!lv.isOverrun() && (spresult.stopdist - ONE_TICK_IN_S * speed1s(lv) < 0 || spresult.stopdist < 1)) {
                 lv.setOverrun(true);
             }
             // Rewards and penalties
@@ -451,10 +451,10 @@ class motion {
     private static void doorLogic(utsvehicle lv, TrainProperties tprop) {
         // Door (enter and exit train, open = 1, close = 0)
         if (lv.isDoordiropen() && lv.getDooropen() < 1) {
-            double openvalue = lv.getDooropen() + lv.getDooropenspeed() / ticksin1s;
+            double openvalue = lv.getDooropen() + lv.getDooropenspeed() / TICKS_IN_1_S;
             lv.setDooropen(openvalue > 1 ? 1 : openvalue);
         } else if (!lv.isDoordiropen() && lv.getDooropen() > 0) {
-            double closevalue = lv.getDooropen() - lv.getDoorclosespeed() / ticksin1s;
+            double closevalue = lv.getDooropen() - lv.getDoorclosespeed() / TICKS_IN_1_S;
             lv.setDooropen(closevalue < 0 ? 0 : closevalue);
         }
         if (!lv.isDoorconfirm() && (lv.getDooropen() == 0 || lv.getDooropen() == 1)) {
@@ -478,7 +478,7 @@ class motion {
 
     private static void catchSignalUpdate(utsvehicle lv) {
         Location signalloc = lv.getLastsisign();
-        if (signalloc != null && lv.getLastsisp() != maxspeed) {
+        if (signalloc != null && lv.getLastsisp() != MAX_SPEED) {
             Sign warnsign = (Sign) lv.getSavedworld().getBlockAt(signalloc).getState();
             String warnsi = warnsign.getLine(2).split(" ")[1];
             int warnsp = Integer.parseInt(warnsign.getLine(2).split(" ")[2]);
@@ -496,7 +496,7 @@ class motion {
                 if (lv.getSafetysystype().equals("atc")) {
                     warnsp = Math.min(warnsp, lv.getSpeedlimit());
                 }
-                String speedlimittxt = warnsp >= maxspeed ? getLang("speedlimit_del") : warnsp + " km/h";
+                String speedlimittxt = warnsp >= MAX_SPEED ? getLang("speedlimit_del") : warnsp + " km/h";
                 if (!lv.getSafetysystype().equals("atc") || warnsp != Math.min(oldsignallimit, lv.getSpeedlimit())) {
                     generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_change") + " " + signalmsg + ChatColor.GRAY + " " + speedlimittxt);
                 }
@@ -530,21 +530,21 @@ class motion {
             generalMsg(lv.getLd(), ChatColor.RED, getLang("tcblocking"));
         }
         if (lv.getAtsforced() == -1 && lv.getAtsping() > 0 && lv.getMascon() == -9) {
-            lv.setSpeed(Math.max(lv.getSpeed() - ebdecel * onetickins * 45 / 7, 0));
+            lv.setSpeed(Math.max(lv.getSpeed() - ebdecel * ONE_TICK_IN_S * 45 / 7, 0));
         }
         // If no obstacle need braking in 2s then release
         if (lv.getAtsforced() == -1 && !mg.isObstacleAhead(mg.getProperties().getWaitDistance() + getThinkingDistance(lv, lv.getSpeed(), lowerSpeed, decel, 8, slopeaccel, 0) * 2, true, true)) {
             lv.setAtsforced(0);
         }
         // Find either signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
-        if (lv.getLastsisign() != null && lv.getLastsisp() != maxspeed) {
+        if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
             Location actualSiRefPos = getActualRefPos(lv.getLastsisign(), mg.getWorld());
             slopeaccelsi = getSlopeAccel(actualSiRefPos, result.tailLoc);
             reqsidist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastsisp(), speeddrop, 6, slopeaccelsi, 0);
             signaldist = distFormula(actualSiRefPos, result.headLoc);
             signaldistdiff = signaldist - reqsidist;
         }
-        if (lv.getLastspsign() != null && lv.getLastspsp() != maxspeed) {
+        if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED) {
             Location actualSpRefPos = getActualRefPos(lv.getLastspsign(), mg.getWorld());
             slopeaccelsp = getSlopeAccel(actualSpRefPos, result.tailLoc);
             reqspdist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastspsp(), speeddrop, 6, slopeaccelsp, 0);
@@ -552,12 +552,12 @@ class motion {
             speeddistdiff = speeddist - reqspdist;
         }
         double priority = Math.min(signaldistdiff, speeddistdiff);
-        if (lv.getLastsisign() != null && lv.getLastsisp() != maxspeed && priority == signaldistdiff) {
+        if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED && priority == signaldistdiff) {
             lowerSpeed = lv.getLastsisp();
             distnow = signaldist;
             slopeaccel = slopeaccelsi;
         }
-        if (lv.getLastspsign() != null && lv.getLastspsp() != maxspeed && priority == speeddistdiff) {
+        if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED && priority == speeddistdiff) {
             lowerSpeed = lv.getLastspsp();
             distnow = speeddist;
             slopeaccel = slopeaccelsp;
@@ -670,11 +670,11 @@ class motion {
     static double getSpeedAfterPotentialAccel(utsvehicle lv, double currentSpeed, double slopeaccel) {
         double current = Math.max(0, lv.getCurrent());
         // 1 tick delay for compensation for action delay
-        double speed = currentSpeed + (accelSwitch(lv, currentSpeed, (int) (getNotchFromCurrent(current))) + slopeaccel) * onetickins;
+        double speed = currentSpeed + (accelSwitch(lv, currentSpeed, (int) (getNotchFromCurrent(current))) + slopeaccel) * ONE_TICK_IN_S;
         // Anti out-of-range causing GIGO
         // Use while loop as using formula is tedious
         while (current > 0) {
-            speed += (accelSwitch(lv, speed, (int) (getNotchFromCurrent(current))) + slopeaccel) * onetickins;
+            speed += (accelSwitch(lv, speed, (int) (getNotchFromCurrent(current))) + slopeaccel) * ONE_TICK_IN_S;
             current -= lv.getCurrentpertick();
         }
         return speed;
@@ -763,7 +763,7 @@ class motion {
             } else {
                 // SPAD ATS EB (-35 km/h/s)
                 lv.setAtsforced(2);
-                lv.setSpeed(lv.getSpeed() - ebdecel * onetickins * 45 / 7);
+                lv.setSpeed(lv.getSpeed() - ebdecel * ONE_TICK_IN_S * 45 / 7);
             }
         }
         return retdecel - slopeaccel;
@@ -796,7 +796,7 @@ class motion {
     }
 
     static double getBrakeInitTime(double bcp, double bcptarget, double bcppertick) {
-        return (bcptarget - bcp) / bcppertick * onetickins;
+        return (bcptarget - bcp) / bcppertick * ONE_TICK_IN_S;
     }
 
     static AfterBrakeInitResult getAfterBrakeInitResult(utsvehicle lv, double upperSpeed, double decel, double slopeaccel, double bcp, double bcptarget) {
@@ -804,7 +804,7 @@ class motion {
         double ticksfrom0 = bcp / bcppertick;
         double ticksatend = bcptarget / bcppertick;
         double timeleft = getBrakeInitTime(bcp, bcptarget, bcppertick);
-        double avgrate = bcp > 0 ? (80 * (ticksatend + ticksfrom0) * onetickins + 27) / 35 : (80 * (Math.pow(ticksatend, 2) - 1) * onetickins + 27 * (ticksatend - 1)) / 35 / ticksatend; // average rate by mean value theorem, separate cases for bcp < 0 or not
+        double avgrate = bcp > 0 ? (80 * (ticksatend + ticksfrom0) * ONE_TICK_IN_S + 27) / 35 : (80 * (Math.pow(ticksatend, 2) - 1) * ONE_TICK_IN_S + 27 * (ticksatend - 1)) / 35 / ticksatend; // average rate by mean value theorem, separate cases for bcp < 0 or not
         double estlowerspeed = Math.max(0, upperSpeed - (decel * avgrate / 7 - slopeaccel) * timeleft); // estimated lower speed, rough result only for avgRangeDecel, prevent negative
         double avgdecel = avgRangeDecel(decel, Math.max(0, upperSpeed + slopeaccel), estlowerspeed, avgrate, lv.getSpeedsteps()) - slopeaccel; // gives better estimation than globalDecel, inaccuracy is negligible?
         // Time in s instead of tick to brake init end, but to prevent over-estimation and negative deceleration values

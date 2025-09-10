@@ -156,7 +156,7 @@ class atosign extends SignAction {
                 default:
                     double val = parseInt(e.getLine(2));
                     opt.setDescription(val >= 0 ? "set ATO indirect pattern for train" : "set ATO direct pattern for train");
-                    if (val > maxspeed) {
+                    if (val > MAX_SPEED) {
                         generalMsg(p, ChatColor.RED, getLang("argwrong"));
                         e.setCancelled(true);
                     }

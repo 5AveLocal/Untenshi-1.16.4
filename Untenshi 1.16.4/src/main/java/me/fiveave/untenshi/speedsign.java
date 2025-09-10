@@ -85,11 +85,11 @@ class speedsign extends SignAction {
                 }
             } while (true);
         }
-        return new Location(w, loc.getX() + blkoffset[0] + 0.5, loc.getY() + blkoffset[1] + cartyposdiff, loc.getZ() + blkoffset[2] + 0.5);
+        return new Location(w, loc.getX() + blkoffset[0] + 0.5, loc.getY() + blkoffset[1] + CART_Y_POS_DIFF, loc.getZ() + blkoffset[2] + 0.5);
     }
 
     static void signImproper(Location loc, utsdriver ld) {
-        String s = utshead + ChatColor.RED + getLang("signimproper") + " (" + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + ")";
+        String s = UTS_HEAD + ChatColor.RED + getLang("signimproper") + " (" + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + ")";
         if (ld != null && ld.getP() != null) {
             ld.getP().sendMessage(s);
         }
@@ -101,7 +101,7 @@ class speedsign extends SignAction {
     }
 
     static boolean limitSpeedIncorrect(CommandSender p, int speedlimit) {
-        if (speedlimit < 0 || Math.floorMod(speedlimit, 5) != 0 || speedlimit > maxspeed) {
+        if (speedlimit < 0 || Math.floorMod(speedlimit, 5) != 0 || speedlimit > MAX_SPEED) {
             if (p != null) {
                 generalMsg(p, ChatColor.RED, getLang("argwrong"));
             }
@@ -116,7 +116,7 @@ class speedsign extends SignAction {
             lv.setLastspsign(warn.getLocation());
             int warnsp = parseInt(warn.getLine(2));
             lv.setLastspsp(warnsp);
-            if (warnsp < maxspeed) {
+            if (warnsp < MAX_SPEED) {
                 // ATC signal and speed limit min value
                 if (lv.getSafetysystype().equals("atc") && warnsp != minSpeedLimit(lv)) {
                     warnsp = Math.min(Math.min(lv.getLastsisp(), lv.getLastspsp()), lv.getSignallimit());
@@ -143,15 +143,15 @@ class speedsign extends SignAction {
         if (lv.getSafetysystype().equals("atc")) {
             speed = Math.min(lv.getSignallimit(), lv.getSpeedlimit());
             if (speed != Math.min(oldspeedlimit, lv.getSignallimit())) {
-                String temp = speed >= maxspeed ? getLang("speedlimit_del") : speed + " km/h";
+                String temp = speed >= MAX_SPEED ? getLang("speedlimit_del") : speed + " km/h";
                 generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_set") + " " + ChatColor.GOLD + "ATC" + ChatColor.GRAY + " " + temp);
             }
         } else {
-            generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("speedlimit_set") + " " + (speed == maxspeed ? ChatColor.GREEN + getLang("speedlimit_del") : speed + " km/h"));
+            generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("speedlimit_set") + " " + (speed == MAX_SPEED ? ChatColor.GREEN + getLang("speedlimit_del") : speed + " km/h"));
         }
         if (speed != 0) {
             lv.setLastspsign(null);
-            lv.setLastspsp(maxspeed);
+            lv.setLastspsp(MAX_SPEED);
         }
     }
 

@@ -298,7 +298,7 @@ class signalsign extends SignAction {
                 if (lv.getSafetysystype().equals("atc")) {
                     warnsp = Math.min(Math.min(lv.getLastsisp(), lv.getLastspsp()), lv.getSpeedlimit());
                 }
-                String temp2 = warnsp >= maxspeed ? getLang("speedlimit_del") : warnsp + " km/h";
+                String temp2 = warnsp >= MAX_SPEED ? getLang("speedlimit_del") : warnsp + " km/h";
                 // Do not show same signal if using ATC
                 if (!lv.getSafetysystype().equals("atc") || warnsp != minSpeedLimit(lv)) {
                     generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_warn") + " " + signalmsg + ChatColor.GRAY + " " + temp2);
@@ -322,7 +322,7 @@ class signalsign extends SignAction {
         newloc[0] = loc;
         // Remove variables
         lv.setLastsisign(null);
-        lv.setLastsisp(maxspeed);
+        lv.setLastsisp(MAX_SPEED);
         lv.setRsposlist(newloc);
         // Make blocked section longer by 1
         lv.setRsoccupiedpos(lv.getRsoccupiedpos() + 1);
@@ -388,7 +388,7 @@ class signalsign extends SignAction {
                                     if (lv.getSafetysystype().equals("atc")) {
                                         shownspeed = Math.min(lv.getSignallimit(), lv.getSpeedlimit());
                                     }
-                                    String temp = shownspeed >= maxspeed ? getLang("speedlimit_del") : shownspeed + " km/h";
+                                    String temp = shownspeed >= MAX_SPEED ? getLang("speedlimit_del") : shownspeed + " km/h";
                                     if (lv.getLd() != null && (!lv.getSafetysystype().equals("atc") || shownspeed != Math.min(oldsignallimit, lv.getSpeedlimit()))) {
                                         generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_set") + " " + signalmsg + ChatColor.GRAY + " " + temp);
                                     }
