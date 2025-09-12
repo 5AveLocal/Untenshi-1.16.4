@@ -795,16 +795,10 @@ class motion {
         return Math.min(lv.getSpeedlimit(), lv.getSignallimit());
     }
 
-    static double getBrakeInitTime(double bcp, double bcptarget, double bcppertick) {
-        return (bcptarget - bcp) / bcppertick * ONE_TICK_IN_S;
-    }
-
     static AfterBrakeInitResult getAfterBrakeInitResult(utsvehicle lv, double upperSpeed, double decel, double slopeaccel, double bcp, double bcptarget) {
         double bcppertick = lv.getBcppertick();
-        double ticksfrom0 = bcp / bcppertick;
-        double ticksatend = bcptarget / bcppertick;
-        double timeleft = getBrakeInitTime(bcp, bcptarget, bcppertick);
-        double avgrate = bcp > 0 ? (80 * (ticksatend + ticksfrom0) * ONE_TICK_IN_S + 27) / 35 : (80 * (Math.pow(ticksatend, 2) - 1) * ONE_TICK_IN_S + 27 * (ticksatend - 1)) / 35 / ticksatend; // average rate by mean value theorem, separate cases for bcp < 0 or not
+        double timeleft = (bcptarget - bcp) / bcppertick * ONE_TICK_IN_S;
+        double avgrate = bcp > 0 ? (bcptarget + bcp) * 9 / 960 + 1 : ((bcptarget + bcppertick) * 9 / 960 + 1) * (timeleft - 0.05) / timeleft; // average rate, separate cases for bcp < 0 or not
         double estlowerspeed = Math.max(0, upperSpeed - (decel * avgrate / 7 - slopeaccel) * timeleft); // estimated lower speed, rough result only for avgRangeDecel, prevent negative
         double avgdecel = avgRangeDecel(decel, Math.max(0, upperSpeed + slopeaccel), estlowerspeed, avgrate, lv.getSpeedsteps()) - slopeaccel; // gives better estimation than globalDecel, inaccuracy is negligible?
         // Time in s instead of tick to brake init end, but to prevent over-estimation and negative deceleration values

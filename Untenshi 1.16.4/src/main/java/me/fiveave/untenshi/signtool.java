@@ -30,7 +30,7 @@ import static me.fiveave.untenshi.utscmduser.initCmdUser;
 
 class signtool implements CommandExecutor, TabCompleter, Listener {
 
-    List<String> alldirlist = Arrays.asList("b", "backwards", "d", "downwards", "e", "east", "f", "forward",
+    final List<String> alldirlist = Arrays.asList("b", "backwards", "d", "downwards", "e", "east", "f", "forward",
             "l", "left", "n", "ne", "none", "north", "northeast", "northwest", "nw", "r", "right",
             "s", "se", "south", "southeast", "southwest", "sw", "u", "upwards", "w", "west");
 
