@@ -804,6 +804,7 @@ class motion {
         double ticksfrom0 = bcp / bcppertick;
         double ticksatend = bcptarget / bcppertick;
         double timeleft = getBrakeInitTime(bcp, bcptarget, bcppertick);
+        // UPDATED NEEDED - values are for the 40/3 kPa/tick bcp increase
         double avgrate = bcp > 0 ? (80 * (ticksatend + ticksfrom0) * ONE_TICK_IN_S + 27) / 35 : (80 * (Math.pow(ticksatend, 2) - 1) * ONE_TICK_IN_S + 27 * (ticksatend - 1)) / 35 / ticksatend; // average rate by mean value theorem, separate cases for bcp < 0 or not
         double estlowerspeed = Math.max(0, upperSpeed - (decel * avgrate / 7 - slopeaccel) * timeleft); // estimated lower speed, rough result only for avgRangeDecel, prevent negative
         double avgdecel = avgRangeDecel(decel, Math.max(0, upperSpeed + slopeaccel), estlowerspeed, avgrate, lv.getSpeedsteps()) - slopeaccel; // gives better estimation than globalDecel, inaccuracy is negligible?
