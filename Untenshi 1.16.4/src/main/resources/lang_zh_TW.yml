@@ -34,11 +34,6 @@ activate_info1: '[true: 啟用]'
 activate_info2: '[false: 停用]'
 activate_notowner: 你不是該列車的擁有人!
 activate_sitincart: 請先坐在列車裡!
-door: '車門:'
-door_opening: 開啟中
-door_closing: 關閉中
-door_opened: 已開啟
-door_closed: 已關閉
 door_openinmotion: 行車時不能開門!
 eb_stop: 緊急煞車停車
 eb_misuse: 使用緊急煞車
@@ -64,7 +59,6 @@ se_inmotion: 行車時不能換位!
 p_b8: 常用煞車動作
 p_eb: 緊急煞車動作
 p_near: Pattern 接近
-stoppos: '停車位置:'
 stoppos_next: 下一站，停車!
 stoppos_perfect: '停車位置: 完美!'
 stoppos_great: '停車位置: 很好!'
@@ -106,8 +100,6 @@ playeronlycmd: 玩家才能輸入該指令!
 cmdblkonlycmd: 命令方塊才能輸入該指令!
 error: 發生錯誤。
 noperm: 權限不足!
-speed: '速度:'
-points: '分數:'
 panoempty: 文字不可以是空白的!
 collidebuffer: 撞上止衝擋
 argwrong: 參數不正確。

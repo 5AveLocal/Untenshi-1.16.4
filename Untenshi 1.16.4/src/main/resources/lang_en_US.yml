@@ -34,11 +34,6 @@ activate_info1: '[true: Enable]'
 activate_info2: '[false: Disable]'
 activate_notowner: You are not the owner of this train!
 activate_sitincart: Please sit in a train!
-door: 'Door:'
-door_opening: Opening
-door_closing: Closing
-door_opened: Opened
-door_closed: Closed
 door_openinmotion: Do not open the doors in motion!
 eb_stop: Stopping using EB
 eb_misuse: Usage of EB
@@ -64,7 +59,6 @@ se_inmotion: Do not switch seats in motion!
 p_b8: Service Brake Run
 p_eb: Emergency Brake Run
 p_near: Pattern Approaching
-stoppos: 'Stop position:'
 stoppos_next: Stopping at next station!
 stoppos_perfect: 'Stop position: Excellent!'
 stoppos_great: 'Stop position: Great!'
@@ -106,8 +100,6 @@ playeronlycmd: Only players can type this command!
 cmdblkonlycmd: Only command blocks can type this command!
 error: An error occurred.
 noperm: You do not have permission!
-speed: 'Speed:'
-points: 'Points:'
 panoempty: The text cannot be empty!
 collidebuffer: Collided with buffer
 argwrong: Incorrect arguments.

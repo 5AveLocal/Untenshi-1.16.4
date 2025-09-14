@@ -34,11 +34,6 @@ activate_info1: '[true: オン]'
 activate_info2: '[false: オフ]'
 activate_notowner: 列車の所有者ではありません!
 activate_sitincart: まず列車に座ってください!
-door: 'ドア:'
-door_opening: 開きます
-door_closing: 閉まります
-door_opened: 開いています
-door_closed: 閉まっています
 door_openinmotion: 運転中にドアを開けないでください!
 eb_stop: 非常制動停車
 eb_misuse: 非常ブレーキ
@@ -64,7 +59,6 @@ se_inmotion: 運転中に運転席を切り替えないでください!
 p_b8: 常用ブレーキ動作
 p_eb: 非常ブレーキ動作
 p_near: パターン接近
-stoppos: '停止位置:'
 stoppos_next: 次は、停車です!
 stoppos_perfect: '停止位置: Excellent!'
 stoppos_great: '停止位置: Great!'
@@ -106,8 +100,6 @@ playeronlycmd: このコマンドを入力できるのはプレイヤーだけ�
 cmdblkonlycmd: このコマンドを入力できるのはコマンドブロックだけです!
 error: エラーが発生しました。
 noperm: 権限が足りません!
-speed: '速度:'
-points: '点数:'
 panoempty: テキストを空にすることはできません!
 collidebuffer: 車止め激突
 argwrong: 引数が正しくありません。

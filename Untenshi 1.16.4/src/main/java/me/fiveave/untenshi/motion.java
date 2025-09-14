@@ -164,31 +164,36 @@ class motion {
     }
 
     static void driverSystem(utsdriver ld) {
+        utsvehicle lv = ld.getLv();
         // Rounding
         DecimalFormat df0 = new DecimalFormat("#");
         df0.setRoundingMode(RoundingMode.HALF_EVEN);
         // Combine properties and action bar
-        String doortxt = doorText(ld.getLv());
+        String doortxt = doorText(lv);
         // Display speed
         String speedcolor = "";
-        if (ld.getLv().getAtsping() > 0 || ld.getLv().getAtsforced() == 2) {
+        if (lv.getAtsping() > 0 || lv.getAtsforced() == 2) {
             speedcolor += ChatColor.RED;
-        } else if (ld.getLv().isAtspnear()) {
+        } else if (lv.isAtspnear()) {
             speedcolor += ChatColor.GOLD;
         } else {
             speedcolor += ChatColor.WHITE;
         }
-        String formattedSpeed = speedcolor + df0.format(ld.getLv().getSpeed());
+        String formattedSpeed = speedcolor + df0.format(lv.getSpeed());
         String displaySpeed = add3ZeroPadding(formattedSpeed);
         boolean showstoppos = false;
         int stopdistcm = 0;
-        if (ld.getLv().getStoppos() != null) {
-            StopPosResult spresult = getStopPosResult(ld.getLv());
+        if (lv.getStoppos() != null) {
+            StopPosResult spresult = getStopPosResult(lv);
             stopdistcm = spresult.stopdistcm;
-            if (spresult.stopdist <= 5 && ld.getLv().getSpeed() != 0) showstoppos = true;
+            if (spresult.stopdist <= 5 && lv.getSpeed() != 0) showstoppos = true;
         }
         // Action bar
-        String actionbarmsg = getCtrlText(ld.getLv()) + ChatColor.WHITE + " | " + ChatColor.YELLOW + getLang("speed") + " " + displaySpeed + ChatColor.WHITE + " km/h" + " | " + ChatColor.YELLOW + getLang("points") + " " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(ld.getPoints())) + " | " + (showstoppos ? ChatColor.YELLOW + getLang("stoppos") + " " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(stopdistcm)) + ChatColor.WHITE + " cm" : ChatColor.YELLOW + getLang("door") + " " + doortxt);
+        String actionbarmsg = getCtrlText(lv) + ChatColor.WHITE + " | " + displaySpeed + ChatColor.GRAY + " km/h"
+                + ChatColor.WHITE + " | " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(Math.round(lv.getCurrent()))) + ChatColor.GRAY + " A"
+                + ChatColor.WHITE + " | " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(Math.round(lv.getBcpressure()))) + ChatColor.GRAY + " kPa"
+                + ChatColor.WHITE + " | " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(ld.getPoints())) + ChatColor.GRAY + " pts"
+                + ChatColor.WHITE + " | " + (showstoppos ? add3ZeroPadding(ChatColor.WHITE + String.valueOf(stopdistcm)) + ChatColor.GRAY + " cm" : doortxt);
         ld.getP().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(actionbarmsg));
         // Catch point <= 0 and end game
         if (noFreemodeOrATO(ld) && ld.getPoints() <= 0) {
@@ -472,8 +477,9 @@ class motion {
 
     private static String doorText(utsvehicle lv) {
         // Door text
-        String tolangtxt = lv.isDoorconfirm() ? "ed" : "ing";
-        return lv.isDoordiropen() ? (lv.getAtostoptime() != -1 ? ChatColor.GOLD + "..." + lv.getAtostoptime() : ChatColor.GREEN + getLang("door_open" + tolangtxt)) : ChatColor.RED + getLang("door_clos" + tolangtxt);
+        String door = lv.isDoordiropen() ? ChatColor.GREEN + "<|>" : ChatColor.RED + ">|<";
+        int openpercent = (int) Math.round(lv.getDooropen() * 100);
+        return lv.getAtostoptime() != -1 && lv.isDoordiropen() ? ChatColor.GOLD + "..." + lv.getAtostoptime() : door + " " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(openpercent)) + "%";
     }
 
     private static void catchSignalUpdate(utsvehicle lv) {
