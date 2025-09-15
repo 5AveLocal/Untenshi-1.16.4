@@ -189,11 +189,11 @@ class motion {
             if (spresult.stopdist <= 5 && lv.getSpeed() != 0) showstoppos = true;
         }
         // Action bar
-        String actionbarmsg = getCtrlText(lv) + ChatColor.WHITE + " | " + displaySpeed + ChatColor.GRAY + " km/h"
-                + ChatColor.WHITE + " | " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(Math.round(lv.getCurrent()))) + ChatColor.GRAY + " A"
-                + ChatColor.WHITE + " | " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(Math.round(lv.getBcpressure()))) + ChatColor.GRAY + " kPa"
-                + ChatColor.WHITE + " | " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(ld.getPoints())) + ChatColor.GRAY + " pts"
-                + ChatColor.WHITE + " | " + (showstoppos ? add3ZeroPadding(ChatColor.WHITE + String.valueOf(stopdistcm)) + ChatColor.GRAY + " cm" : doortxt);
+        String actionbarmsg = getCtrlText(lv) + ChatColor.WHITE + " | " + displaySpeed + ChatColor.GRAY + " km/h" // speed
+                + ChatColor.WHITE + " | " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(Math.round(lv.getCurrent()))) + ChatColor.GRAY + " A" // current
+                + ChatColor.WHITE + " | " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(Math.round(lv.getBcpressure()))) + ChatColor.GRAY + " kPa" // brake cylinder pressure
+                + ChatColor.WHITE + " | " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(ld.getPoints())) + ChatColor.GRAY + " pts" // points
+                + ChatColor.WHITE + " | " + (showstoppos ? add3ZeroPadding(ChatColor.WHITE + String.valueOf(stopdistcm)) + ChatColor.GRAY + " cm" : doortxt); // stop position or door status
         ld.getP().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(actionbarmsg));
         // Catch point <= 0 and end game
         if (noFreemodeOrATO(ld) && ld.getPoints() <= 0) {
@@ -212,7 +212,7 @@ class motion {
         // Prevent front train being blocked due to train at back due to lack of iloccupied
         // Ignore blocked status until first signal is found,
         // no worries for direct collision as if rs exists, train will be blocked;
-        // if rs does not exist (by interlock del), there must be an other location
+        // if rs does not exist (by interlock del), there must be another location
         int searchstart = 0;
         for (int i = 0; i < oldposlist.length; i++) {
             if (isLocOfSign(oldposlist[i])) {
@@ -767,7 +767,7 @@ class motion {
             if (lv.getAtsforced() != 2 && lv.getSignallimit() != 0) {
                 retdecel = globalDecel(ebdecel, speed, 7, speedsteps);
             } else {
-                // SPAD ATS EB (-35 km/h/s)
+                // SPAD EB on 0 km/h signal
                 lv.setAtsforced(2);
                 lv.setSpeed(lv.getSpeed() - ebdecel * ONE_TICK_IN_S * 45 / 7);
             }
