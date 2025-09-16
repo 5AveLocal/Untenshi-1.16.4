@@ -114,7 +114,11 @@ class motion {
                     - decelnow * ONE_TICK_IN_S); // Deceleration (speed drop included)
             // Prevent negative speed
             if (lv.getSpeed() < 0) {
-                lv.setSpeed(0.0);
+                lv.setSpeed(0);
+            }
+            // Prevent speed over 360 km/h (TC Limit)
+            if (lv.getSpeed() > 360) {
+                lv.setSpeed(360);
             }
         } else {
             // If door is open
