@@ -116,3 +116,5 @@ signsettimeout: 設定告示牌逾時。
 signdirset: 已設定告示牌方向。
 signdirwrong: 告示牌方向錯誤。
 signreqseldir: 請先選擇指示牌及方向!
+stoppos_autoopen_true: 下一站起，車門會自動打開。
+stoppos_autoopen_false: 下一站起，車門不會自動打開。

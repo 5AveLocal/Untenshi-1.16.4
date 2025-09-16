@@ -116,3 +116,5 @@ signsettimeout: サインの設定がタイムアウトしました。
 signdirset: サインの方向を設定しました。
 signdirwrong: サインの方向が間違っています。
 signreqseldir: サインと方向を選択してください!
+stoppos_autoopen_true: 次駅からドアは自動では開きます。
+stoppos_autoopen_false: 次駅からドアは自動では開きません。

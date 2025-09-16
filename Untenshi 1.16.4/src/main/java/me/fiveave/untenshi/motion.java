@@ -405,7 +405,7 @@ class motion {
                 else {
                     showStopPos(lv, "stoppos_good", spresult.stopdistcm, shock, 3);
                 }
-                openDoorProcedure(lv);
+                stopProcedure(lv);
             }
             // < 50 m
             else if (spresult.stopdist < 50 && lv.getSpeed() == 0 && lv.isOverrun() && !lv.isFixstoppos()) {

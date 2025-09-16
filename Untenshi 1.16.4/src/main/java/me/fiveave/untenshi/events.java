@@ -81,35 +81,8 @@ class events implements Listener {
             }
             lv.setDoordiropen(true);
             lv.setDoorconfirm(false);
-            // Provide output when open door
-            if (lv.getStopoutput() != null) {
-                Block b = lv.getSavedworld().getBlockAt(lv.getStopoutput()[0], lv.getStopoutput()[1], lv.getStopoutput()[2]);
-                b.getChunk().load();
-                b.setType(Material.REDSTONE_BLOCK);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    b.setType(Material.AIR);
-                    lv.setStopoutput(null);
-                }, 4);
-            }
-            // Stop penalties (If have)
-            if (noFreemodeOrATO(ld)) {
-                // In station EB
-                if (lv.isStaeb()) {
-                    pointCounter(ld, ChatColor.YELLOW, getLang("eb_stop") + " ", -5, "");
-                }
-                // In station accel
-                if (lv.isStaaccel()) {
-                    pointCounter(ld, ChatColor.YELLOW, getLang("reaccel") + " ", -5, "");
-                }
-            }
-            lv.setStaeb(false);
-            lv.setStaaccel(false);
-            // ATO Stop Time Countdown, cancelled if door is closed
-            atoDepartCountdown(lv);
         } else {
             lv.setDoordiropen(false);
-            lv.setReqstopping(false);
-            lv.setOverrun(false);
             lv.setDoorconfirm(false);
         }
         trainSound(lv, "doorbutton");

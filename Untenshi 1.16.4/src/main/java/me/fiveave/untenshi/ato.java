@@ -168,10 +168,39 @@ class ato {
     }
 
     // Reset values, open doors, reset ATO
-    static void openDoorProcedure(utsvehicle lv) {
+    static void stopProcedure(utsvehicle lv) {
         lv.setReqstopping(false);
         lv.setFixstoppos(false);
-        doorControls(lv, true);
+        lv.setOverrun(false);
+        // Stop penalties (If have)
+        utsdriver ld = lv.getLd();
+        if (noFreemodeOrATO(ld)) {
+            // In station EB
+            if (lv.isStaeb()) {
+                pointCounter(ld, ChatColor.YELLOW, getLang("eb_stop") + " ", -5, "");
+            }
+            // In station accel
+            if (lv.isStaaccel()) {
+                pointCounter(ld, ChatColor.YELLOW, getLang("reaccel") + " ", -5, "");
+            }
+        }
+        lv.setStaeb(false);
+        lv.setStaaccel(false);
+        if (lv.isStopautodooropen()) {
+            doorControls(lv, true);
+        }
+        // Provide output
+        if (lv.getStopoutput() != null) {
+            Block b = lv.getSavedworld().getBlockAt(lv.getStopoutput()[0], lv.getStopoutput()[1], lv.getStopoutput()[2]);
+            b.getChunk().load();
+            b.setType(Material.REDSTONE_BLOCK);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                b.setType(Material.AIR);
+                lv.setStopoutput(null);
+            }, 4);
+        }
+        // ATO Stop Time Countdown, cancelled if door is closed, unless door does not open automatically
+        atoDepartCountdown(lv);
         if (lv.getAtospeed() != -1) {
             toB8(lv);
         }
@@ -182,7 +211,7 @@ class ato {
     // ATO Stop Time Countdown
     static void atoDepartCountdown(utsvehicle lv) {
         if (lv.getAtostoptime() != -1) {
-            if (lv.getAtostoptime() > 0 && lv.isDoordiropen()) {
+            if (lv.getAtostoptime() > 0 && (lv.isDoordiropen() || !lv.isStopautodooropen())) {
                 lv.setAtostoptime(lv.getAtostoptime() - 1);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> atoDepartCountdown(lv), 20);
             } else {

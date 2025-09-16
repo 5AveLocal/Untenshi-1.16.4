@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Rail;
 
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
@@ -74,28 +75,48 @@ class stoppos extends SignAction {
     public void execute(SignActionEvent cartevent) {
         if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && cartevent.hasRailedMember() && cartevent.isPowered()) {
             MinecartGroup mg = cartevent.getGroup();
-            String[] l3split = cartevent.getLine(2).split(" ");
+            String l3 = cartevent.getLine(2);
             String l4 = cartevent.getLine(3);
             utsvehicle lv = vehicle.get(mg);
-            stopPosDefault(lv, l3split, l4);
+            if (!l3.equals("autodooropen")) {
+                stopPosAutoDoorOpen(lv, l4);
+            } else {
+                String[] l3split = l3.split(" ");
+                stopPosDefault(lv, l3split, l4);
+            }
+        }
+    }
+
+    private void stopPosAutoDoorOpen(utsvehicle lv, String l4) {
+        if (lv != null) {
+            boolean autoopen = parseBoolean(l4);
+            boolean oldautoopen = lv.isStopautodooropen();
+            if (autoopen != oldautoopen) {
+                lv.setStopautodooropen(autoopen);
+                generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("stoppos_autoopen_" + autoopen));
+            }
         }
     }
 
     @Override
     public boolean build(SignChangeActionEvent e) {
         if (noSignPerm(e)) return true;
-        String[] loc = e.getLine(2).split(" ");
-        String[] loc2 = e.getLine(3).split(" ");
         try {
             SignBuildOptions opt = SignBuildOptions.create().setName(ChatColor.GOLD + "Stop positioner");
-            opt.setDescription("set stop position for train");
-            parseInt(loc[0]);
-            parseInt(loc[1]);
-            parseInt(loc[2]);
-            if (!e.getLine(3).isEmpty()) {
-                parseInt(loc2[0]);
-                parseInt(loc2[1]);
-                parseInt(loc2[2]);
+            if (!e.getLine(2).equals("autodooropen")) {
+                opt.setDescription("set if doors will open automatically after train stop at a stop");
+            } else {
+                opt.setDescription("set stop position for train");
+                String[] loc = e.getLine(2).split(" ");
+                String[] loc2 = e.getLine(3).split(" ");
+                parseInt(loc[0]);
+                parseInt(loc[1]);
+                parseInt(loc[2]);
+                if (!e.getLine(3).isEmpty()) {
+                    parseInt(loc2[0]);
+                    parseInt(loc2[1]);
+                    parseInt(loc2[2]);
+                }
             }
             return opt.handle(e.getPlayer());
         } catch (Exception exception) {
