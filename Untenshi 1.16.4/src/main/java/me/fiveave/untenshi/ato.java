@@ -186,7 +186,7 @@ class ato {
         }
         lv.setStaeb(false);
         lv.setStaaccel(false);
-        if (lv.isStopautodooropen()) {
+        if (lv.isStopautoopen()) {
             doorControls(lv, true);
         }
         // Provide output
@@ -211,7 +211,7 @@ class ato {
     // ATO Stop Time Countdown
     static void atoDepartCountdown(utsvehicle lv) {
         if (lv.getAtostoptime() != -1) {
-            if (lv.getAtostoptime() > 0 && (lv.isDoordiropen() || !lv.isStopautodooropen())) {
+            if (lv.getAtostoptime() > 0 && (lv.isDoordiropen() || !lv.isStopautoopen())) {
                 lv.setAtostoptime(lv.getAtostoptime() - 1);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> atoDepartCountdown(lv), 20);
             } else {

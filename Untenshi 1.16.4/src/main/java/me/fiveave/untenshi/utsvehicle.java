@@ -76,7 +76,7 @@ class utsvehicle {
     private boolean atoautodep; // ATO auto departure after doors closed
     private boolean beinglogged; // Train being logged
     private boolean twohandled; // Train is two-handled
-    private boolean stopautodooropen; // Auto door opening at stop
+    private boolean stopautoopen; // Auto door opening at stop
     private MinecartGroup train; // MinecartGroup of this utsvehicle
     @SuppressWarnings("rawtypes")
     private MinecartMember driverseat; // Cart belonging to driver seat
@@ -186,7 +186,7 @@ class utsvehicle {
         this.setRsoccupiedpos(-1);
         this.setAtoautodep(false);
         this.setLastilchest(null);
-        this.setStopautodooropen(true);
+        this.setStopautoopen(true);
     }
 
     private static double getDoubleIfExists(String tDataInfo, String x, double data) {
@@ -672,11 +672,11 @@ class utsvehicle {
         this.dooropenspeed = dooropenspeed;
     }
 
-    public boolean isStopautodooropen() {
-        return stopautodooropen;
+    public boolean isStopautoopen() {
+        return stopautoopen;
     }
 
-    public void setStopautodooropen(boolean stopautodooropen) {
-        this.stopautodooropen = stopautodooropen;
+    public void setStopautoopen(boolean stopautoopen) {
+        this.stopautoopen = stopautoopen;
     }
 }

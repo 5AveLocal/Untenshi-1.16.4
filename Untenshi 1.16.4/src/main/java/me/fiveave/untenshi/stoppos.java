@@ -78,8 +78,8 @@ class stoppos extends SignAction {
             String l3 = cartevent.getLine(2);
             String l4 = cartevent.getLine(3);
             utsvehicle lv = vehicle.get(mg);
-            if (!l3.equals("autodooropen")) {
-                stopPosAutoDoorOpen(lv, l4);
+            if (l3.equals("autoopen")) {
+                stopPosAutoOpen(lv, l4);
             } else {
                 String[] l3split = l3.split(" ");
                 stopPosDefault(lv, l3split, l4);
@@ -87,12 +87,12 @@ class stoppos extends SignAction {
         }
     }
 
-    private void stopPosAutoDoorOpen(utsvehicle lv, String l4) {
+    private void stopPosAutoOpen(utsvehicle lv, String l4) {
         if (lv != null) {
             boolean autoopen = parseBoolean(l4);
-            boolean oldautoopen = lv.isStopautodooropen();
+            boolean oldautoopen = lv.isStopautoopen();
             if (autoopen != oldautoopen) {
-                lv.setStopautodooropen(autoopen);
+                lv.setStopautoopen(autoopen);
                 generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("stoppos_autoopen_" + autoopen));
             }
         }
@@ -103,7 +103,7 @@ class stoppos extends SignAction {
         if (noSignPerm(e)) return true;
         try {
             SignBuildOptions opt = SignBuildOptions.create().setName(ChatColor.GOLD + "Stop positioner");
-            if (!e.getLine(2).equals("autodooropen")) {
+            if (e.getLine(2).equals("autoopen")) {
                 opt.setDescription("set if doors will open automatically after train stop at a stop");
             } else {
                 opt.setDescription("set stop position for train");
