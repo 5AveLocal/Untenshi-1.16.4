@@ -395,7 +395,6 @@ class motion {
             if (spresult.stopdist <= 1.00 && lv.getSpeed() == 0) {
                 // 25 cm
                 if (spresult.stopdist <= 0.25) {
-                    // Need to fix stop pos? If no then add points
                     showStopPos(lv, "stoppos_perfect", spresult.stopdistcm, shock, 10);
                 }
                 // 50 cm
@@ -722,6 +721,7 @@ class motion {
 
     static void showStopPos(utsvehicle lv, String stopposeval, int stopdistcm, String shock, int pts) {
         utsdriver ld = lv.getLd();
+        // Need to fix stop pos? If no then add points
         if (!lv.isFixstoppos() && ld != null) {
             String s = " ";
             if (noFreemodeOrATO(lv.getLd())) {

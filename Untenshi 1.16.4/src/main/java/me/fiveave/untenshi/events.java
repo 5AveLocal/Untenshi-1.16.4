@@ -8,16 +8,17 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -358,6 +359,31 @@ class events implements Listener {
     private boolean isItems(ItemStack item) {
         ItemStack[] is = new ItemStack[]{upWand(), nWand(), downWand(), leftWand(), rightWand(), doorButton(), sbLever(), ebButton()};
         return Arrays.asList(is).contains(item);
+    }
+
+    @EventHandler
+    void onRotateItemFrame(PlayerInteractEntityEvent event) {
+        Player p = event.getPlayer();
+        Entity e = event.getRightClicked();
+        utsdriver ld = driver.get(p);
+        utsvehicle lv = ld.getLv();
+        if (lv != null && ld.isPlaying() && e.getType().equals(EntityType.ITEM_FRAME)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    void onDamageItemFrame(EntityDamageByEntityEvent event) {
+        Entity e1 = event.getDamager();
+        Entity e2 = event.getEntity();
+        if (e1.getType().equals(EntityType.PLAYER)) {
+            Player p = (Player) e1;
+            utsdriver ld = driver.get(p);
+            utsvehicle lv = ld.getLv();
+            if (lv != null && ld.isPlaying() && e2.getType().equals(EntityType.ITEM_FRAME)) {
+                event.setCancelled(true);
+            }
+        }
     }
 
     @EventHandler
