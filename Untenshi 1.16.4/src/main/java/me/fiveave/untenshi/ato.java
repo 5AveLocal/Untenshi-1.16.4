@@ -370,6 +370,8 @@ class ato {
         if (actionstrsplit[0].contains("train")) {
             // Run for train, add select train parameter at end of command
             newexecutestr = actionstr + " --train " + lv.getTrain().getProperties().getTrainName();
+        } else if (actionstrsplit[0].contains("utsdebug")) {
+            newexecutestr = "utsdebug " + lv.getTrain().getProperties().getTrainName() + actionstr.replaceFirst("utsdebug", "");
         } else {
             newexecutestr = "execute at " + lv.getTrain().head().getEntity().getEntity().getUniqueId() + " run " + actionstr;
         }
