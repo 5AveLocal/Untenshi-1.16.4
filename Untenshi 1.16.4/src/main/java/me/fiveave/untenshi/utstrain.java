@@ -20,9 +20,7 @@ class utstrain extends SignAction {
     @Override
     public void execute(SignActionEvent cartevent) {
         if (cartevent.hasRailedMember() && cartevent.isPowered()) {
-            if (vehicle.get(cartevent.getGroup()) != null) {
-                cartevent.setLevers(true);
-            }
+            cartevent.setLevers(vehicle.get(cartevent.getGroup()) != null);
             if (cartevent.isAction(SignActionType.GROUP_LEAVE)) {
                 cartevent.setLevers(false);
             }

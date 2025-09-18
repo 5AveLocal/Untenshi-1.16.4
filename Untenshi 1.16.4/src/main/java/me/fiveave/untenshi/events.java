@@ -188,18 +188,20 @@ class events implements Listener {
 
     static void trainSound(utsvehicle lv, String type) {
         if (lv.getTrain() != null) {
+            // Divide by at least 32
+            double cartlen = lv.getTrain().head().getProperties().getModel().getCartLength();
             switch (type) {
                 case "brake_apply":
-                    lv.getTrain().forEach(mm -> lv.getSavedworld().playSound(mm.getEntity().getLocation(), Sound.BLOCK_REDSTONE_TORCH_BURNOUT, 0.025f, 0.75f));
+                    lv.getTrain().forEach(mm -> lv.getSavedworld().playSound(mm.getEntity().getLocation(), Sound.BLOCK_REDSTONE_TORCH_BURNOUT, (float) cartlen / 80, 0.75f));
                     break;
                 case "brake_release":
-                    lv.getTrain().forEach(mm -> lv.getSavedworld().playSound(mm.getEntity().getLocation(), Sound.BLOCK_REDSTONE_TORCH_BURNOUT, 0.025f, 1.5f));
+                    lv.getTrain().forEach(mm -> lv.getSavedworld().playSound(mm.getEntity().getLocation(), Sound.BLOCK_REDSTONE_TORCH_BURNOUT, (float) cartlen / 80, 1.5f));
                     break;
                 case "accel_on":
-                    lv.getTrain().forEach(mm -> lv.getSavedworld().playSound(mm.getEntity().getLocation(), Sound.BLOCK_PISTON_EXTEND, 0.01f, 2f));
+                    lv.getTrain().forEach(mm -> lv.getSavedworld().playSound(mm.getEntity().getLocation(), Sound.BLOCK_PISTON_EXTEND, (float) cartlen / 160, 2f));
                     break;
                 case "accel_off":
-                    lv.getTrain().forEach(mm -> lv.getSavedworld().playSound(mm.getEntity().getLocation(), Sound.BLOCK_PISTON_CONTRACT, 0.01f, 2f));
+                    lv.getTrain().forEach(mm -> lv.getSavedworld().playSound(mm.getEntity().getLocation(), Sound.BLOCK_PISTON_CONTRACT, (float) cartlen / 160, 2f));
                     break;
                 case "mascon":
                     if (lv.getLd() != null) {
@@ -340,7 +342,7 @@ class events implements Listener {
         Player p = event.getPlayer();
         Entity e = event.getRightClicked();
         utsdriver ld = driver.get(p);
-        if (ld.isPlaying() && e.getType().equals(EntityType.ITEM_FRAME)) {
+        if (ld != null && ld.isPlaying() && e.getType().equals(EntityType.ITEM_FRAME)) {
             utsvehicle lv = ld.getLv();
             if (lv != null) {
                 event.setCancelled(true);
@@ -355,7 +357,7 @@ class events implements Listener {
         if (e1.getType().equals(EntityType.PLAYER)) {
             Player p = (Player) e1;
             utsdriver ld = driver.get(p);
-            if (ld.isPlaying() && e2.getType().equals(EntityType.ITEM_FRAME)) {
+            if (ld != null && ld.isPlaying() && e2.getType().equals(EntityType.ITEM_FRAME)) {
                 utsvehicle lv = ld.getLv();
                 if (lv != null) {
                     event.setCancelled(true);
@@ -370,7 +372,7 @@ class events implements Listener {
         Player p = event.getPlayer();
         initDriver(p);
         utsdriver ld = driver.get(p);
-        if (ld.isPlaying()) {
+        if (ld != null && ld.isPlaying()) {
             restoreInitLd(ld);
         }
         driver.remove(p);

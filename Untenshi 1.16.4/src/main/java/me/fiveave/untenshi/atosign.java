@@ -54,6 +54,32 @@ class atosign extends SignAction {
         }
     }
 
+    static void getLocFromString(String s, Location signloc, double[] loc) {
+        String[] sloc = s.split(" ");
+        for (int a = 0; a <= 2; a++) {
+            String strloc = sloc[a];
+            if (strloc.startsWith("~")) {
+                String rstr = strloc.replaceFirst("~", "");
+                int offset = rstr.isEmpty() ? 0 : parseInt(rstr);
+                int coord;
+                switch (a) {
+                    case 0:
+                        coord = signloc.getBlockX();
+                        break;
+                    case 1:
+                        coord = signloc.getBlockY();
+                        break;
+                    default: // 2
+                        coord = signloc.getBlockZ();
+                        break;
+                }
+                loc[a] = coord + offset;
+            } else {
+                loc[a] = parseInt(sloc[a]);
+            }
+        }
+    }
+
     @Override
     public boolean match(SignActionEvent info) {
         return info.isType("atosign");
@@ -93,10 +119,7 @@ class atosign extends SignAction {
                         case "stopaction":
                             if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON)) {
                                 double[] loc = new double[3];
-                                String[] sloc = cartevent.getLine(3).split(" ");
-                                for (int a = 0; a <= 2; a++) {
-                                    loc[a] = Integer.parseInt(sloc[a]);
-                                }
+                                getLocFromString(cartevent.getLine(3), cartevent.getLocation(), loc);
                                 lv.setStopactionpos(new Location(cartevent.getWorld(), loc[0], loc[1], loc[2]));
                                 generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectstopaction"));
                             }
@@ -104,12 +127,9 @@ class atosign extends SignAction {
                         default:
                             // Only activate if train is not overrun
                             if (!lv.isOverrun() && cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
-                                double[] loc = new double[3];
-                                String[] sloc = cartevent.getLine(3).split(" ");
                                 double val = Double.parseDouble(cartevent.getLine(2));
-                                for (int a = 0; a <= 2; a++) {
-                                    loc[a] = Integer.parseInt(sloc[a]);
-                                }
+                                double[] loc = new double[3];
+                                getLocFromString(cartevent.getLine(3), cartevent.getLocation(), loc);
                                 atoSignDefault(lv, val, loc);
                             }
                             break;
@@ -160,9 +180,7 @@ class atosign extends SignAction {
                         generalMsg(p, ChatColor.RED, getLang("argwrong"));
                         e.setCancelled(true);
                     }
-                    for (String i : e.getLine(3).split(" ")) {
-                        parseInt(i);
-                    }
+                    getLocFromString(e.getLine(3), e.getLocation(), new double[3]);
                     break;
             }
             return opt.handle(p);

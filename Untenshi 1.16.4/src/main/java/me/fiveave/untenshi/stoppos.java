@@ -13,6 +13,7 @@ import org.bukkit.block.data.Rail;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
+import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 
@@ -107,15 +108,9 @@ class stoppos extends SignAction {
                 opt.setDescription("set if doors will open automatically after train stop at a stop");
             } else {
                 opt.setDescription("set stop position for train");
-                String[] loc = e.getLine(2).split(" ");
-                String[] loc2 = e.getLine(3).split(" ");
-                parseInt(loc[0]);
-                parseInt(loc[1]);
-                parseInt(loc[2]);
+                getLocFromString(e.getLine(2), e.getLocation(), new double[3]);
                 if (!e.getLine(3).isEmpty()) {
-                    parseInt(loc2[0]);
-                    parseInt(loc2[1]);
-                    parseInt(loc2[2]);
+                    getLocFromString(e.getLine(3), e.getLocation(), new double[3]);
                 }
             }
             return opt.handle(e.getPlayer());

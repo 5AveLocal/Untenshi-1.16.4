@@ -1,11 +1,13 @@
 package me.fiveave.untenshi;
 
+import com.bergerkiller.bukkit.tc.attachments.animation.AnimationOptions;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -250,7 +252,7 @@ class ato {
         }
     }
 
-    static void stopActionClock(utsvehicle lv, ItemMeta mat, int timecount, int stattimecount, boolean lastdoordiropen, boolean lastdoorconfirm, boolean lastreqstopping) {
+    static void stopActionClock(utsvehicle lv, Chest refchest, ItemMeta mat, int timecount, int stattimecount, boolean lastdoordiropen, boolean lastdoorconfirm, boolean lastreqstopping) {
         if (lv.getTrain().isValid()) {
             boolean stopped = lv.getSpeed() == 0;
             boolean reqstopping = lv.isReqstopping();
@@ -275,7 +277,7 @@ class ato {
                         if (stopped && timesplit[0].equals(status) || timesplit[0].equals("init") && timecount == 0) {
                             for (String onesplitstr : trysplitstr) {
                                 // Run action string
-                                actionCmdRunner(lv, onesplitstr);
+                                actionCmdRunner(lv, refchest, onesplitstr);
                             }
                         }
                     }
@@ -284,16 +286,17 @@ class ato {
                 if (reqstopping || lastreqstopping || stopped) {
                     // Add to counter, run next tick
                     int finalStatTimeCount = stattimecount;
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> stopActionClock(lv, mat, timecount + 1, finalStatTimeCount + 1, doordiropen, doorconfirm, reqstopping), 1);
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> stopActionClock(lv, refchest, mat, timecount + 1, finalStatTimeCount + 1, doordiropen, doorconfirm, reqstopping), 1);
                 }
             }
         }
     }
 
-    static void actionCmdRunner(utsvehicle lv, String runstr) {
+    static void actionCmdRunner(utsvehicle lv, Chest refchest, String runstr) {
         String[] splitstr = runstr.split(" ", 2);
         String actionstr = splitstr[1];
         String[] actionstrsplit = actionstr.split(" ");
+        Location eventloc = refchest.getLocation();
         switch (splitstr[0]) {
             case "stoppos":
                 // stoppos <x> <y> <z> (stop position) <x> <y> <z> (redstone output)
@@ -328,11 +331,11 @@ class ato {
             case "speedsign":
                 if (!actionstrsplit[0].equals("warn")) {
                     // speedsign <speed>
-                    speedSignSet(lv, null, parseInt(actionstrsplit[0]));
+                    speedSignSet(lv, eventloc, parseInt(actionstrsplit[0]));
                 } else {
                     // speedsign warn <x> <y> <z> (target location)
                     String warnloc = actionstrsplit[1] + " " + actionstrsplit[2] + " " + actionstrsplit[3];
-                    speedSignWarn(lv, null, warnloc);
+                    speedSignWarn(lv, eventloc, warnloc);
                 }
                 break;
             case "signalsign":
@@ -340,20 +343,25 @@ class ato {
                     case "warn":
                         // signalsign warn <x> <y> <z> (target location)
                         String warnloc2 = actionstrsplit[1] + " " + actionstrsplit[2] + " " + actionstrsplit[3];
-                        signalSignWarn(lv, null, warnloc2);
+                        signalSignWarn(lv, eventloc, warnloc2);
                         break;
                     case "interlock":
                         // signalsign interlock <signalorder> <priority/del> <x> <y> <z>
                         String[] ill3 = {actionstrsplit[0], actionstrsplit[1], actionstrsplit[2]};
                         String illoc = actionstrsplit[3] + " " + actionstrsplit[4] + " " + actionstrsplit[5];
-                        signalSignInterlock(lv, ill3, illoc);
+                        signalSignInterlock(lv, eventloc, ill3, illoc);
                         break;
                 }
                 break;
             case "run":
                 // run <cmd...>
-                String newexecutestr = getActionCmdExecuteStr(lv, actionstrsplit, actionstr);
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), newexecutestr);
+                if (actionstrsplit[0].contains("train") && actionstrsplit[1].equals("animate")) {
+                    AnimationOptions ao = getAnimationOptions(actionstrsplit);
+                    lv.getTrain().playNamedAnimation(ao);
+                } else {
+                    String newexecutestr = getActionCmdExecuteStr(lv, actionstrsplit, actionstr);
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), newexecutestr);
+                }
                 break;
             case "set":
                 // set <x> <y> <z> <material>
@@ -362,6 +370,37 @@ class ato {
                 b.setType(Material.valueOf(actionstrsplit[3].toUpperCase()));
                 break;
         }
+    }
+
+    private static AnimationOptions getAnimationOptions(String[] actionstrsplit) {
+        AnimationOptions ao = new AnimationOptions();
+        ao.setName(actionstrsplit[2]); // Animation name
+        int alen = actionstrsplit.length;
+        if (alen > 3) {
+            for (int i = 3; i < alen; i++) {
+                switch (actionstrsplit[i].toLowerCase()) {
+                    case "--delay":
+                        ao.setDelay(Double.parseDouble(actionstrsplit[i + 1]));
+                        break;
+                    case "--loop":
+                        ao.setLooped(true);
+                        break;
+                    case "--noloop":
+                        ao.setLooped(false);
+                        break;
+                    case "--reset":
+                        ao.setReset(true);
+                        break;
+                    case "--scene":
+                        ao.setScene(actionstrsplit[i + 1]);
+                        break;
+                    case "--speed":
+                        ao.setSpeed(Double.parseDouble(actionstrsplit[i + 1]));
+                        break;
+                }
+            }
+        }
+        return ao;
     }
 
     private static String getActionCmdExecuteStr(utsvehicle lv, String[] actionstrsplit, String actionstr) {

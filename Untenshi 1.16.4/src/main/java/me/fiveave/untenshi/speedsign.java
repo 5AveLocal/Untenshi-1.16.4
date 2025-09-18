@@ -15,14 +15,17 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import static java.lang.Integer.parseInt;
+import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.motion.minSpeedLimit;
 
 class speedsign extends SignAction {
 
-    static Location getFullLoc(World world, String loctext) {
-        return new Location(world, getLoc(loctext, 0), getLoc(loctext, 1), getLoc(loctext, 2));
+    static Location getFullLoc(String loctext, Location signloc) {
+        double[] newloc = new double[3];
+        getLocFromString(loctext, signloc, newloc);
+        return new Location(signloc.getWorld(), newloc[0], newloc[1], newloc[2]);
     }
 
     static boolean isLocOfSign(Location loc) {
@@ -96,10 +99,6 @@ class speedsign extends SignAction {
         Bukkit.getConsoleSender().sendMessage(s);
     }
 
-    static int getLoc(String str, int i) {
-        return parseInt(str.split(" ")[i]);
-    }
-
     static boolean limitSpeedIncorrect(CommandSender p, int speedlimit) {
         if (speedlimit < 0 || Math.floorMod(speedlimit, 5) != 0 || speedlimit > MAX_SPEED) {
             if (p != null) {
@@ -111,7 +110,7 @@ class speedsign extends SignAction {
     }
 
     static void speedSignWarn(utsvehicle lv, Location eventloc, String signloc) {
-        Sign warn = getSignFromLoc(getFullLoc(lv.getSavedworld(), signloc));
+        Sign warn = getSignFromLoc(getFullLoc(signloc, eventloc));
         if (warn != null) {
             lv.setLastspsign(warn.getLocation());
             int warnsp = parseInt(warn.getLine(2));
@@ -201,10 +200,7 @@ class speedsign extends SignAction {
                 if (limitSpeedIncorrect(p, intspeed)) e.setCancelled(true);
                 opt.setDescription("set speed limit for train");
             } else {
-                String[] temp = e.getLine(3).split(" ");
-                parseInt(temp[0]);
-                parseInt(temp[1]);
-                parseInt(temp[2]);
+                getLocFromString(e.getLine(3), e.getLocation(), new double[3]);
                 opt.setDescription("set speed limit warning for train");
             }
             return opt.handle(e.getPlayer());

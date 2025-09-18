@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.lang.Integer.parseInt;
+import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
@@ -186,13 +187,13 @@ class signalsign extends SignAction {
                 Location[] newilpos;
                 // try statement
                 if (trysplitstr[0].equals("try")) {
-                    Location fullloc2 = getFullLoc(lv.getSavedworld(), trysplitstr[2]);
+                    Location fullloc2 = getFullLoc(trysplitstr[2], refchestloc);
                     Chest refchest2 = getChestFromLoc(fullloc2);
                     tryIlChest(lv, refchest2, trysplitstr[1]);
                     // No reading other locations after try statement
                     break;
                 }
-                Location setloc = getFullLoc(lv.getSavedworld(), str);
+                Location setloc = getFullLoc(str, refchestloc);
                 // Anti duplicating causing interlock pattern to be set twice, thus bugging out
                 if (lv.getLastilchest() != null && lv.getLastilchest().equals(refchestloc)) {
                     break;
@@ -208,7 +209,7 @@ class signalsign extends SignAction {
                     newilpos = new Location[oldilposlen + 1];
                     // Array copy and set new positions
                     System.arraycopy(oldilpos, 0, newilpos, 0, oldilposlen);
-                    newilpos[oldilposlen] = getFullLoc(lv.getSavedworld(), str);
+                    newilpos[oldilposlen] = getFullLoc(str, refchestloc);
                 }
                 // If duplicated just copy old to new
                 else {
@@ -226,8 +227,9 @@ class signalsign extends SignAction {
         for (int itemno = 0; itemno < 27; itemno++) {
             ItemMeta mat;
             try {
+                Location loc = refchest.getLocation();
                 mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
-                found = isIlClear(mat, lv.getSavedworld(), false);
+                found = isIlClear(mat, loc, false);
                 if (found) {
                     String tagname = tagprefix + itemno;
                     // Check for duplicated tags and time (prevent two trains occupying same path)
@@ -238,7 +240,7 @@ class signalsign extends SignAction {
                     }
                     // Tag not used then assign
                     if (found) {
-                        readIlBook(lv, mat, refchest.getLocation());
+                        readIlBook(lv, mat, loc);
                         // Add tag for point switches
                         lv.getTrain().getProperties().addTags(tagname);
                         break;
@@ -253,8 +255,8 @@ class signalsign extends SignAction {
         }
     }
 
-    static void signalSignInterlock(utsvehicle lv, String[] l3, String l4) {
-        Location fullloc = getFullLoc(lv.getSavedworld(), l4);
+    static void signalSignInterlock(utsvehicle lv, Location loc, String[] l3, String l4) {
+        Location fullloc = getFullLoc(l4, loc);
         Chest refchest = getChestFromLoc(fullloc);
         if (l3.length == 3 && l3[2].equals("del")) {
             iLListandOccupiedRemoveShift(lv, fullloc, true);
@@ -281,7 +283,7 @@ class signalsign extends SignAction {
     static void signalSignWarn(utsvehicle lv, Location eventloc, String l4) {
         String signalmsg;
         if (lv.getAtsforced() != 2 && (lv.getSafetysystype().equals("ats-p") || lv.getSafetysystype().equals("atc"))) {
-            Sign warn = getSignFromLoc(getFullLoc(lv.getSavedworld(), l4));
+            Sign warn = getSignFromLoc(getFullLoc(l4, eventloc));
             if (warn != null && warn.getLine(1).equals("signalsign")) {
                 // lastsisign and lastsisp are for detecting signal change
                 lv.setLastsisign(warn.getLocation());
@@ -440,7 +442,7 @@ class signalsign extends SignAction {
                         case "interlock":
                             if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && cartevent.hasRailedMember() && cartevent.isPowered()) {
                                 String l4 = cartevent.getLine(3);
-                                signalSignInterlock(lv, l3, l4);
+                                signalSignInterlock(lv, cartevent.getLocation(), l3, l4);
                             }
                             break;
                         default:
@@ -476,9 +478,7 @@ class signalsign extends SignAction {
             // Check line 4 (coord) is int only
             switch (s2[0]) {
                 case "warn":
-                    for (String i : s3) {
-                        parseInt(i);
-                    }
+                    getLocFromString(e.getLine(3), e.getLocation(), new double[3]);
                     opt.setDescription("set signal speed warning for train");
                     break;
                 case "interlock":
@@ -491,9 +491,7 @@ class signalsign extends SignAction {
                     } else {
                         e.setCancelled(true);
                     }
-                    for (String i : s3) {
-                        parseInt(i);
-                    }
+                    getLocFromString(e.getLine(3), e.getLocation(), new double[3]);
                     break;
                 case "set":
                     if (!isSignalType(s3[1].toLowerCase())) {

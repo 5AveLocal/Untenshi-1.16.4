@@ -158,8 +158,9 @@ class motion {
             Chest refchest = getChestFromLoc(lv.getStopactionpos());
             // Train stopping at station
             if (refchest != null) {
+                // Only 1 book allowed
                 ItemMeta mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(0)).getItemMeta();
-                stopActionClock(lv, mat, 0, 0, lv.isDoordiropen(), lv.isDoorconfirm(), true);
+                stopActionClock(lv, refchest, mat, 0, 0, lv.isDoordiropen(), lv.isDoorconfirm(), true);
                 lv.setStopactionpos(null);
             }
         }

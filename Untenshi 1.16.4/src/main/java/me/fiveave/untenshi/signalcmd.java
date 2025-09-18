@@ -1,7 +1,10 @@
 package me.fiveave.untenshi;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.CommandBlock;
@@ -37,7 +40,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
         }
     }
 
-    static boolean isIlClear(ItemMeta mat, World world, boolean lossy) {
+    static boolean isIlClear(ItemMeta mat, Location loc, boolean lossy) {
         boolean isclear = true;
         if (mat instanceof BookMeta) {
             BookMeta bk = (BookMeta) mat;
@@ -46,12 +49,12 @@ class signalcmd implements CommandExecutor, TabCompleter {
             for (int pgno = 1; pgno <= pgcount; pgno++) {
                 String str = bk.getPage(pgno);
                 String[] trysplitstr = str.split(" ", 3);
-                Location loc1 = getFullLoc(world, str);
+                Location loc1 = getFullLoc(str, loc);
                 // try statement
                 if (trysplitstr[0].equals("try")) {
-                    Location fullloc2 = getFullLoc(world, trysplitstr[2]);
+                    Location fullloc2 = getFullLoc(trysplitstr[2], loc);
                     Chest refchest2 = getChestFromLoc(fullloc2);
-                    isclear = tryItemIsIlClear(refchest2, world, lossy);
+                    isclear = tryItemIsIlClear(refchest2, loc, lossy);
                     // No reading other locations after try statement
                     break;
                 }
@@ -103,7 +106,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
         return isclear;
     }
 
-    private static boolean tryItemIsIlClear(Chest refchest, World world, boolean lossy) {
+    private static boolean tryItemIsIlClear(Chest refchest, Location loc, boolean lossy) {
         boolean isclear = false;
         if (refchest != null) {
             for (int itemno = 0; itemno < 27; itemno++) {
@@ -112,7 +115,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                     mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
                 } catch (Exception ignored) {
                 }
-                isclear = isIlClear(mat, world, lossy);
+                isclear = isIlClear(mat, loc, lossy);
                 // If one of them is not clear then result is not clear
                 if (!isclear) {
                     break;
@@ -131,12 +134,12 @@ class signalcmd implements CommandExecutor, TabCompleter {
                 // Main content starts here
                 if (limitSpeedIncorrect(sender, signalspeed)) return true;
                 if (args[3].equals("warn") || args[3].equals("sign") || args[3].equals("getilclear") || args[3].equals("getilclearlossy")) {
-                    World world = ((BlockCommandSender) sender).getBlock().getWorld();
+                    Location loc = ((BlockCommandSender) sender).getBlock().getLocation();
                     String signalmsg;
                     switch (args[3]) {
                         // Signal speed limit warn
                         case "warn":
-                            Sign warn = getSignFromLoc(getFullLoc(world, inputpos));
+                            Sign warn = getSignFromLoc(getFullLoc(inputpos, loc));
                             if (warn != null && warn.getLine(1).equals("signalsign")) {
                                 // lastsisign and lastsisp are for detecting signal change
                                 String warnsi = warn.getLine(2).split(" ")[1];
@@ -152,7 +155,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                         // Set line 4 of sign at (line 3 of this sign) to turn signal
                         case "sign":
                             if (isSignalType(args[4])) {
-                                Sign sign = getSignFromLoc(getFullLoc(world, inputpos));
+                                Sign sign = getSignFromLoc(getFullLoc(inputpos, loc));
                                 if (sign != null) {
                                     updateSignals(sign, "set " + args[4] + " " + args[5]);
                                     generalMsg(sender, ChatColor.RESET, getLang("signal_signchange") + " (" + args[4] + " " + args[5] + ")");
@@ -161,9 +164,9 @@ class signalcmd implements CommandExecutor, TabCompleter {
                             }
                         case "getilclear":
                         case "getilclearlossy":
-                            Chest refchest = getChestFromLoc(getFullLoc(world, inputpos));
+                            Chest refchest = getChestFromLoc(getFullLoc(inputpos, loc));
                             boolean lossy = args[3].equals("getilclearlossy");
-                            boolean isclear = tryItemIsIlClear(refchest, world, lossy);
+                            boolean isclear = tryItemIsIlClear(refchest, loc, lossy);
                             Block blk = ((BlockCommandSender) sender).getBlock();
                             if (isclear) {
                                 Bukkit.dispatchCommand(sender, String.format("data modify block %s %s %s SuccessCount set value 15", blk.getX(), blk.getY(), blk.getZ()));
