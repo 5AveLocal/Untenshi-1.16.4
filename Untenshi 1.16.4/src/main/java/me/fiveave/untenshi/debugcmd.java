@@ -48,10 +48,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 lv.setStoppos(loc5);
                 break;
             case "stopoutput":
-                int[] loc4 = new int[3];
-                for (int i = 0; i < 3; i++) {
-                    loc4[i] = Integer.parseInt(args[i + 3]);
-                }
+                Location loc4 = new Location(lv.getSavedworld(), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
                 lv.setStopoutput(loc4);
                 break;
             case "lastspsp":
@@ -285,17 +282,6 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 break;
         }
         generalMsg(sender, ChatColor.GRAY, args[0] + ": " + ChatColor.YELLOW + args[2].toLowerCase() + ChatColor.WHITE + " = " + ChatColor.GREEN + retstr);
-    }
-
-    public static String locToString(int[] loc) {
-        String retstr = "null";
-        try {
-            for (int i = 0; i < 3; i++) {
-                retstr = loc[0] + " " + loc[1] + " " + loc[2];
-            }
-        } catch (Exception ignored) {
-        }
-        return retstr;
     }
 
     public static String locToString(Location loc) {

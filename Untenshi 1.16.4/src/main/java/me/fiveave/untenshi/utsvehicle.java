@@ -37,7 +37,7 @@ class utsvehicle {
     private int atsforced; // ATS (ATC) forced status (-1: TrainCarts forced stop, 0: normal, 1: EB applied, 2: ATS Run)
     private int lastsisp; // Speed limit of last recognized signal sign
     private int lastspsp; // Speed limit of last recognized speed limit sign
-    private int[] stopoutput; // Redstone output position after stopping at station
+    private Location stopoutput; // Redstone output position after stopping at station
     private int atostoptime; // ATO stopping time at station
     /*  rs = "resettable sign" means signal signs that will be reset after train moves out of signal blocks
         New entries for rs are added after train passes a new signal, and old entries are removed when train at back occupies those positions
@@ -268,11 +268,11 @@ class utsvehicle {
         this.dooropen = dooropen;
     }
 
-    public int[] getStopoutput() {
+    public Location getStopoutput() {
         return stopoutput;
     }
 
-    public void setStopoutput(int[] stopoutput) {
+    public void setStopoutput(Location stopoutput) {
         this.stopoutput = stopoutput;
     }
 

@@ -60,7 +60,7 @@ class stoppos extends SignAction {
             loc[2] += 0.5;
             lv.setStoppos(new Location(lv.getSavedworld(), loc[0], loc[1], loc[2]));
             if (!l4.isEmpty()) {
-                lv.setStopoutput(loc2);
+                lv.setStopoutput(new Location(lv.getSavedworld(), loc2[0], loc2[1], loc2[2]));
             }
             lv.setReqstopping(true);
             generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("stoppos_next"));

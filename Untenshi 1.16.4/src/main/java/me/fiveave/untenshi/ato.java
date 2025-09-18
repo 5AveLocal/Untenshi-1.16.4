@@ -193,7 +193,7 @@ class ato {
         }
         // Provide output
         if (lv.getStopoutput() != null) {
-            Block b = lv.getSavedworld().getBlockAt(lv.getStopoutput()[0], lv.getStopoutput()[1], lv.getStopoutput()[2]);
+            Block b = lv.getSavedworld().getBlockAt(lv.getStopoutput());
             b.getChunk().load();
             b.setType(Material.REDSTONE_BLOCK);
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
