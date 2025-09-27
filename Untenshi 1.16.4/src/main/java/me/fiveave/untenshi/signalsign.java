@@ -397,6 +397,9 @@ class signalsign extends SignAction {
                                     // Update resettable sign
                                     Location loc = cartevent.getLocation();
                                     shiftRs(lv, loc);
+                                    // Update this signal
+                                    String str = (lv.getSafetysystype().equals("atc") ? "atc" : "r") + " " + 0;
+                                    Bukkit.getScheduler().runTaskLater(plugin, () -> updateSignals(cartevent.getSign(), "set " + str), 1);
                                     // Prevent non-resettable ATS Run caused by red light but without receiving warning
                                     if (signalspeed == 0 && lv.getLastsisign() == null) {
                                         lv.setLastsisign(loc);
@@ -410,7 +413,8 @@ class signalsign extends SignAction {
                                 signalOrderPtnResult result = getSignalOrderPtnResult(lv);
                                 // Make blocked section shorter by 1
                                 lv.setRsoccupiedpos(Math.max(lv.getRsoccupiedpos() - 1, 0));
-                                for (int i1 = 0; i1 < oldloc.length; i1++) {
+                                // This signal has been updated when train touches the sign, so update next ones
+                                for (int i1 = 1; i1 < oldloc.length; i1++) {
                                     // settable: Sign to be set
                                     Sign settable;
                                     try {
