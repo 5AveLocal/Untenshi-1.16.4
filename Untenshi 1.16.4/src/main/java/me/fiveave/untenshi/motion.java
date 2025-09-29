@@ -579,18 +579,18 @@ class motion {
         // Check if next is red light
         boolean nextredlight = lv.getLastsisp() == 0 && priority == signaldistdiff;
         // tempdist is for anti-ATS-run, stop at 1 m before 0 km/h signal
-        double tempdist = nextredlight ? (distnow - 1 < 0 ? 0 : distnow - 1) : distnow;
-        // Find minimum brake needed (default 10: even EB cannot brake in time)
-        int reqbrake = 10;
-        for (int b = 9; b >= 0; b--) {
+        double tempdist = nextredlight ? Math.max(distnow - 1, 0) : distnow;
+        // Find minimum brake needed
+        int reqbrake = 9;
+        for (int b = 8; b >= 0; b--) {
             if (tempdist >= reqdist[b]) {
                 reqbrake = b;
             }
         }
         // Pattern run
-        if (reqbrake > 8 && lv.getSpeed() > lowerSpeed + 3 || isoverspeed3) {
+        if (reqbrake >= 8 && lv.getSpeed() > lowerSpeed + 3 || isoverspeed3) {
             // Or SPAD (0 km/h signal) EB
-            if ((reqbrake > 9 || lv.getSignallimit() == 0) && lv.getAtsping() != 2) {
+            if ((reqbrake == 9 || lv.getSignallimit() == 0) && lv.getAtsping() != 2) {
                 lv.setBrake(9);
                 lv.setMascon(0);
                 lv.setAtsping(2);
