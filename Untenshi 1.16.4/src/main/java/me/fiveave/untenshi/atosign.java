@@ -32,17 +32,19 @@ class atosign extends SignAction {
     }
 
     static void atoSignDefault(utsvehicle lv, double val, double[] loc) {
-        lv.setOverrun(false);
-        // Direct or indirect pattern?
-        lv.setAtopisdirect(val < 0);
-        lv.setAtospeed(Math.abs(val));
-        curveRailPosFix(lv, loc);
-        lv.setAtodest(new Location(lv.getSavedworld(), loc[0], loc[1], loc[2]));
-        generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectpattern"));
+        if (lv.getLd() == null || lv.getLd().isAllowatousage()) {
+            lv.setOverrun(false);
+            // Direct or indirect pattern?
+            lv.setAtopisdirect(val < 0);
+            lv.setAtospeed(Math.abs(val));
+            curveRailPosFix(lv, loc);
+            lv.setAtodest(new Location(lv.getSavedworld(), loc[0], loc[1], loc[2]));
+            generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectpattern"));
+        }
     }
 
     static void atoSignDir(utsvehicle lv, MinecartGroup mg, MinecartMember<?> mm, String dir, SignActionEvent cartevent) {
-        BlockFace bf = BlockFace.valueOf(dir);
+        BlockFace bf = BlockFace.valueOf(dir.toUpperCase());
         if (mm.getDirection().getOppositeFace().equals(bf)) {
             mg.reverse();
             lv.setDriverseat(mg.head());
@@ -112,8 +114,7 @@ class atosign extends SignAction {
                         case "dir":
                             // Only activate if train is stopped
                             if (lv.getSpeed() == 0 && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
-                                String dir = cartevent.getLine(3).toUpperCase();
-                                atoSignDir(lv, mg, mm, dir, cartevent);
+                                atoSignDir(lv, mg, mm, cartevent.getLine(3), cartevent);
                             }
                             break;
                         case "stopaction":
