@@ -312,39 +312,35 @@ class debugcmd implements CommandExecutor, TabCompleter {
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         try {
-            if (sender instanceof Player) {
-                if (args.length >= 3) {
-                    if (checkPerm((Player) sender, "uts.debug")) {
-                        noPerm(sender);
-                        return true;
-                    }
-                    utsvehicle lv = null;
-                    try {
-                        lv = vehicle.get(TrainProperties.get(args[0]).getHolder());
-                    } catch (Exception ignored) {
-                    }
-                    if (lv != null) {
-                        switch (args[1].toLowerCase()) {
-                            case "get":
-                                debugGet(sender, args, lv);
-                                break;
-                            case "set":
-                                if (args.length >= 4) {
-                                    try {
-                                        debugSet(sender, args, lv);
-                                    } catch (Exception e) {
-                                        generalMsg(sender, ChatColor.RED, getLang("argwrong"));
-                                    }
-                                } else {
+            if (args.length >= 3) {
+                if (sender instanceof Player && checkPerm((Player) sender, "uts.debug")) {
+                    noPerm(sender);
+                    return true;
+                }
+                utsvehicle lv = null;
+                try {
+                    lv = vehicle.get(TrainProperties.get(args[0]).getHolder());
+                } catch (Exception ignored) {
+                }
+                if (lv != null) {
+                    switch (args[1].toLowerCase()) {
+                        case "get":
+                            debugGet(sender, args, lv);
+                            break;
+                        case "set":
+                            if (args.length >= 4) {
+                                try {
+                                    debugSet(sender, args, lv);
+                                } catch (Exception e) {
                                     generalMsg(sender, ChatColor.RED, getLang("argwrong"));
                                 }
-                        }
+                            } else {
+                                generalMsg(sender, ChatColor.RED, getLang("argwrong"));
+                            }
                     }
-                } else {
-                    generalMsg(sender, ChatColor.RED, getLang("argwrong"));
                 }
             } else {
-                generalMsg(sender, ChatColor.RESET, getLang("playeronlycmd"));
+                generalMsg(sender, ChatColor.RED, getLang("argwrong"));
             }
         } catch (Exception e) {
             errorLog(e, "debugcmd.onCommand");
