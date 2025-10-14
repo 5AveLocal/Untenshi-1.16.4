@@ -316,37 +316,41 @@ class motion {
             signalOrderPtnResult result = getSignalOrderPtnResult(lv);
             int orderno = 0;
             // Set signs with new signal and speed
-            // TODO: Test if signno >= lv.getIlposoccupied().length works (signno >= 0 originally),
-            //  prevent repeated updating, test if deleting iloccupied works properly (interlock del)
-            for (int signno = furthestoccupied; signno >= lv.getIlposoccupied().length; signno--) {
-                // settable: Sign to be set
-                Sign settable = getSignFromLoc(oldposlist[signno]);
-                if (settable != null) {
-                    try {
-                        String[] settablesplit = settable.getLine(2).split(" ");
-                        String currentsi = settablesplit[1];
-                        int currentsp = parseInt(settablesplit[2]);
-                        // Check if new speed to be set is lower than current, if yes choose current instead
-                        String sistr = result.ptnsisp[orderno] < currentsp ? currentsi : result.ptnsisi[orderno];
-                        int sp = Math.max(result.ptnsisp[orderno], currentsp);
-                        updateSignals(settable, "set " + sistr + " " + sp);
-                        // Orderno must not exceed halfptnlen
-                        if (orderno + 1 < result.halfptnlen) {
-                            orderno++;
-                        }
-                        // If next signal is lower than this
-                        if (result.ptnsisp[orderno] <= sp) {
-                            // For next orderno, must be higher than this
-                            for (int i = orderno; i < result.halfptnlen; i++) {
-                                if (result.ptnsisp[i] >= sp) {
-                                    orderno = i;
-                                    break;
+            // Prevent repeated updating
+            if (lv.getIlposoccupied() == null || lv.getIlposoccupied().length < furthestoccupied + 1) {
+                for (int signno = furthestoccupied; signno >= 0; signno--) {
+                    // settable: Sign to be set
+                    Sign settable = getSignFromLoc(oldposlist[signno]);
+                    if (settable != null) {
+                        try {
+                            String[] settablesplit = settable.getLine(2).split(" ");
+                            String currentsi = settablesplit[1];
+                            int currentsp = parseInt(settablesplit[2]);
+                            // Check if new speed to be set is lower than current, if yes choose current instead
+                            String sistr = result.ptnsisp[orderno] < currentsp ? currentsi : result.ptnsisi[orderno];
+                            int sp = Math.max(result.ptnsisp[orderno], currentsp);
+                            // Update only if changed
+                            if (sp != currentsp) {
+                                updateSignals(settable, "set " + sistr + " " + sp);
+                            }
+                            // Orderno must not exceed halfptnlen
+                            if (orderno + 1 < result.halfptnlen) {
+                                orderno++;
+                            }
+                            // If next signal is lower than this
+                            if (result.ptnsisp[orderno] <= sp) {
+                                // For next orderno, must be higher than this
+                                for (int i = orderno; i < result.halfptnlen; i++) {
+                                    if (result.ptnsisp[i] >= sp) {
+                                        orderno = i;
+                                        break;
+                                    }
                                 }
                             }
+                        } catch (IndexOutOfBoundsException | NumberFormatException e) {
+                            signImproper(settable.getLocation(), lv.getLd());
+                            throw new RuntimeException(e);
                         }
-                    } catch (IndexOutOfBoundsException | NumberFormatException e) {
-                        signImproper(settable.getLocation(), lv.getLd());
-                        throw new RuntimeException(e);
                     }
                 }
             }
