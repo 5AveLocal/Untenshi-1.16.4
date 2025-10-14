@@ -316,7 +316,9 @@ class motion {
             signalOrderPtnResult result = getSignalOrderPtnResult(lv);
             int orderno = 0;
             // Set signs with new signal and speed
-            for (int signno = furthestoccupied; signno >= 0; signno--) {
+            // TODO: Test if signno >= lv.getIlposoccupied().length works (signno >= 0 originally),
+            //  prevent repeated updating, test if deleting iloccupied works properly (interlock del)
+            for (int signno = furthestoccupied; signno >= lv.getIlposoccupied().length; signno--) {
                 // settable: Sign to be set
                 Sign settable = getSignFromLoc(oldposlist[signno]);
                 if (settable != null) {
