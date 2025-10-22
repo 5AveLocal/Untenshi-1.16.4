@@ -11,7 +11,6 @@ import org.bukkit.block.Chest;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.*;
 import static me.fiveave.untenshi.cmds.generalMsg;
@@ -26,7 +25,6 @@ import static me.fiveave.untenshi.stoppos.stopPosDefault;
 class ato {
 
     static void atoSys(utsvehicle lv, MinecartGroup mg) {
-        double speeddrop = lv.getSpeeddrop();
         if (lv.getAtodest() != null && lv.getAtospeed() != -1 && lv.getAtsping() == 0 && lv.getAtsforced() == 0 && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
             /*
              Get distances, test which (atodest, speedsign, signalsign) has greater priority
@@ -41,8 +39,8 @@ class ato {
             double slopeaccelsel = getSlopeAccel(actualAtoRefPos, result.tailLoc);
             double slopeaccelsi = 0;
             double slopeaccelsp = 0;
-            double reqatodist = getSingleReqdist(lv, lv.getSpeed(), lv.getAtospeed(), speeddrop, 6, slopeaccelsel, 0)
-                    + getThinkingDistance(lv, lv.getSpeed(), lv.getAtospeed(), decel, 6, slopeaccelsel, 0);
+            double reqatodist = getSingleReqdist(lv, lv.getSpeed(), lv.getAtospeed(), 6, slopeaccelsel, 0)
+                    + getThinkingDistance(lv, lv.getSpeed(), lv.getAtospeed(), 6, slopeaccelsel, 0);
             double signaldist = Double.MAX_VALUE;
             double signaldistdiff = Double.MAX_VALUE;
             double speeddist = Double.MAX_VALUE;
@@ -59,16 +57,16 @@ class ato {
             if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
                 Location actualSiRefPos = getActualRefPos(lv.getLastsisign(), mg.getWorld());
                 slopeaccelsi = getSlopeAccel(actualSiRefPos, result.tailLoc);
-                reqsidist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastsisp(), speeddrop, 6, slopeaccelsi, 0)
-                        + getThinkingDistance(lv, lv.getSpeed(), lv.getLastsisp(), decel, 6, slopeaccelsi, 0);
+                reqsidist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastsisp(), 6, slopeaccelsi, 0)
+                        + getThinkingDistance(lv, lv.getSpeed(), lv.getLastsisp(), 6, slopeaccelsi, 0);
                 signaldist = distFormula(actualSiRefPos, result.headLoc);
                 signaldistdiff = signaldist - reqsidist;
             }
             if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED) {
                 Location actualSpRefPos = getActualRefPos(lv.getLastspsign(), mg.getWorld());
                 slopeaccelsp = getSlopeAccel(actualSpRefPos, result.tailLoc);
-                reqspdist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastspsp(), speeddrop, 6, slopeaccelsp, 0)
-                        + getThinkingDistance(lv, lv.getSpeed(), lv.getLastspsp(), decel, 6, slopeaccelsp, 0);
+                reqspdist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastspsp(), 6, slopeaccelsp, 0)
+                        + getThinkingDistance(lv, lv.getSpeed(), lv.getLastspsp(), 6, slopeaccelsp, 0);
                 speeddist = distFormula(actualSpRefPos, result.headLoc);
                 speeddistdiff = speeddist - reqspdist;
             }
@@ -95,19 +93,19 @@ class ato {
             double safeslopeaccelsel = Math.max(slopeaccelsel, 0); // Non-negative slope acceleration
             double saspeed = lv.getSpeed() + safeslopeaccelsel; // Speed with slope acceleration
             // Actual controlling part, extra tick to prevent huge shock on stopping
-            getAllReqdist(lv, lv.getSpeed(), lowerSpeed, speeddrop, reqdist, slopeaccelsel, ONE_TICK_IN_S);
+            getAllReqdist(lv, lv.getSpeed(), lowerSpeed, reqdist, slopeaccelsel, ONE_TICK_IN_S);
             // Require accel? (no need to prepare for braking for next object and ATO target destination + additional thinking distance)
             boolean allowaccel = (lv.getMascon() > 0 || currentlimit - lv.getSpeed() > 5 && (lowerSpeed - lv.getSpeed() > 5 || tempdist > speed1s(lv)) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
                     && potentialspeed <= currentlimit // Will not go over speed limit
                     && (potentialspeed <= lowerSpeed || tempdist > speed1s(lv)) // Will not go over target speed
                     && !lv.isOverrun() // Not overrunning
                     && lv.getDooropen() == 0 && lv.isDoorconfirm(); // Doors closed
-            boolean notnearreqdist = tempdist > reqdist[6] + getThinkingDistance(lv, saspeed, lowerSpeed, decel, 6, slopeaccelsel, 3);
+            boolean notnearreqdist = tempdist > reqdist[6] + getThinkingDistance(lv, saspeed, lowerSpeed, 6, slopeaccelsel, 3);
             if (notnearreqdist && allowaccel) {
                 finalmascon = 5;
             }
             // Require braking? (with additional thinking time, if thinking distance is less than 1 m then consider as 1 m (prevent hard braking at low speeds))
-            if (tempdist < reqdist[6] + Math.max(1, 2 * ONE_TICK_IN_S * getThinkingDistance(lv, lv.getSpeed(), lowerSpeed, decel, 6, slopeaccelsel, ONE_TICK_IN_S))) {
+            if (tempdist < reqdist[6] + Math.max(1, 2 * ONE_TICK_IN_S * getThinkingDistance(lv, saspeed, lowerSpeed, 6, slopeaccelsel, ONE_TICK_IN_S))) {
                 lv.setAtoforcebrake(true);
             }
             // Direct pattern or forced?
@@ -124,7 +122,7 @@ class ato {
                 }
             }
             // Cancel braking? (with additional thinking time)
-            if (tempdist > reqdist[6] + getThinkingDistance(lv, saspeed + safeslopeaccelsel, lowerSpeed, decel, 6, slopeaccelsel, 3) && !lv.isOverrun()) {
+            if (tempdist > reqdist[6] + getThinkingDistance(lv, saspeed + safeslopeaccelsel, lowerSpeed, 6, slopeaccelsel, 3) && !lv.isOverrun()) {
                 lv.setAtoforcebrake(false);
             }
             // 0 km/h signal waiting procedure (1 m (+ 1 m before signal) distance with signal)
@@ -141,7 +139,7 @@ class ato {
             // Slope braking (not related to ATS-P or ATC)
             if (lv.isAtoforceslopebrake()) {
                 // Redefine reqdist (here for braking distance to speed limit)
-                getAllReqdist(lv, lv.getSpeed() + slopeaccelnow, currentlimit, speeddrop, reqdist, slopeaccelnow, 0);
+                getAllReqdist(lv, lv.getSpeed() + slopeaccelnow, currentlimit, reqdist, slopeaccelnow, 0);
                 int thisfinalbrake = 8;
                 for (int a = 8; a >= 1; a--) {
                     double ssavgdecel = avgRangeDecel(decel, lv.getSpeed() + slopeaccelnow, currentlimit, a + 1, lv.getSpeedsteps());
@@ -239,7 +237,7 @@ class ato {
     static void waitDepart(utsvehicle lv, Location actualSiRefPos, Location cartactualpos) {
         if (lv != null && lv.getTrain().isValid()) {
             double[] reqdist = new double[10];
-            getAllReqdist(lv, minSpeedLimit(lv), 0, lv.getSpeeddrop(), reqdist, 0, 0);
+            getAllReqdist(lv, minSpeedLimit(lv), 0, reqdist, 0, 0);
             if (lv.getLastsisign() != null) {
                 // Assuming positions will not be changed during loop, prevent lag
                 actualSiRefPos = actualSiRefPos == null ? getActualRefPos(lv.getLastsisign(), lv.getSavedworld()) : actualSiRefPos;
