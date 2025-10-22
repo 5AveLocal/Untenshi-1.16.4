@@ -72,10 +72,7 @@ class ato {
                 speeddist = distFormula(actualSpRefPos, result.headLoc);
                 speeddistdiff = speeddist - reqspdist;
             }
-            // TODO: Check if this is better and can solve up then down slope distance calculation issue
-            //  Check if this update will cause mascon and brake fighting issues
             double priority = Math.min(atodistdiff, Math.min(speeddistdiff, signaldistdiff));
-            // TODO: Removed redundant checks
             if (signaldistdiff != Double.MAX_VALUE && priority == signaldistdiff) {
                 lowerSpeed = lv.getLastsisp();
                 distnow = signaldist;
