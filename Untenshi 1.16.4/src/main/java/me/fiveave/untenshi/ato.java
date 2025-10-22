@@ -11,6 +11,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.*;
 import static me.fiveave.untenshi.cmds.generalMsg;
@@ -28,7 +29,8 @@ class ato {
         double speeddrop = lv.getSpeeddrop();
         if (lv.getAtodest() != null && lv.getAtospeed() != -1 && lv.getAtsping() == 0 && lv.getAtsforced() == 0 && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
             /*
-             Get distances (distnow: smaller value of atodist and signaldist)
+             Get distances, test which (atodest, speedsign, signalsign) has greater priority
+             (distnow: smaller value of atodist and signaldist)
              reqatodist rate must be higher than others to prevent ATS-P or ATC run
             */
             double lowerSpeed = lv.getAtospeed();
@@ -39,7 +41,8 @@ class ato {
             double slopeaccelsel = getSlopeAccel(actualAtoRefPos, result.tailLoc);
             double slopeaccelsi = 0;
             double slopeaccelsp = 0;
-            double reqatodist = getSingleReqdist(lv, lv.getSpeed(), lv.getAtospeed(), speeddrop, 6, slopeaccelsel, 0) + getThinkingDistance(lv, lv.getSpeed(), lv.getAtospeed(), decel, 6, slopeaccelsel, 0);
+            double reqatodist = getSingleReqdist(lv, lv.getSpeed(), lv.getAtospeed(), speeddrop, 6, slopeaccelsel, 0)
+                    + getThinkingDistance(lv, lv.getSpeed(), lv.getAtospeed(), decel, 6, slopeaccelsel, 0);
             double signaldist = Double.MAX_VALUE;
             double signaldistdiff = Double.MAX_VALUE;
             double speeddist = Double.MAX_VALUE;
@@ -69,13 +72,16 @@ class ato {
                 speeddist = distFormula(actualSpRefPos, result.headLoc);
                 speeddistdiff = speeddist - reqspdist;
             }
-            double priority = (atodistdiff < signaldistdiff) ? (Math.min(atodistdiff, speeddistdiff)) : (Math.min(signaldistdiff, speeddistdiff));
-            if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED && priority == signaldistdiff) {
+            // TODO: Check if this is better and can solve up then down slope distance calculation issue
+            //  Check if this update will cause mascon and brake fighting issues
+            double priority = Math.min(atodistdiff, Math.min(speeddistdiff, signaldistdiff));
+            // TODO: Removed redundant checks
+            if (signaldistdiff != Double.MAX_VALUE && priority == signaldistdiff) {
                 lowerSpeed = lv.getLastsisp();
                 distnow = signaldist;
                 slopeaccelsel = slopeaccelsi;
             }
-            if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED && priority == speeddistdiff) {
+            if (signaldistdiff != Double.MAX_VALUE && priority == speeddistdiff) {
                 lowerSpeed = lv.getLastspsp();
                 distnow = speeddist;
                 slopeaccelsel = slopeaccelsp;
