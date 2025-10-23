@@ -36,7 +36,9 @@ class ato {
             HeadAndTailResult result = getHeadAndTailResult(mg);
             Location actualAtoRefPos = getActualRefPos(lv.getAtodest(), mg.getWorld());
             double slopeaccelnow = getSlopeAccel(result.headLoc, result.tailLoc);
-            double slopeaccelsel = getSlopeAccel(actualAtoRefPos, result.tailLoc);
+            // Prevent upslope then downslope causing braking delay
+            Location tailorheadsel = actualAtoRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
+            double slopeaccelsel = getSlopeAccel(actualAtoRefPos, tailorheadsel);
             double slopeaccelsi = 0;
             double slopeaccelsp = 0;
             double reqatodist = getSingleReqdist(lv, lv.getSpeed(), lv.getAtospeed(), 6, slopeaccelsel, 0)
@@ -56,7 +58,9 @@ class ato {
             // Find either ATO, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
             if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
                 Location actualSiRefPos = getActualRefPos(lv.getLastsisign(), mg.getWorld());
-                slopeaccelsi = getSlopeAccel(actualSiRefPos, result.tailLoc);
+                // Prevent upslope then downslope causing braking delay
+                Location tailorheadsi = actualSiRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
+                slopeaccelsi = getSlopeAccel(actualSiRefPos, tailorheadsi);
                 reqsidist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastsisp(), 6, slopeaccelsi, 0)
                         + getThinkingDistance(lv, lv.getSpeed(), lv.getLastsisp(), 6, slopeaccelsi, 0);
                 signaldist = distFormula(actualSiRefPos, result.headLoc);
@@ -64,7 +68,9 @@ class ato {
             }
             if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED) {
                 Location actualSpRefPos = getActualRefPos(lv.getLastspsign(), mg.getWorld());
-                slopeaccelsp = getSlopeAccel(actualSpRefPos, result.tailLoc);
+                // Prevent upslope then downslope causing braking delay
+                Location tailorheadsp = actualSpRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
+                slopeaccelsp = getSlopeAccel(actualSpRefPos, tailorheadsp);
                 reqspdist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastspsp(), 6, slopeaccelsp, 0)
                         + getThinkingDistance(lv, lv.getSpeed(), lv.getLastspsp(), 6, slopeaccelsp, 0);
                 speeddist = distFormula(actualSpRefPos, result.headLoc);
@@ -213,7 +219,7 @@ class ato {
 
     // ATO Stop Time Countdown
     static void atoDepartCountdown(utsvehicle lv) {
-        if (lv.getAtostoptime() != -1) {
+        if (lv.getTrain().isValid() && lv.getAtostoptime() != -1) {
             if (lv.getAtostoptime() > 0 && (lv.isDoordiropen() || !lv.isStopautoopen())) {
                 lv.setAtostoptime(lv.getAtostoptime() - 1);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> atoDepartCountdown(lv), 20);
