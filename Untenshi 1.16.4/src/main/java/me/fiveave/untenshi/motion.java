@@ -671,7 +671,7 @@ class motion {
             double sumdist = 0;
             if (bcp < bcptarget) {
                 AfterBrakeInitResult result = getAfterBrakeInitResult(lv, upperSpeed, slopeaccel, bcp, bcptarget);
-                sumdist = (upperSpeed * result.t - result.avgdecel * Math.pow(result.t, 2) / 2) / 3.6; // get distance from basic decel distance formula, v = u*t+1/2*a*t^2, and speed to SI units
+                sumdist = ((upperSpeed + slopeaccel) * result.realt - result.avgdecel * Math.pow(result.realt, 2) / 2) / 3.6; // get distance from basic decel distance formula, v = u*t+1/2*a*t^2, and speed to SI units
             }
             // Extra tick for action delay + slope acceleration considered, prevent negative distance
             return Math.max(0, Math.max(0, sumdist) + (upperSpeed + slopeaccel) / 3.6 * extra);
@@ -820,7 +820,7 @@ class motion {
         double avgdecel = avgRangeDecel(decel, Math.max(0, upperSpeed + slopeaccel), estlowerspeed, avgrate, lv.getSpeedsteps()) - slopeaccel; // gives better estimation than globalDecel, inaccuracy is negligible?
         // Time in s instead of tick to brake init end, but to prevent over-estimation and negative deceleration values
         double realt = avgdecel > 0 ? Math.min(timeleft, upperSpeed / avgdecel) : timeleft;
-        return new AfterBrakeInitResult(avgdecel, realt, timeleft);
+        return new AfterBrakeInitResult(avgdecel, realt);
     }
 
     static Location getCartActualRefPos(MinecartMember<?> mm, boolean flipdir) {
@@ -910,12 +910,10 @@ class motion {
     static class AfterBrakeInitResult {
         public final double avgdecel;
         public final double realt;
-        public final double t;
 
-        public AfterBrakeInitResult(double avgdecel, double realt, double t) {
+        public AfterBrakeInitResult(double avgdecel, double realt) {
             this.avgdecel = avgdecel;
             this.realt = realt;
-            this.t = t;
         }
     }
 
