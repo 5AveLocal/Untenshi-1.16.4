@@ -106,12 +106,13 @@ class ato {
                     && (potentialspeed <= lowerSpeed || tempdist > speed1s(lv)) // Will not go over target speed
                     && !lv.isOverrun() // Not overrunning
                     && lv.getDooropen() == 0 && lv.isDoorconfirm(); // Doors closed
-            boolean notnearreqdist = tempdist > reqdist[6] + getThinkingDistance(lv, saspeed, lowerSpeed, 6, slopeaccelsel, 3);
+            int targetBrake = 6;
+            boolean notnearreqdist = tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed, lowerSpeed, targetBrake, slopeaccelsel, 3);
             if (notnearreqdist && allowaccel) {
                 finalmascon = 5;
             }
             // Require braking? (with additional thinking time, if thinking distance is less than 1 m then consider as 1 m (prevent hard braking at low speeds))
-            if (tempdist < reqdist[6] + Math.max(1, 2 * ONE_TICK_IN_S * getThinkingDistance(lv, saspeed, lowerSpeed, 6, slopeaccelsel, ONE_TICK_IN_S))) {
+            if (tempdist < reqdist[targetBrake] + Math.max(1, 2 * ONE_TICK_IN_S * getThinkingDistance(lv, saspeed, lowerSpeed, targetBrake, slopeaccelsel, ONE_TICK_IN_S))) {
                 lv.setAtoforcebrake(true);
             }
             // Direct pattern or forced?
@@ -128,7 +129,7 @@ class ato {
                 }
             }
             // Cancel braking? (with additional thinking time)
-            if (tempdist > reqdist[6] + getThinkingDistance(lv, saspeed + safeslopeaccelsel, lowerSpeed, 6, slopeaccelsel, 3) && !lv.isOverrun()) {
+            if (tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed + safeslopeaccelsel, lowerSpeed, targetBrake, slopeaccelsel, 3) && !lv.isOverrun()) {
                 lv.setAtoforcebrake(false);
             }
             // 0 km/h signal waiting procedure (1 m (+ 1 m before signal) distance with signal)
