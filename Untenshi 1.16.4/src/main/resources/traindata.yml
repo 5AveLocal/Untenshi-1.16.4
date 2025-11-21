@@ -10,3 +10,4 @@ trains:
     dooropenspeed: 0.333333
     doorclosespeed: 0.333333
     twohandled: false
+    stopposoffset: 0.0

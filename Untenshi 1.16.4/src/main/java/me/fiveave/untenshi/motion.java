@@ -13,6 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.Vector;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -444,7 +445,8 @@ class motion {
     static StopPosResult getStopPosResult(utsvehicle lv) {
         Location stoppos = lv.getStoppos();
         Location cartactualpos = getDriverseatActualPos(lv);
-        double stopdist = distFormula(stoppos, cartactualpos);
+        Vector cartoffsetvector = lv.getDriverseat().getOrientationForward().multiply(lv.getStopposoffset());
+        double stopdist = distFormula(stoppos, cartactualpos.add(cartoffsetvector));
         int stopdistcm = (int) Math.round(stopdist * 100);
         return new StopPosResult(stopdist, stopdistcm);
     }

@@ -27,6 +27,7 @@ class utsvehicle {
     private double dooropen; // Door open status
     private double dooropenspeed; // Opening door speed (to reach 1 = open)
     private double doorclosespeed; // Closing door speed (to reach 0 = close)
+    private double stopposoffset; // Stop position offset (- to back, + to front)
     private int[] speedsteps; // Speed steps for acceleration and deceleration
     private utsdriver ld; // Driver
     private World savedworld; // World
@@ -113,6 +114,7 @@ class utsvehicle {
         double tempebbcppertick = 0;
         double tempdooropenspeed = 0;
         double tempdoorclosespeed = 0;
+        double tempstopposoffset = 0;
         int[] tempspeedsteps = new int[6];
         boolean twohandled = false;
         String tDataInfo = "trains." + seltrainname;
@@ -124,6 +126,7 @@ class utsvehicle {
         tempebbcppertick = getDoubleIfExists(tDataInfo, ".ebbcppertick", tempebbcppertick);
         tempdooropenspeed = getDoubleIfExists(tDataInfo, ".dooropenspeed", tempdooropenspeed);
         tempdoorclosespeed = getDoubleIfExists(tDataInfo, ".doorclosespeed", tempdoorclosespeed);
+        tempstopposoffset = getDoubleIfExists(tDataInfo, ".stopposoffset", tempstopposoffset);
         if (traindata.dataconfig.contains(tDataInfo + ".speeds") && traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").size() == 6) {
             for (int i = 0; i < 6; i++) {
                 tempspeedsteps[i] = traindata.dataconfig.getIntegerList(tDataInfo + ".speeds").get(i);
@@ -145,6 +148,7 @@ class utsvehicle {
         this.setEbbcppertick(tempebbcppertick);
         this.setDooropenspeed(tempdooropenspeed);
         this.setDoorclosespeed(tempdoorclosespeed);
+        this.setStopposoffset(tempstopposoffset);
         this.setTwohandled(twohandled);
         this.setSpeed(0.0);
         this.setSignallimit(MAX_SPEED);
@@ -678,5 +682,13 @@ class utsvehicle {
 
     public void setStopautoopen(boolean stopautoopen) {
         this.stopautoopen = stopautoopen;
+    }
+
+    public double getStopposoffset() {
+        return stopposoffset;
+    }
+
+    public void setStopposoffset(double stopposoffset) {
+        this.stopposoffset = stopposoffset;
     }
 }
