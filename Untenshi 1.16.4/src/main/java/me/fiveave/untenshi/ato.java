@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.Vector;
 
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.*;
@@ -47,7 +48,9 @@ class ato {
             double signaldistdiff = Double.MAX_VALUE;
             double speeddist = Double.MAX_VALUE;
             double speeddistdiff = Double.MAX_VALUE;
-            double atodist = distFormula(actualAtoRefPos, result.headLoc);
+            // Add vector for (stop) position offset
+            Vector cartoffsetvector = lv.getDriverseat().getOrientationForward().multiply(lv.getStopposoffset());
+            double atodist = distFormula(actualAtoRefPos, result.headLoc.add(cartoffsetvector));
             double atodistdiff = atodist - reqatodist;
             double reqsidist;
             double reqspdist;
