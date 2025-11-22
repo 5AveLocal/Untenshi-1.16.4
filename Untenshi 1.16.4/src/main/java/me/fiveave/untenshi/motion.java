@@ -446,7 +446,7 @@ class motion {
         Location stoppos = lv.getStoppos();
         Location cartactualpos = getDriverseatActualPos(lv);
         // Add vector for stop position offset
-        Vector cartoffsetvector = lv.getDriverseat().getOrientationForward().multiply(lv.getStopposoffset());
+        Vector cartoffsetvector = cartactualpos.toVector().subtract(lv.getDriverseat().getEntity().getLocation().toVector()).normalize().multiply(lv.getStopposoffset());
         double stopdist = distFormula(stoppos, cartactualpos.add(cartoffsetvector));
         int stopdistcm = (int) Math.round(stopdist * 100);
         return new StopPosResult(stopdist, stopdistcm);
