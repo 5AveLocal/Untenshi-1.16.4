@@ -452,10 +452,18 @@ class motion {
         Location stoppos = lv.getStoppos();
         Location cartactualpos = getDriverseatActualPos(lv);
         // Add vector for stop position offset
-        Vector cartoffsetvector = cartactualpos.toVector().subtract(lv.getDriverseat().getEntity().getLocation().toVector()).normalize().multiply(lv.getStopposoffset());
+        Vector cartoffsetvector = getCartOffsetVector(lv, cartactualpos);
         double stopdist = distFormula(stoppos, cartactualpos.add(cartoffsetvector));
         int stopdistcm = (int) Math.round(stopdist * 100);
         return new StopPosResult(stopdist, stopdistcm);
+    }
+
+    static Vector getCartOffsetVector(utsvehicle lv, Location cartactualpos) {
+        Vector cartoffsetvector = cartactualpos.toVector().subtract(lv.getDriverseat().getEntity().getLocation().toVector());
+        if (cartoffsetvector.length() != 0) {
+            cartoffsetvector = cartoffsetvector.normalize().multiply(lv.getStopposoffset());
+        }
+        return cartoffsetvector;
     }
 
     private static void ebUntilRestoreInit(utsdriver ld, String s) {

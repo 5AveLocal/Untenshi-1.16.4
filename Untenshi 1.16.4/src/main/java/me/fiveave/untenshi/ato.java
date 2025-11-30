@@ -50,7 +50,7 @@ class ato {
             double speeddistdiff = Double.MAX_VALUE;
             Location cartactualpos = getDriverseatActualPos(lv);
             // Add vector for stop position offset
-            Vector cartoffsetvector = cartactualpos.toVector().subtract(lv.getDriverseat().getEntity().getLocation().toVector()).normalize().multiply(lv.getStopposoffset());
+            Vector cartoffsetvector = getCartOffsetVector(lv, cartactualpos);
             double atodist = distFormula(actualAtoRefPos, result.headLoc.add(cartoffsetvector));
             double atodistdiff = atodist - reqatodist;
             double reqsidist;
