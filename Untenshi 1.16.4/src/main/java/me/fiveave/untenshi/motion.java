@@ -161,10 +161,14 @@ class motion {
             if (refchest != null) {
                 // Test for all items in chest
                 for (int itemno = 0; itemno < 27; itemno++) {
-                    ItemMeta mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
-                    stopActionClock(lv, refchest, mat, 0, 0, lv.isDoordiropen(), lv.isDoorconfirm(), true);
-                    lv.setStopactionpos(null);
+                    ItemMeta mat;
+                    try {
+                        mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
+                        stopActionClock(lv, refchest, mat, 0, 0, lv.isDoordiropen(), lv.isDoorconfirm(), true);
+                    } catch (Exception ignored) {
+                    }
                 }
+                lv.setStopactionpos(null);
             }
         }
         // Stop position
