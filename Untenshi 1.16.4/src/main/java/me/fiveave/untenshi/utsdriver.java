@@ -5,6 +5,7 @@ import org.bukkit.inventory.ItemStack;
 
 import static me.fiveave.untenshi.cmds.getPConfig;
 import static me.fiveave.untenshi.main.driver;
+import static me.fiveave.untenshi.main.vehicle;
 
 class utsdriver {
 
@@ -28,8 +29,11 @@ class utsdriver {
     }
 
     static void initDriver(Player p) {
-        utsdriver ld = new utsdriver(p, getPConfig().getBoolean("players." + p.getUniqueId() + ".freemode"), getPConfig().getBoolean("players." + p.getUniqueId() + ".allowatousage"));
-        driver.putIfAbsent(p, ld);
+        utsdriver ld = driver.get(p);
+        if (ld == null) {
+            ld = new utsdriver(p, getPConfig().getBoolean("players." + p.getUniqueId() + ".freemode"), getPConfig().getBoolean("players." + p.getUniqueId() + ".allowatousage"));
+            driver.put(p, ld);
+        }
     }
 
     public int getPoints() {

@@ -90,6 +90,12 @@ class utsvehicle {
             this.setDriverseat(mg.head());
         } catch (Exception ignored) {
         }
+        // TrainCarts settings
+        TrainProperties tprop = mg.getProperties();
+        tprop.setSlowingDown(false);
+        tprop.setKeepChunksLoaded(true);
+        tprop.setCollision(tprop.getCollision().cloneAndSetMiscMode(CollisionMode.CANCEL));
+        tprop.setCollision(tprop.getCollision().cloneAndSetPlayerMode(CollisionMode.CANCEL));
         // Set accel, decel and speedsteps
         // Init train
         // From traindata (if available)
@@ -200,12 +206,6 @@ class utsvehicle {
     }
 
     static void initVehicle(MinecartGroup mg) {
-        // TrainCarts settings
-        TrainProperties tprop = mg.getProperties();
-        tprop.setSlowingDown(false);
-        tprop.setKeepChunksLoaded(true);
-        tprop.setCollision(tprop.getCollision().cloneAndSetMiscMode(CollisionMode.CANCEL));
-        tprop.setCollision(tprop.getCollision().cloneAndSetPlayerMode(CollisionMode.CANCEL));
         // Untenshi section
         utsvehicle lv = vehicle.get(mg);
         if (lv == null) {

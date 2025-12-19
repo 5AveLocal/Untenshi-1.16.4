@@ -75,9 +75,7 @@ class cmds implements CommandExecutor, TabCompleter {
     }
 
     static void errorLog(Exception e, String loc) {
-        plugin.getLogger().log(Level.SEVERE, UTS_HEAD + loc + "() did not function properly!\n");
-        //noinspection CallToPrintStackTrace
-        e.printStackTrace();
+        plugin.getLogger().log(Level.SEVERE, UTS_HEAD + loc + "() did not function properly!\n" + e.getMessage());
     }
 
     @Override
