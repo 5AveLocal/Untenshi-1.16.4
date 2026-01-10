@@ -14,8 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static me.fiveave.untenshi.cmds.*;
-import static me.fiveave.untenshi.main.getLang;
-import static me.fiveave.untenshi.main.vehicle;
+import static me.fiveave.untenshi.main.*;
 
 class debugcmd implements CommandExecutor, TabCompleter {
 
@@ -343,7 +342,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 generalMsg(sender, ChatColor.RED, getLang("argwrong"));
             }
         } catch (Exception e) {
-            errorLog(e, "debugcmd.onCommand");
+            errorLog(e);
         }
         return true;
     }

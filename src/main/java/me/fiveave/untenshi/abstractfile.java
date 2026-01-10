@@ -11,8 +11,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Set;
 
-import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
+import static me.fiveave.untenshi.main.errorLog;
 
 class abstractfile {
     protected final main plugin;
@@ -70,7 +70,7 @@ class abstractfile {
                     dataconfig.save(file);
                     generalMsg(Bukkit.getConsoleSender(), ChatColor.YELLOW, fileName + " has been updated with new config options");
                 } catch (IOException e) {
-                    errorLog(e, "abstractfile.reloadConfig");
+                    errorLog(e);
                 }
             }
         }
@@ -83,7 +83,7 @@ class abstractfile {
         try {
             dataconfig.save(file);
         } catch (IOException e) {
-            errorLog(e, "abstractfile.save");
+            errorLog(e);
         }
     }
 

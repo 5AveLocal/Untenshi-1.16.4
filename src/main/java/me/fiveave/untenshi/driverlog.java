@@ -17,7 +17,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 
@@ -52,7 +51,7 @@ class driverlog implements CommandExecutor, TabCompleter {
             }
         } catch (Exception e) {
             generalMsg(sender, ChatColor.RED, getLang("error"));
-            errorLog(e, "driverlog.onCommand");
+            errorLog(e);
         }
         return true;
     }

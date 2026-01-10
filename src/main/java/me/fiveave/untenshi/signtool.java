@@ -133,7 +133,7 @@ class signtool implements CommandExecutor, TabCompleter, Listener {
                 generalMsg(sender, ChatColor.RED, getLang("argwrong"));
             }
         } catch (Exception e) {
-            errorLog(e, "signtool.onCommand");
+            errorLog(e);
         }
         return true;
     }

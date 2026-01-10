@@ -4,6 +4,7 @@ import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.events.SignChangeActionEvent;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import com.bergerkiller.bukkit.tc.signactions.SignAction;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,6 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.logging.Level;
 
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.events.toB8;
@@ -180,5 +182,9 @@ public final class main extends JavaPlugin implements Listener {
         for (SignAction sa : new SignAction[]{sign1, sign2, sign3, sign4, sign5}) {
             SignAction.unregister(sa);
         }
+    }
+
+    static void errorLog(Exception e) {
+        Bukkit.getLogger().log(Level.SEVERE, ChatColor.stripColor(UTS_HEAD) + "An error occurred!", e);
     }
 }

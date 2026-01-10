@@ -23,7 +23,6 @@ import java.util.Objects;
 
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.getLocFromString;
-import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.motion.minSpeedLimit;
@@ -456,7 +455,7 @@ class signalsign extends SignAction {
                 }
             }
         } catch (Exception e) {
-            errorLog(e, "signalsign.execute");
+            errorLog(e);
         }
     }
 

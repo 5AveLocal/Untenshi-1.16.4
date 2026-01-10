@@ -16,7 +16,6 @@ import org.bukkit.entity.Player;
 import java.util.Arrays;
 
 import static java.lang.Integer.parseInt;
-import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.events.toB8;
 import static me.fiveave.untenshi.main.*;
@@ -138,7 +137,7 @@ class atosign extends SignAction {
                 }
             }
         } catch (Exception e) {
-            errorLog(e, "atosign.execute");
+            errorLog(e);
         }
     }
 

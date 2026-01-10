@@ -18,7 +18,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 
 import static java.lang.Integer.parseInt;
-import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.signalsign.*;
@@ -193,7 +192,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                 generalMsg(sender, ChatColor.RESET, getLang("cmdblkonlycmd"));
             }
         } catch (Exception e) {
-            errorLog(e, "signalcmd.onCommand");
+            errorLog(e);
         }
         return true;
     }

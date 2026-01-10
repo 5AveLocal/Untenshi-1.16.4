@@ -74,10 +74,6 @@ class cmds implements CommandExecutor, TabCompleter {
         return false;
     }
 
-    static void errorLog(Exception e, String loc) {
-        plugin.getLogger().log(Level.SEVERE, UTS_HEAD + loc + "() did not function properly!\n" + e.getMessage());
-    }
-
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         try {
@@ -343,7 +339,7 @@ class cmds implements CommandExecutor, TabCompleter {
             playerdata.save();
         } catch (Exception e) {
             generalMsg(sender, ChatColor.RED, getLang("error"));
-            errorLog(e, "cmds.onCommand");
+            errorLog(e);
         }
         return true;
     }

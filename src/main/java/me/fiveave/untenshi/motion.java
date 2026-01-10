@@ -22,7 +22,6 @@ import java.util.Objects;
 
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.ato.*;
-import static me.fiveave.untenshi.cmds.errorLog;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.events.toB8;
 import static me.fiveave.untenshi.events.trainSound;
@@ -38,7 +37,7 @@ class motion {
                 motionSystem(lv);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLv(lv), TICK_DELAY);
             } catch (Exception e) {
-                errorLog(e, "motion.recursiveClockLv");
+                errorLog(e);
                 restoreInitLv(lv);
             }
         } else {
@@ -52,7 +51,7 @@ class motion {
                 driverSystem(ld);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> recursiveClockLd(ld), TICK_DELAY);
             } catch (Exception e) {
-                errorLog(e, "motion.recursiveClockLd");
+                errorLog(e);
                 restoreInitLd(ld);
             }
         } else if (ld.isFrozen()) {
