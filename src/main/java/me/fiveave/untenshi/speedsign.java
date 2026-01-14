@@ -29,13 +29,35 @@ class speedsign extends SignAction {
     }
 
     static boolean isLocOfSign(Location loc) {
-        BlockState bl = loc.getBlock().getState();
-        return bl instanceof Sign;
+        // Prevent repeated getState(), put sign to HashMap if is, else not
+        if (loctosign.containsKey(loc)) {
+            return true;
+        } else {
+            BlockState bl = loc.getBlock().getState();
+            boolean retval = bl instanceof Sign;
+            // Add to HashMap if is Sign
+            if (retval) {
+                loctosign.put(loc, (Sign) bl);
+            }
+            return retval;
+        }
     }
 
     static Sign getSignFromLoc(Location loc) {
-        BlockState bl = loc.getBlock().getState();
-        return isLocOfSign(loc) ? (Sign) bl : null;
+        // Prevent repeated getState(), put sign to HashMap if is, else not
+        if (loctosign.containsKey(loc)) {
+            return loctosign.get(loc);
+        } else {
+            BlockState bl = loc.getBlock().getState();
+            boolean retval = bl instanceof Sign;
+            // Add to HashMap if is Sign
+            if (retval) {
+                loctosign.put(loc, (Sign) bl);
+                return (Sign) bl;
+            } else {
+                return null;
+            }
+        }
     }
 
     static boolean isLocOfChest(Location loc) {

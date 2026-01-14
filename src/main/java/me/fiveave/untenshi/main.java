@@ -7,6 +7,7 @@ import com.bergerkiller.bukkit.tc.signactions.SignAction;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
@@ -34,6 +35,7 @@ public final class main extends JavaPlugin implements Listener {
     static final HashMap<MinecartGroup, utsvehicle> vehicle = new HashMap<>();
     static final HashMap<Player, utsdriver> driver = new HashMap<>();
     static final HashMap<Player, utscmduser> cmduser = new HashMap<>();
+    static final HashMap<Location, Sign> loctosign = new HashMap<>();
     static final String PURE_UTS_TITLE = ChatColor.YELLOW + "[========== " + ChatColor.GREEN + "Untenshi " + ChatColor.YELLOW + "==========]\n";
     static final String UTS_HEAD = "[" + ChatColor.GREEN + "Untenshi" + ChatColor.WHITE + "] ";
     public static main plugin;
