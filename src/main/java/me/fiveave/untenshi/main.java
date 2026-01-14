@@ -7,10 +7,8 @@ import com.bergerkiller.bukkit.tc.signactions.SignAction;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,6 +18,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 import static me.fiveave.untenshi.cmds.generalMsg;
+import static me.fiveave.untenshi.events.doorControls;
 import static me.fiveave.untenshi.events.toB8;
 import static me.fiveave.untenshi.motion.noFreemodeOrATO;
 import static me.fiveave.untenshi.signalsign.resetSignals;
@@ -84,26 +83,25 @@ public final class main extends JavaPlugin implements Listener {
     }
 
     static void restoreInitLd(utsdriver ld) {
-        // Get train group and stop train and open doors
+        // Get train group, stop train and open doors
         if (ld.isPlaying()) {
             utsvehicle lv = ld.getLv();
             if (lv.getAtodest() == null || lv.getAtospeed() == -1) {
                 try {
                     MinecartGroup mg = lv.getTrain();
                     TrainProperties tprop = mg.getProperties();
+                    // Stop train (TC side)
                     tprop.setSpeedLimit(0);
                     mg.setForwardForce(0);
                     // Delete owners
                     tprop.clearOwners();
                 } catch (Exception ignored) {
                 }
-
-                lv.setDooropen(0);
+                // Stop train (Untenshi side)
+                lv.setSpeed(0);
                 toB8(lv);
-            }
-            // Clear Inventory
-            for (int i = 0; i < 41; i++) {
-                ld.getP().getInventory().setItem(i, new ItemStack(Material.AIR));
+                // Open doors (to prevent driver and passengers from being trapped)
+                doorControls(lv, true);
             }
             // Reset inventory
             ld.getP().getInventory().setContents(ld.getInv());

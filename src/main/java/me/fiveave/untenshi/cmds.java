@@ -8,7 +8,6 @@ import com.bergerkiller.bukkit.tc.properties.CartProperties;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,12 +17,10 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.RideableMinecart;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import static me.fiveave.untenshi.events.*;
 import static me.fiveave.untenshi.main.*;
@@ -171,10 +168,8 @@ class cmds implements CommandExecutor, TabCompleter {
                                         }
                                         // Save inventory
                                         ld.setInv(p.getInventory().getContents());
-                                        // Clear other slots
-                                        for (int i = 0; i < 41; i++) {
-                                            p.getInventory().setItem(i, new ItemStack(Material.AIR));
-                                        }
+                                        // Clear inventory
+                                        p.getInventory().clear();
                                         // Set wands in place
                                         if (ld.getLv().isTwohandled()) {
                                             p.getInventory().setItem(0, downWand());
