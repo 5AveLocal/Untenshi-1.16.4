@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.logging.Level;
 
@@ -36,6 +37,7 @@ public final class main extends JavaPlugin implements Listener {
     static final HashMap<Player, utsdriver> driver = new HashMap<>();
     static final HashMap<Player, utscmduser> cmduser = new HashMap<>();
     static final HashMap<Location, Sign> loctosign = new HashMap<>();
+    static final HashSet<Location> loctoother = new HashSet<>();
     static final String PURE_UTS_TITLE = ChatColor.YELLOW + "[========== " + ChatColor.GREEN + "Untenshi " + ChatColor.YELLOW + "==========]\n";
     static final String UTS_HEAD = "[" + ChatColor.GREEN + "Untenshi" + ChatColor.WHITE + "] ";
     public static main plugin;
