@@ -94,7 +94,6 @@ class cmds implements CommandExecutor, TabCompleter {
             // Change arg to case-non-sensitive
             // For each arg need check length of arg to ensure safety
             if (args.length > 0) {
-                label:
                 switch (args[0].toLowerCase()) {
                     case "help":
                         if (args.length == 1) {
@@ -139,11 +138,11 @@ class cmds implements CommandExecutor, TabCompleter {
                                 case "true":
                                     if (ld.isPlaying()) {
                                         generalMsg(sender, ChatColor.YELLOW, getLang("activate_onalready"));
-                                        break label;
+                                        return true;
                                     }
                                     if (!p.isInsideVehicle()) {
                                         generalMsg(sender, ChatColor.YELLOW, getLang("activate_sitincart"));
-                                        break label;
+                                        return true;
                                     }
                                     // Get train
                                     Entity selcart = p.getVehicle();
@@ -193,14 +192,14 @@ class cmds implements CommandExecutor, TabCompleter {
                                     } else {
                                         generalMsg(ld.getP(), ChatColor.RED, getLang("activate_notowner"));
                                     }
-                                    break label;
+                                    return true;
                                 case "false":
                                     if (ld.isPlaying()) {
                                         restoreInitLd(ld);
                                     } else {
                                         generalMsg(sender, ChatColor.YELLOW, getLang("activate_offalready"));
                                     }
-                                    break label;
+                                    return true;
                             }
                         }
                         sender.sendMessage(PURE_UTS_TITLE + ChatColor.YELLOW + "[" + getLang("help_usage") + " " + ChatColor.GOLD + "/uts activate <true/false>" + ChatColor.YELLOW + "]\n" + getLang("activate_info1") + "\n" + getLang("activate_info2"));
