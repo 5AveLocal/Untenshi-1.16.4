@@ -7,7 +7,6 @@ import com.bergerkiller.bukkit.tc.signactions.SignAction;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
@@ -15,7 +14,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.logging.Level;
 
@@ -36,8 +34,6 @@ public final class main extends JavaPlugin implements Listener {
     static final HashMap<MinecartGroup, utsvehicle> vehicle = new HashMap<>();
     static final HashMap<Player, utsdriver> driver = new HashMap<>();
     static final HashMap<Player, utscmduser> cmduser = new HashMap<>();
-    static final HashMap<Location, Sign> loctosign = new HashMap<>();
-    static final HashSet<Location> loctoother = new HashSet<>();
     static final String PURE_UTS_TITLE = ChatColor.YELLOW + "[========== " + ChatColor.GREEN + "Untenshi " + ChatColor.YELLOW + "==========]\n";
     static final String UTS_HEAD = "[" + ChatColor.GREEN + "Untenshi" + ChatColor.WHITE + "] ";
     public static main plugin;
@@ -105,7 +101,9 @@ public final class main extends JavaPlugin implements Listener {
                 lv.setSpeed(0);
                 toB8(lv);
                 // Open doors (to prevent driver and passengers from being trapped)
-                doorControls(lv, true);
+                if (!lv.isDoordiropen() && lv.getTrain().isValid()) {
+                    doorControls(lv, true);
+                }
             }
             // Reset inventory
             ld.getP().getInventory().setContents(ld.getInv());
@@ -142,6 +140,9 @@ public final class main extends JavaPlugin implements Listener {
         vehicle.put(lv.getTrain(), new utsvehicle(lv.getTrain()));
     }
 
+    static void errorLog(Exception e) {
+        Bukkit.getLogger().log(Level.SEVERE, ChatColor.stripColor(UTS_HEAD) + "An error occurred!", e);
+    }
 
     @Override
     public void onEnable() {
@@ -184,9 +185,5 @@ public final class main extends JavaPlugin implements Listener {
         for (SignAction sa : new SignAction[]{sign1, sign2, sign3, sign4, sign5}) {
             SignAction.unregister(sa);
         }
-    }
-
-    static void errorLog(Exception e) {
-        Bukkit.getLogger().log(Level.SEVERE, ChatColor.stripColor(UTS_HEAD) + "An error occurred!", e);
     }
 }
