@@ -218,7 +218,10 @@ class motion {
             return;
         }
         // Check conditions to change signal
+        // Furthest occupied position by this (how far train can go)
         int furthestoccupied = oldposlist.length - 1;
+        // Furthest occupied position by other trains (occupied)
+        boolean othersoccupied = false;
         boolean ispriority = true;
         // Prevent front train being blocked due to train at back due to lack of iloccupied
         // Ignore blocked status until first signal is found,
@@ -247,6 +250,7 @@ class motion {
                             int minno = Math.min(result2.halfptnlen - 1, Math.max(0, j - lv2.getRsoccupiedpos()));
                             // Resettable sign signal of lv2 is supposed to be 0 km/h by resettable sign
                             if (oldposlist[i].equals(location) && i < furthestoccupied && result2.ptnsisp[minno] == 0) {
+                                othersoccupied = true;
                                 furthestoccupied = i;
                                 break;
                             }
@@ -261,6 +265,7 @@ class motion {
                         for (Location location : il2posoccupied) {
                             // Occupied by interlocking route
                             if (oldposlist[i].equals(location) && i < furthestoccupied) {
+                                othersoccupied = true;
                                 furthestoccupied = i;
                                 break;
                             }
@@ -333,7 +338,8 @@ class motion {
                             String currentsi = settablesplit[1];
                             int currentsp = parseInt(settablesplit[2]);
                             // Check if new speed to be set is lower than current, if yes choose current instead
-                            String sistr = result.ptnsisp[orderno] < currentsp ? currentsi : result.ptnsisi[orderno];
+                            // TODO: TEST: Add restriction to this so if signal is occupied by other trains, use lower (result.ptnsisi[orderno])
+                            String sistr = result.ptnsisp[orderno] < currentsp && !othersoccupied ? currentsi : result.ptnsisi[orderno];
                             int sp = Math.max(result.ptnsisp[orderno], currentsp);
                             // Update only if changed
                             if (sp != currentsp) {
