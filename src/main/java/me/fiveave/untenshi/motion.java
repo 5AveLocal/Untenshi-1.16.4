@@ -261,6 +261,8 @@ class motion {
                         for (Location location : il2posoccupied) {
                             // Occupied by interlocking route
                             if (oldposlist[i].equals(location) && i < furthestoccupied) {
+                                /* Note: If signal at furthestoccupied is not 0 km/h, train at back may collide with front,
+                                but if this is to be prevented, train at back can never proceed (because ilposoccupied cannot be cleared)*/
                                 furthestoccupied = i;
                                 break;
                             }

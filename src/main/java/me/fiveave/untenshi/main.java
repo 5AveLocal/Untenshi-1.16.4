@@ -87,23 +87,14 @@ public final class main extends JavaPlugin implements Listener {
         if (ld.isPlaying()) {
             utsvehicle lv = ld.getLv();
             if (lv.getAtodest() == null || lv.getAtospeed() == -1) {
-                try {
-                    MinecartGroup mg = lv.getTrain();
-                    TrainProperties tprop = mg.getProperties();
-                    // Stop train (TC side)
-                    tprop.setSpeedLimit(0);
-                    mg.setForwardForce(0);
+                if (lv.getTrain().isValid()) {
                     // Delete owners
-                    tprop.clearOwners();
-                } catch (Exception ignored) {
+                    lv.getTrain().getProperties().clearOwners();
                 }
                 // Stop train (Untenshi side)
-                lv.setSpeed(0);
                 toB8(lv);
                 // Open doors (to prevent driver and passengers from being trapped)
-                if (!lv.isDoordiropen() && lv.getTrain().isValid()) {
-                    doorControls(lv, true);
-                }
+                waitStopOpenDoor(lv);
             }
             // Reset inventory
             ld.getP().getInventory().setContents(ld.getInv());
@@ -115,6 +106,16 @@ public final class main extends JavaPlugin implements Listener {
             }
             ld.setPlaying(false);
             generalMsg(ld.getP(), ChatColor.YELLOW, getLang("activate") + " " + ChatColor.RED + getLang("activate_off"));
+        }
+    }
+
+    static void waitStopOpenDoor(utsvehicle lv) {
+        if (!lv.isDoordiropen() && lv.getTrain().isValid()) {
+            if (lv.getSpeed() > 0) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> waitStopOpenDoor(lv), 1);
+                return;
+            }
+            doorControls(lv, true);
         }
     }
 

@@ -5,7 +5,6 @@ import org.bukkit.inventory.ItemStack;
 
 import static me.fiveave.untenshi.cmds.getPConfig;
 import static me.fiveave.untenshi.main.driver;
-import static me.fiveave.untenshi.main.vehicle;
 
 class utsdriver {
 
