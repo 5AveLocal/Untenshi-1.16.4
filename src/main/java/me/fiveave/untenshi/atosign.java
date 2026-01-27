@@ -26,7 +26,7 @@ class atosign extends SignAction {
 
     static void atoSignStopTime(utsvehicle lv, int val) {
         lv.setAtoautodep(val >= 0 && (lv.getLd() == null || lv.getLd().isAllowatousage()));
-        lv.setAtostoptime(Math.abs(val));
+        lv.setAtostoptime(Math.abs(val * TICKS_IN_1_S));
         generalMsg(lv.getLd(), ChatColor.GOLD, getLang("ato_detectstoptime"));
     }
 

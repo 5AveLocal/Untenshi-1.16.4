@@ -507,7 +507,7 @@ class motion {
         // Door text
         String door = lv.isDoordiropen() ? ChatColor.GREEN + "<|>" : ChatColor.RED + ">|<";
         int openpercent = (int) Math.round(lv.getDooropen() * 100);
-        return lv.getAtostoptime() != -1 && lv.isDoordiropen() ? ChatColor.GOLD + "..." + lv.getAtostoptime() : door + " " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(openpercent)) + "%";
+        return lv.getAtostoptime() != -1 && lv.isDoordiropen() ? ChatColor.GOLD + "..." + lv.getAtostoptime() / 20 : door + " " + add3ZeroPadding(ChatColor.WHITE + String.valueOf(openpercent)) + "%";
     }
 
     private static void catchSignalUpdate(utsvehicle lv) {

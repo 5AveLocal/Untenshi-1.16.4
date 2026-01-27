@@ -108,7 +108,6 @@ class ato {
             boolean allowaccel = (lv.getMascon() > 0 || currentlimit - lv.getSpeed() > 5 && (lowerSpeed - lv.getSpeed() > 5 || tempdist > div3p6(lv.getSpeed())) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
                     && potentialspeed <= currentlimit // Will not go over speed limit
                     && (potentialspeed <= lowerSpeed || tempdist > div3p6(potentialspeed)) // Will not go over target speed
-                    && !lv.isOverrun() // Not overrunning
                     && lv.getDooropen() == 0 && lv.isDoorconfirm(); // Doors closed
             int targetBrake = 6;
             boolean notnearreqdist = tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed, lowerSpeed, targetBrake, slopeaccelsel, 3);
@@ -123,9 +122,9 @@ class ato {
             if (lv.isAtoforcebrake() || lv.isAtopisdirect()) {
                 // If even emergency brake cannot brake in time
                 finalbrake = 9;
+                double minreqdist = reqdist[9];
                 // For more accurate result (prevent EB misuse especially at low speeds when smaller brakes can do)
-                double minreqdist = Double.MAX_VALUE;
-                for (int b = 9; b >= 0; b--) {
+                for (int b = 8; b >= 0; b--) {
                     if (tempdist >= reqdist[b] || reqdist[b] < minreqdist) {
                         finalbrake = b;
                         minreqdist = reqdist[b];
@@ -133,14 +132,12 @@ class ato {
                 }
             }
             // Cancel braking? (with additional thinking time)
-            if (tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed + safeslopeaccelsel, lowerSpeed, targetBrake, slopeaccelsel, 3) && !lv.isOverrun()) {
+            if (tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed + safeslopeaccelsel, lowerSpeed, targetBrake, slopeaccelsel, 3)) {
                 lv.setAtoforcebrake(false);
             }
             // 0 km/h signal waiting procedure (if no need accel)
-            if (nextredlight && lv.getSpeed() == 0 && finalmascon == 0) {
-                if (finalbrake < 8) {
-                    finalbrake = 8;
-                }
+            if (nextredlight && lv.getSpeed() == 0 && finalmascon == 0 && finalbrake < 8) {
+                finalbrake = 8;
             }
             // Potentially over speed limit / next speed limit in 1 s
             double aspeed = lv.getSpeed() + slopeaccelnow;
@@ -151,9 +148,9 @@ class ato {
             // Slope braking (not related to ATS-P or ATC)
             if (lv.isAtoforceslopebrake()) {
                 int thisfinalbrake = 8;
-                for (int a = 8; a >= 1; a--) {
+                for (int a = 7; a >= 1; a--) {
                     double ssavgdecel = avgRangeDecel(decel, aspeed, currentlimit, a + 1, lv.getSpeedsteps());
-                    // If braking distance is greater than distance in 1 s and if the brake is greater, then use the value
+                    // If braking decel is greater than slope accel, use the brake
                     if (ssavgdecel > slopeaccelnow) {
                         thisfinalbrake = a;
                     }
@@ -212,7 +209,7 @@ class ato {
                 lv.setStopoutput(null);
             }, 4);
         }
-        // ATO Stop Time Countdown, cancelled if door is closed, unless door does not open automatically
+        // ATO Stop Time Countdown
         atoDepartCountdown(lv);
         if (lv.getAtospeed() != -1) {
             toB8(lv);
@@ -223,10 +220,11 @@ class ato {
 
     // ATO Stop Time Countdown
     static void atoDepartCountdown(utsvehicle lv) {
-        if (lv.getTrain().isValid() && lv.getAtostoptime() != -1) {
-            if (lv.getAtostoptime() > 0 && (lv.isDoordiropen() || !lv.isStopautoopen())) {
-                lv.setAtostoptime(lv.getAtostoptime() - 1);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> atoDepartCountdown(lv), 20);
+        int stoptime = lv.getAtostoptime();
+        if (lv.getTrain().isValid() && stoptime != -1) {
+            if (stoptime > 0 && (lv.isDoordiropen() || !lv.isStopautoopen())) {
+                lv.setAtostoptime(stoptime - 1);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> atoDepartCountdown(lv), 1);
             }
             // If next is red light do not close doors
             else if (lv.getLastsisp() != 0) {
@@ -235,7 +233,7 @@ class ato {
                 lv.setAtostoptime(-1);
                 lv.setAtodest(null);
                 lv.setAtospeed(-1);
-                waitDepart(lv, null, null);
+                waitDepart(lv);
             }
             // Continue waiting if red light
             else {
@@ -244,15 +242,8 @@ class ato {
         }
     }
 
-    static void waitDepart(utsvehicle lv, Location actualSiRefPos, Location cartactualpos) {
+    static void waitDepart(utsvehicle lv) {
         if (lv != null && lv.getTrain().isValid()) {
-            double[] reqdist = new double[10];
-            getAllReqdist(lv, minSpeedLimit(lv), 0, reqdist, 0, 0);
-            if (lv.getLastsisign() != null) {
-                // Assuming positions will not be changed during loop, prevent lag
-                actualSiRefPos = actualSiRefPos == null ? getActualRefPos(lv.getLastsisign(), lv.getSavedworld()) : actualSiRefPos;
-                cartactualpos = cartactualpos == null ? getDriverseatActualPos(lv) : cartactualpos;
-            }
             // For ATO enabled only
             if (lv.isAtoautodep()) {
                 // Wait doors fully closed then depart
@@ -261,10 +252,8 @@ class ato {
                     lv.setMascon(5);
                     lv.setAtoautodep(false);
                 } else {
-                    // Return as final variables
-                    Location finalCartactualpos = cartactualpos;
-                    Location finalActualSiRefPos = actualSiRefPos;
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> waitDepart(lv, finalActualSiRefPos, finalCartactualpos), TICK_DELAY);
+                    // Wait
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> waitDepart(lv), TICK_DELAY);
                 }
             }
         }
