@@ -105,9 +105,9 @@ class ato {
             // Actual controlling part, extra tick to prevent huge shock on stopping
             getAllReqdist(lv, lv.getSpeed(), lowerSpeed, reqdist, slopeaccelsel, ONE_TICK_IN_S);
             // Require accel? (no need to prepare for braking for next object and ATO target destination + additional thinking distance)
-            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - lv.getSpeed() > 5 && (lowerSpeed - lv.getSpeed() > 5 || tempdist > speed1s(lv)) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
+            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - lv.getSpeed() > 5 && (lowerSpeed - lv.getSpeed() > 5 || tempdist > div3p6(lv.getSpeed())) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
                     && potentialspeed <= currentlimit // Will not go over speed limit
-                    && (potentialspeed <= lowerSpeed || tempdist > speed1s(lv)) // Will not go over target speed
+                    && (potentialspeed <= lowerSpeed || tempdist > div3p6(potentialspeed)) // Will not go over target speed
                     && !lv.isOverrun() // Not overrunning
                     && lv.getDooropen() == 0 && lv.isDoorconfirm(); // Doors closed
             int targetBrake = 6;
@@ -136,24 +136,23 @@ class ato {
             if (tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed + safeslopeaccelsel, lowerSpeed, targetBrake, slopeaccelsel, 3) && !lv.isOverrun()) {
                 lv.setAtoforcebrake(false);
             }
-            // 0 km/h signal waiting procedure (1 m (+ 1 m before signal) distance with signal)
-            if (nextredlight && lv.getSpeed() == 0 && signaldist < 2) {
+            // 0 km/h signal waiting procedure (if no need accel)
+            if (nextredlight && lv.getSpeed() == 0 && finalmascon == 0) {
                 if (finalbrake < 8) {
                     finalbrake = 8;
                 }
-                finalmascon = 0;
             }
             // Potentially over speed limit / next speed limit in 1 s
-            if (lv.getSpeed() + slopeaccelnow > (distnow < speed1s(lv) ? lowerSpeed : currentlimit)) {
+            double aspeed = lv.getSpeed() + slopeaccelnow;
+            double slopeselspeed = tempdist < div3p6(aspeed) ? lowerSpeed : currentlimit;
+            if (aspeed > slopeselspeed) {
                 lv.setAtoforceslopebrake(true);
             }
             // Slope braking (not related to ATS-P or ATC)
             if (lv.isAtoforceslopebrake()) {
-                // Redefine reqdist (here for braking distance to speed limit)
-                getAllReqdist(lv, lv.getSpeed() + slopeaccelnow, currentlimit, reqdist, slopeaccelnow, 0);
                 int thisfinalbrake = 8;
                 for (int a = 8; a >= 1; a--) {
-                    double ssavgdecel = avgRangeDecel(decel, lv.getSpeed() + slopeaccelnow, currentlimit, a + 1, lv.getSpeedsteps());
+                    double ssavgdecel = avgRangeDecel(decel, aspeed, currentlimit, a + 1, lv.getSpeedsteps());
                     // If braking distance is greater than distance in 1 s and if the brake is greater, then use the value
                     if (ssavgdecel > slopeaccelnow) {
                         thisfinalbrake = a;
@@ -164,7 +163,7 @@ class ato {
                 }
             }
             // 3 s needed for release
-            if (lv.getSpeed() + 3 * slopeaccelnow < currentlimit) {
+            if (lv.getSpeed() + 3 * slopeaccelnow < slopeselspeed) {
                 lv.setAtoforceslopebrake(false);
             }
             // Final value

@@ -397,7 +397,7 @@ class motion {
             // Get stop location
             StopPosResult spresult = getStopPosResult(lv);
             // Start Overrun (prevent escaping overrun over 144 km/h)
-            if (!lv.isOverrun() && (spresult.stopdist - ONE_TICK_IN_S * speed1s(lv) < 0 || spresult.stopdist < 1)) {
+            if (!lv.isOverrun() && (spresult.stopdist - ONE_TICK_IN_S * div3p6(lv.getSpeed()) < 0 || spresult.stopdist < 1)) {
                 lv.setOverrun(true);
             }
             // Rewards and penalties
@@ -625,7 +625,7 @@ class motion {
             lv.setAtsping(0);
         }
         // Pattern near
-        boolean pnear = (tempdist < reqdist[8] + speed1s(lv) * 5 && lv.getSpeed() > lowerSpeed) || isoverspeed0;
+        boolean pnear = (tempdist < reqdist[8] + div3p6(lv.getSpeed()) * 5 && lv.getSpeed() > lowerSpeed) || isoverspeed0;
         if (!lv.isAtspnear() && pnear) {
             generalMsg(lv.getLd(), ChatColor.GOLD, lv.getSafetysystype().toUpperCase() + " " + getLang("p_near"));
         }
@@ -689,10 +689,10 @@ class motion {
             double sumdist = 0;
             if (bcp < bcptarget) {
                 AfterBrakeInitResult result = getAfterBrakeInitResult(lv, upperSpeed, slopeaccel, bcp, bcptarget);
-                sumdist = (upperSpeed * result.realt - result.avgdecel * Math.pow(result.realt, 2) / 2) / 3.6; // get distance from basic decel distance formula, v = u*t+1/2*a*t^2, and speed to SI units
+                sumdist = div3p6(upperSpeed * result.realt - result.avgdecel * Math.pow(result.realt, 2) / 2); // get distance from basic decel distance formula, v = u*t+1/2*a*t^2, and speed to SI units
             }
             // Extra tick for action delay + slope acceleration considered, prevent negative distance
-            return Math.max(0, Math.max(0, sumdist) + (upperSpeed + slopeaccel) / 3.6 * extra);
+            return Math.max(0, Math.max(0, sumdist) + div3p6(upperSpeed + slopeaccel) * extra);
         } else {
             // Thinking distance not required
             return 0;
@@ -700,7 +700,7 @@ class motion {
     }
 
     static double getSpeedAfterPotentialAccel(utsvehicle lv, double currentSpeed, double slopeaccel) {
-        double current = Math.max(0, lv.getCurrent());
+        double current = lv.getCurrent();
         // 1 tick delay for compensation for action delay
         double speed = currentSpeed + (accelSwitch(lv, currentSpeed, (int) (getNotchFromCurrent(current))) + slopeaccel) * ONE_TICK_IN_S;
         // Anti out-of-range causing GIGO
@@ -728,8 +728,9 @@ class motion {
         return bcp * 9 / 480;
     }
 
-    static double speed1s(utsvehicle lv) {
-        return lv.getSpeed() / 3.6;
+    static double div3p6(double d) {
+        // km/h to m/s conversion
+        return d / 3.6;
     }
 
     static double getSlopeAccel(Location endpt, Location beginpt) {
