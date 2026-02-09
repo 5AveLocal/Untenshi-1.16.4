@@ -299,10 +299,7 @@ class cmds implements CommandExecutor, TabCompleter {
                                         }
                                     }
                                     s = sBuilder.toString();
-                                    // To keep & type \&
-                                    s = s.replaceAll("\\\\&", "\\\\and");
-                                    s = s.replaceAll("&", "§");
-                                    s = s.replaceAll("\\\\and", "&");
+                                    s = ChatColor.translateAlternateColorCodes('&', s);
                                     generalMsg(p2, ChatColor.YELLOW, getLang("help_painfo") + ": " + s);
                                 } else {
                                     generalMsg(p, ChatColor.RED, getLang("panoempty"));

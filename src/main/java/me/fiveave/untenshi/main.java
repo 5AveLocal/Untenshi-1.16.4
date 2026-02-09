@@ -47,6 +47,8 @@ public final class main extends JavaPlugin implements Listener {
     final signalsign sign3 = new signalsign();
     final atosign sign4 = new atosign();
     final utstrain sign5 = new utstrain();
+    final drivermsg sign6 = new drivermsg();
+    final SignAction[] signs = new SignAction[]{sign1, sign2, sign3, sign4, sign5, sign6};
 
     static String getLang(String path) {
         langdata.reloadConfig();
@@ -148,7 +150,7 @@ public final class main extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         // Plugin startup logic
-        for (SignAction sa : new SignAction[]{sign1, sign2, sign3, sign4, sign5}) {
+        for (SignAction sa : signs) {
             SignAction.register(sa);
         }
         plugin = this;
@@ -183,7 +185,7 @@ public final class main extends JavaPlugin implements Listener {
         // Plugin shutdown logic
         driver.keySet().forEach(p -> restoreInitLd(driver.get(p)));
         vehicle.keySet().forEach(mg -> restoreInitLv(vehicle.get(mg)));
-        for (SignAction sa : new SignAction[]{sign1, sign2, sign3, sign4, sign5}) {
+        for (SignAction sa : signs) {
             SignAction.unregister(sa);
         }
     }
