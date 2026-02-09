@@ -48,7 +48,7 @@ class drivermsg extends SignAction {
                             p.sendMessage(UTS_HEAD + ChatColor.translateAlternateColorCodes('&', s));
                             break;
                         case "json":
-                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + p.getName() + " " + s);
+                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + p.getName() + " [{\"text\":\"" + UTS_HEAD + "\"}," + s + "]");
                             break;
                         default:
                             signImproper(eventloc, ld);
