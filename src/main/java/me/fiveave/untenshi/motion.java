@@ -238,7 +238,7 @@ class motion {
                 // Check resettable sign of other trains
                 Location[] rssign2locs = lv2.getRsposlist();
                 if (rssign2locs != null) {
-                    signalOrderPtnResult result2 = getSignalOrderPtnResult(lv2);
+                    SignalOrderPtnResult result2 = getSignalOrderPtnResult(lv2);
                     // Check for each location
                     for (int i = oldposlist.length - 1; i >= 0; i--) {
                         for (int j = 0; j < rssign2locs.length; j++) {
@@ -321,7 +321,7 @@ class motion {
         // Is first priority? If yes then continue, if no then wait
         if (ispriority) {
             // Occupy and set signals when ok
-            signalOrderPtnResult result = getSignalOrderPtnResult(lv);
+            SignalOrderPtnResult result = getSignalOrderPtnResult(lv);
             int orderno = 0;
             // Set signs with new signal and speed
             // Prevent repeated updating

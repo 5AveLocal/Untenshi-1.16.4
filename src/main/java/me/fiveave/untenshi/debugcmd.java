@@ -64,7 +64,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 Location loc3 = new Location(lv.getSavedworld(), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
                 lv.setLastsisign(loc3);
                 break;
-            case "rslist":
+            case "rsposlist":
             case "ilposlist":
             case "ilposoccupied":
             case "ilpriority":
@@ -189,7 +189,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
             case "lastsisign":
                 retstr = locToString(lv.getLastsisign());
                 break;
-            case "rslist":
+            case "rsposlist":
                 retstr = locListToString(lv.getRsposlist());
                 break;
             case "ilposlist":
@@ -365,7 +365,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 ta.addAll(Arrays.asList("get", "set"));
                 break;
             case 3:
-                ta.addAll(Arrays.asList("speed", "mascon", "brake", "speedlimit", "signallimit", "atospeed", "atodest", "stoppos", "stopoutput", "lastspsp", "lastspsign", "lastsisp", "lastsisign", "rslist", "ilposlist", "ilposoccupied", "ilpriority", "ilenterqueuetime", "atsforced", "atsping", "atspnear", "ld", "accel", "decel", "ebdecel", "speeddrop", "current", "bcpressure", "currentpertick", "bcppertick", "ebbcppertick", "dooropenspeed", "doorclosespeed", "reqstopping", "overrun", "fixstoppos", "dooropen", "doordiropen", "doorconfirm", "atopisdirect", "atoforcebrake", "atoautodep"));
+                ta.addAll(Arrays.asList("speed", "mascon", "brake", "speedlimit", "signallimit", "atospeed", "atodest", "stoppos", "stopoutput", "lastspsp", "lastspsign", "lastsisp", "lastsisign", "rsposlist", "ilposlist", "ilposoccupied", "ilpriority", "ilenterqueuetime", "atsforced", "atsping", "atspnear", "ld", "accel", "decel", "ebdecel", "speeddrop", "current", "bcpressure", "currentpertick", "bcppertick", "ebbcppertick", "dooropenspeed", "doorclosespeed", "reqstopping", "overrun", "fixstoppos", "dooropen", "doordiropen", "doorconfirm", "atopisdirect", "atoforcebrake", "atoautodep"));
                 break;
         }
         ta.forEach(a -> {

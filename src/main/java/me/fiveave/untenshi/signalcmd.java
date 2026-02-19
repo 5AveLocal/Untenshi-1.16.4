@@ -64,7 +64,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                         if (!lossy) {
                             Location[] rssign2locs = lv2.getRsposlist();
                             if (rssign2locs != null) {
-                                signalOrderPtnResult result2 = getSignalOrderPtnResult(lv2);
+                                SignalOrderPtnResult result2 = getSignalOrderPtnResult(lv2);
                                 // Check for each location
                                 for (int j = 0; j < rssign2locs.length; j++) {
                                     Location location = rssign2locs[j];
@@ -223,7 +223,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
         } else if (args.length == 5) {
             switch (args[3]) {
                 case "sign":
-                    ta.addAll(Arrays.asList("r", "yy", "y", "yg", "g", "atc"));
+                    ta.addAll(signalnamelist);
                     break;
                 case "getilclear":
                 case "getilclearlossy":

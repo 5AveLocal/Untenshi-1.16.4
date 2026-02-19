@@ -17,7 +17,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -41,7 +40,7 @@ class signalsign extends SignAction {
 
     static void resetSignals(World world, Location[] locs) {
         try {
-            // Get resetable signs
+            // Get resettable signs
             for (Location loc : locs) {
                 BlockState bs = world.getBlockAt(loc).getState();
                 if (bs instanceof Sign) {
@@ -77,8 +76,7 @@ class signalsign extends SignAction {
 
     // Simplify
     static boolean isSignalType(String s) {
-        List<String> list = Arrays.asList("g", "yg", "y", "yy", "r", "atc");
-        for (String str : list) {
+        for (String str : signalnamelist) {
             if (Objects.equals(s, str)) {
                 return true;
             }
@@ -86,11 +84,11 @@ class signalsign extends SignAction {
         return false;
     }
 
-    static void iLListandOccupiedRemoveShift(utsvehicle lv, Location targetloc, boolean resetrs) {
+    static void iLListandOccupiedRemoveShift(utsvehicle lv, Location targetloc, boolean clearrs) {
         ilListRemoveShift(lv, targetloc);
         ilOccupiedRemoveShift(lv, targetloc);
-        if (resetrs) {
-            rsListRemoveShift(lv);
+        if (clearrs) {
+            rsPosListClear(lv);
         }
     }
 
@@ -113,30 +111,44 @@ class signalsign extends SignAction {
         if (lv.getIlposoccupied() != null) {
             // Occupied list
             Location[] oldoccupied = lv.getIlposoccupied();
+            int resetlen = -1;
             for (int i2 = 0; i2 < oldoccupied.length; i2++) {
                 if (targetloc.equals(oldoccupied[i2])) {
-                    int resetlen = 1 + i2;
-                    Location[] resetlocs = new Location[resetlen];
-                    System.arraycopy(oldoccupied, 0, resetlocs, 0, resetlen);
-                    resetSignals(lv.getSavedworld(), resetlocs);
-                    Location[] newoccupied = new Location[oldoccupied.length - resetlen];
-                    System.arraycopy(oldoccupied, 1 + i2, newoccupied, 0, newoccupied.length);
-                    lv.setIlposoccupied(newoccupied);
+                    resetlen = 1 + i2;
                     break;
                 }
+            }
+            if (resetlen != -1) {
+                Location[] resetlocs = new Location[resetlen];
+                System.arraycopy(oldoccupied, 0, resetlocs, 0, resetlen);
+                resetSignals(lv.getSavedworld(), resetlocs);
+                Location[] newoccupied = new Location[oldoccupied.length - resetlen];
+                System.arraycopy(oldoccupied, resetlen, newoccupied, 0, newoccupied.length);
+                lv.setIlposoccupied(newoccupied);
             }
         }
     }
 
-    static void rsListRemoveShift(utsvehicle lv) {
+    static void rsPosListClear(utsvehicle lv) {
         // Resettable sign list
-        if (lv.getRsposlist() != null) {
-            lv.setRsposlist(null);
+        lv.setRsposlist(null);
+    }
+
+    static void rsPosListRemoveShift(utsvehicle lv, Location currentloc) {
+        Location[] oldloc = lv.getRsposlist();
+        Location[] newloc = oldloc;
+        for (int i1 = 0; i1 < oldloc.length; i1++) {
+            if (oldloc[i1] != null && currentloc.equals(oldloc[i1])) {
+                newloc = new Location[i1];
+                System.arraycopy(oldloc, 0, newloc, 0, newloc.length);
+                break;
+            }
         }
+        lv.setRsposlist(newloc);
     }
 
 
-    static signalOrderPtnResult getSignalOrderPtnResult(utsvehicle lv) {
+    static SignalOrderPtnResult getSignalOrderPtnResult(utsvehicle lv) {
         // Get signal order (ptnlen: length of string, halfptnlen: actual number of signal orders)
         List<String> ptn = signalorder.dataconfig.getStringList("signal." + lv.getSignalorderptn());
         int ptnlen = ptn.size();
@@ -152,7 +164,7 @@ class signalsign extends SignAction {
                 ptnsisp[(i - 1) / 2] = parseInt(ptn.get(i));
             }
         }
-        return new signalOrderPtnResult(halfptnlen, ptnsisi, ptnsisp);
+        return new SignalOrderPtnResult(halfptnlen, ptnsisi, ptnsisp);
     }
 
     static void deleteOthersRs(utsvehicle lv, Location currentloc) {
@@ -160,16 +172,7 @@ class signalsign extends SignAction {
             initVehicle(mg2);
             utsvehicle lv2 = vehicle.get(mg2);
             if (lv2.getRsposlist() != null && lv2 != lv) {
-                Location[] oldloc = lv2.getRsposlist();
-                Location[] newloc = oldloc;
-                for (int i1 = 0; i1 < oldloc.length; i1++) {
-                    if (oldloc[i1] != null && currentloc.equals(oldloc[i1])) {
-                        newloc = new Location[i1];
-                        System.arraycopy(oldloc, 0, newloc, 0, newloc.length);
-                        break;
-                    }
-                }
-                lv2.setRsposlist(newloc);
+                rsPosListRemoveShift(lv2, currentloc);
             }
         });
     }
@@ -359,7 +362,7 @@ class signalsign extends SignAction {
                     switch (l3[0]) {
                         // Set signal speed limit
                         case "set":
-                            // Train enters, add location into resettablesign
+                            // Train enters, add location into rsposlist
                             if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && cartevent.hasRailedMember() && cartevent.isPowered()) {
                                 String signalmsg;
                                 if (lv.getRsposlist() == null) {
@@ -371,7 +374,7 @@ class signalsign extends SignAction {
                                     // Except red light, signal must get reset first
                                     if (signalspeed != 0) {
                                         Location currentloc = cartevent.getLocation();
-                                        // Suzhoushi: If in 3 trains middle train disappears, back train will receive ALL green lights ((rs only, il is issue-free) r, 0 (front), g, 360 (back), g, 360 (back), ...)
+                                        // FIXME: If in 3 trains middle train disappears, back train will receive ALL green lights ((rs only, il is issue-free) r, 0 (front), g, 360 (back), g, 360 (back), ...)
                                         // Check if that location exists in any other train, then delete that record
                                         deleteOthersRs(lv, currentloc);
                                     }
@@ -398,7 +401,11 @@ class signalsign extends SignAction {
                                     shiftRs(lv, loc);
                                     // Update this signal
                                     String str = (lv.getSafetysystype().equals("atc") ? "atc" : "r") + " " + 0;
-                                    Bukkit.getScheduler().runTaskLater(plugin, () -> updateSignals(cartevent.getSign(), "set " + str), 1);
+                                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                                        updateSignals(cartevent.getSign(), "set " + str);
+                                        // If location is in interlocking list, then remove location and shift list
+                                        iLListandOccupiedRemoveShift(lv, cartevent.getLocation(), false);
+                                    }, 1);
                                     // Prevent non-resettable ATS Run caused by red light but without receiving warning
                                     if (signalspeed == 0 && lv.getLastsisign() == null) {
                                         lv.setLastsisign(loc);
@@ -406,13 +413,20 @@ class signalsign extends SignAction {
                                     }
                                 }
                             }
-                            // Train leaves, but in many ways (group leave, destroyed, etc), delete location from resettablesign
+                            // Train leaves, but in many ways (group leave, destroyed, etc), delete location from rsposlist and interlock
                             else if ((cartevent.isAction(SignActionType.GROUP_LEAVE, SignActionType.REDSTONE_OFF) || !cartevent.hasRailedMember() || !cartevent.isPowered()) && lv.getRsposlist() != null && lv.getRsposlist().length > 0) {
-                                Location[] oldloc = lv.getRsposlist();
-                                signalOrderPtnResult result = getSignalOrderPtnResult(lv);
+                                SignalOrderPtnResult result = getSignalOrderPtnResult(lv);
                                 // Make blocked section shorter by 1
                                 lv.setRsoccupiedpos(Math.max(lv.getRsoccupiedpos() - 1, 0));
+                                // Clear the redundant signal (length over halfptnlen)
+                                Location[] oldlocreset = lv.getRsposlist();
+                                int len = oldlocreset.length;
+                                Location lastloc = oldlocreset[len - 1];
+                                if (!lastloc.equals(eventloc) && len > result.halfptnlen) {
+                                    rsPosListRemoveShift(lv, lastloc);
+                                }
                                 // This signal has been updated when train touches the sign, so update next ones
+                                Location[] oldloc = lv.getRsposlist();
                                 for (int i1 = 1; i1 < oldloc.length; i1++) {
                                     // settable: Sign to be set
                                     Sign settable;
@@ -430,9 +444,6 @@ class signalsign extends SignAction {
                                     } catch (Exception ignored) {
                                     }
                                 }
-                                // Must put here or else points that are not signals also get cleared wrongly too early
-                                // If location is in interlocking list, then remove location and shift list
-                                iLListandOccupiedRemoveShift(lv, cartevent.getLocation(), false);
                             }
                             break;
                         // Signal speed limit warn
@@ -513,12 +524,12 @@ class signalsign extends SignAction {
         return true;
     }
 
-    static class signalOrderPtnResult {
+    static class SignalOrderPtnResult {
         public final int halfptnlen;
         public final String[] ptnsisi;
         public final int[] ptnsisp;
 
-        public signalOrderPtnResult(int halfptnlen, String[] ptnsisi, int[] ptnsisp) {
+        public SignalOrderPtnResult(int halfptnlen, String[] ptnsisi, int[] ptnsisp) {
             this.halfptnlen = halfptnlen;
             this.ptnsisi = ptnsisi;
             this.ptnsisp = ptnsisp;
