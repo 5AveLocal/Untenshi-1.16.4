@@ -220,10 +220,10 @@ class motion {
         // Check conditions to change signal
         int furthestoccupied = oldposlist.length - 1;
         boolean ispriority = true;
-        // Prevent front train being blocked due to train at back due to lack of iloccupied
-        // Ignore blocked status until first signal is found,
-        // no worries for direct collision as if rs exists, train will be blocked;
-        // if rs does not exist (by interlock del), there must be another location
+        /* Prevent front train being blocked due to train at back due to lack of iloccupied
+           Ignore blocked status until first signal is found,
+           no worries for direct collision as if rs exists, train will be blocked;
+           if rs does not exist (by interlock del), there must be another location */
         int searchstart = 0;
         for (int i = 0; i < oldposlist.length; i++) {
             if (isLocOfSign(oldposlist[i])) {
@@ -273,22 +273,7 @@ class motion {
                 // Fighting with other's unoccupied interlocking route
                 Location[] il2poslist = lv2.getIlposlist();
                 if (il2poslist != null) {
-                    // Find location for start of blocked section, -1 means none
-                    int blocked = -1;
-                    // Find blocked signal
-                    for (int i = searchstart; i < oldposlist.length; i++) {
-                        if (blocked != -1) {
-                            break;
-                        }
-                        // Check for each location
-                        for (int j = 0; j < il2poslist.length - 1; j++) {
-                            // Occupied by interlocking list
-                            if (oldposlist[i].equals(il2poslist[j])) {
-                                blocked = i;
-                                break;
-                            }
-                        }
-                    }
+                    int blocked = getIlBlocked(searchstart, oldposlist, il2poslist);
                     if (blocked != -1) {
                         // Sign closer to this train
                         int firstsign = 0;
@@ -370,6 +355,23 @@ class motion {
             // Delete other's resettable sign (check all locations to prevent bug)
             Arrays.stream(newiloccupied).forEach(eachloc -> deleteOthersRs(lv, eachloc));
         }
+    }
+
+    private static int getIlBlocked(int searchstart, Location[] oldposlist, Location[] il2poslist) {
+        // Find location for start of blocked section, -1 means none
+        int blocked = -1;
+        // Find blocked signal
+        for (int i = searchstart; i < oldposlist.length && blocked == -1; i++) {
+            // Check for each location
+            for (int j = 0; j < il2poslist.length - 1; j++) {
+                // Occupied by interlocking list
+                if (oldposlist[i].equals(il2poslist[j])) {
+                    blocked = i;
+                    break;
+                }
+            }
+        }
+        return blocked;
     }
 
     private static String getCtrlText(utsvehicle lv) {

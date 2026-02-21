@@ -14,14 +14,14 @@ import java.util.Set;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.errorLog;
 
-class abstractfile {
+class absyaml {
     protected final main plugin;
     final FileConfiguration oldconfig;
     private final String fileName;
     FileConfiguration dataconfig;
     private File file;
 
-    abstractfile(main plugin, String fileName) {
+    absyaml(main plugin, String fileName) {
         this.plugin = plugin;
         this.fileName = fileName;
         file = new File(plugin.getDataFolder(), fileName);

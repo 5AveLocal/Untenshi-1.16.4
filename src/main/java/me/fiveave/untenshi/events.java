@@ -17,10 +17,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -376,5 +373,18 @@ class events implements Listener {
             restoreInitLd(ld);
         }
         driver.remove(p);
+    }
+
+    @EventHandler
+        // Inventory retrieval after crash
+    void onJoin(PlayerJoinEvent event) {
+        Player p = event.getPlayer();
+        String uuid = p.getUniqueId().toString();
+        // If have inventory data on joining (due to crash occurred before)
+        if (invdata.dataconfig.contains(uuid)) {
+            initDriver(p);
+            utsdriver ld = driver.get(p);
+            retrieveInv(ld);
+        }
     }
 }

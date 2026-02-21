@@ -8,6 +8,7 @@ import com.bergerkiller.bukkit.tc.properties.CartProperties;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,6 +18,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.RideableMinecart;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,7 +169,23 @@ class cmds implements CommandExecutor, TabCompleter {
                                             lv.setTrain(mg2);
                                         }
                                         // Save inventory
-                                        ld.setInv(p.getInventory().getContents());
+                                        ItemStack[] inv = p.getInventory().getContents();
+                                        // ld.setInv(inv);
+                                        // Save inventory to inventories.yml
+                                        String uuid = ld.getP().getUniqueId().toString();
+                                        for (int i = 0; i < inv.length; i++) {
+                                            ItemStack item = inv[i];
+                                            if (item != null) {
+                                                invdata.dataconfig.set(uuid + "." + i + ".material", item.getType().toString());
+                                                ItemMeta itemmeta = item.getItemMeta();
+                                                invdata.dataconfig.set(uuid + "." + i + ".meta", itemmeta);
+                                                invdata.dataconfig.set(uuid + "." + i + ".amount", item.getAmount());
+                                            } else {
+                                                invdata.dataconfig.set(uuid + "." + i + ".material", Material.AIR.toString());
+                                            }
+                                        }
+                                        // Save inventories.yml
+                                        invdata.save();
                                         // Clear inventory
                                         p.getInventory().clear();
                                         // Set wands in place
@@ -311,10 +330,10 @@ class cmds implements CommandExecutor, TabCompleter {
                     case "reload":
                         if (checkPerm(p, "uts.reload")) break;
                         plugin.reloadConfig();
-                        config = new abstractfile(plugin, "config.yml");
-                        traindata = new abstractfile(plugin, "traindata.yml");
-                        signalorder = new abstractfile(plugin, "signalorder.yml");
-                        langdata = new abstractfile(plugin, "lang_" + plugin.getConfig().getString("lang") + ".yml");
+                        config = new absyaml(plugin, "config.yml");
+                        traindata = new absyaml(plugin, "traindata.yml");
+                        signalorder = new absyaml(plugin, "signalorder.yml");
+                        langdata = new absyaml(plugin, "lang_" + plugin.getConfig().getString("lang") + ".yml");
                         generalMsg(sender, ChatColor.YELLOW, getLang("reloaded"));
                         break;
                     default:

@@ -1,7 +1,6 @@
 package me.fiveave.untenshi;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 import static me.fiveave.untenshi.cmds.getPConfig;
 import static me.fiveave.untenshi.main.driver;
@@ -15,7 +14,6 @@ class utsdriver {
     private boolean frozen;
     private boolean allowatousage;
     private utsvehicle lv;
-    private ItemStack[] inv;
 
     utsdriver(Player p, Boolean freemode, Boolean allowatousage) {
         this.p = p;
@@ -73,14 +71,6 @@ class utsdriver {
 
     public void setAllowatousage(boolean allowatousage) {
         this.allowatousage = allowatousage;
-    }
-
-    public ItemStack[] getInv() {
-        return inv;
-    }
-
-    public void setInv(ItemStack[] inv) {
-        this.inv = inv;
     }
 
     public Player getP() {

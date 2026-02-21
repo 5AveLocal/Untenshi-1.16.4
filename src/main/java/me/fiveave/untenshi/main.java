@@ -7,15 +7,16 @@ import com.bergerkiller.bukkit.tc.signactions.SignAction;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Level;
 
 import static me.fiveave.untenshi.cmds.generalMsg;
@@ -39,11 +40,12 @@ public final class main extends JavaPlugin implements Listener {
     static final String UTS_HEAD = "[" + ChatColor.GREEN + "Untenshi" + ChatColor.WHITE + "] ";
     static final List<String> signalnamelist = Arrays.asList("r", "yy", "y", "yg", "g", "atc");
     public static main plugin;
-    static abstractfile config;
-    static abstractfile langdata;
-    static abstractfile traindata;
-    static abstractfile playerdata;
-    static abstractfile signalorder;
+    static absyaml config;
+    static absyaml langdata;
+    static absyaml traindata;
+    static absyaml playerdata;
+    static absyaml signalorder;
+    static absyaml invdata;
     final stoppos sign1 = new stoppos();
     final speedsign sign2 = new speedsign();
     final signalsign sign3 = new signalsign();
@@ -101,8 +103,7 @@ public final class main extends JavaPlugin implements Listener {
                 waitStopOpenDoor(lv);
             }
             // Reset inventory
-            ld.getP().getInventory().setContents(ld.getInv());
-            ld.getP().updateInventory();
+            retrieveInv(ld);
             lv.setLd(null);
             try {
                 driver.put(ld.getP(), new utsdriver(ld.getP(), ld.isFreemode(), ld.isAllowatousage()));
@@ -111,6 +112,29 @@ public final class main extends JavaPlugin implements Listener {
             ld.setPlaying(false);
             generalMsg(ld.getP(), ChatColor.YELLOW, getLang("activate") + " " + ChatColor.RED + getLang("activate_off"));
         }
+    }
+
+    static void retrieveInv(utsdriver ld) {
+        String uuid = ld.getP().getUniqueId().toString();
+        ConfigurationSection cs = invdata.dataconfig.getConfigurationSection(uuid); // Getting the correct node
+        ArrayList<ItemStack> items = new ArrayList<>();
+        if (cs != null) {
+            for (String key : cs.getKeys(false)) {
+                ItemMeta meta = (ItemMeta) invdata.dataconfig.get(uuid + "." + key + ".meta");
+                Material mat = Objects.requireNonNull(Material.getMaterial(invdata.dataconfig.getString(uuid + "." + key + ".material")));
+                int amount = invdata.dataconfig.getInt(uuid + "." + key + ".amount");
+                ItemStack item = new ItemStack(mat, amount);
+                item.setItemMeta(meta);
+                items.add(item);
+            }
+        }
+        ItemStack[] inv = items.toArray(new ItemStack[0]);
+        // Clear inventory.yml for player
+        invdata.dataconfig.set(uuid, null);
+        invdata.save();
+        // Reset inventory
+        ld.getP().getInventory().setContents(inv);
+        ld.getP().updateInventory();
     }
 
     static void waitStopOpenDoor(utsvehicle lv) {
@@ -157,11 +181,12 @@ public final class main extends JavaPlugin implements Listener {
         }
         plugin = this;
         // If langdata not init twice will cause UTF-8 characters not formatted properly
-        config = new abstractfile(this, "config.yml");
-        Arrays.asList("en_US", "zh_TW", "JP", plugin.getConfig().getString("lang")).forEach(s -> langdata = new abstractfile(this, "lang_" + s + ".yml"));
-        traindata = new abstractfile(this, "traindata.yml");
-        playerdata = new abstractfile(this, "playerdata.yml");
-        signalorder = new abstractfile(this, "signalorder.yml");
+        config = new absyaml(this, "config.yml");
+        Arrays.asList("en_US", "zh_TW", "JP", plugin.getConfig().getString("lang")).forEach(s -> langdata = new absyaml(this, "lang_" + s + ".yml"));
+        traindata = new absyaml(this, "traindata.yml");
+        playerdata = new absyaml(this, "playerdata.yml");
+        signalorder = new absyaml(this, "signalorder.yml");
+        invdata = new absyaml(this, "inventories.yml");
         this.saveDefaultConfig();
         PluginManager pm = this.getServer().getPluginManager();
         Objects.requireNonNull(this.getCommand("uts")).setExecutor(new cmds());
