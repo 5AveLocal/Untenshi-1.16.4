@@ -27,6 +27,7 @@ import java.util.List;
 
 import static me.fiveave.untenshi.events.*;
 import static me.fiveave.untenshi.main.*;
+import static me.fiveave.untenshi.motion.tccTest;
 import static me.fiveave.untenshi.utsdriver.initDriver;
 import static me.fiveave.untenshi.utsvehicle.initVehicle;
 
@@ -98,6 +99,9 @@ class cmds implements CommandExecutor, TabCompleter {
             // For each arg need check length of arg to ensure safety
             if (args.length > 0) {
                 switch (args[0].toLowerCase()) {
+                    case "test":
+                        tccTest(p);
+                        break;
                     case "help":
                         if (args.length == 1) {
                             helpMsg(sender);

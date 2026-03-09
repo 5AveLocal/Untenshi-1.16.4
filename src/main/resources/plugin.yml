@@ -1,10 +1,11 @@
 name: Untenshi
-version: 1.11.22
+version: 1.11.22_01
 main: me.fiveave.untenshi.main
 api-version: 1.15
 description: Untenshi Plugin
 author: 5_AvenueLocal
 depend: [ Train_Carts ]
+softdepend: [ TCCoasters ]
 commands:
   uts:
     description: Untenshi Main Commands
