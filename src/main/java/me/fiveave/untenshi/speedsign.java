@@ -22,6 +22,7 @@ import static me.fiveave.untenshi.motion.minSpeedLimit;
 
 class speedsign extends SignAction {
 
+
     static Location getFullLoc(String loctext, Location signloc) {
         double[] newloc = new double[3];
         getLocFromString(loctext, signloc, newloc);
@@ -83,7 +84,7 @@ class speedsign extends SignAction {
                 }
             } while (true);
         }
-        return new Location(w, loc.getX() + blkoffset[0] + 0.5, loc.getY() + blkoffset[1] + CART_Y_POS_DIFF, loc.getZ() + blkoffset[2] + 0.5);
+        return new Location(w, loc.getX() + blkoffset[0], loc.getY() + blkoffset[1] + CART_Y_POS_DIFF, loc.getZ() + blkoffset[2]);
     }
 
     static void signImproper(Location loc, utsdriver ld) {
@@ -104,10 +105,11 @@ class speedsign extends SignAction {
         return false;
     }
 
-    static void speedSignWarn(utsvehicle lv, Location eventloc, String signloc) {
-        Sign warn = getSignFromLoc(getFullLoc(signloc, eventloc));
+    static void speedSignWarn(utsvehicle lv, Location eventloc, String signlocstr) {
+        Location signloc = getFullLoc(signlocstr, eventloc);
+        Sign warn = getSignFromLoc(signloc);
         if (warn != null) {
-            lv.setLastspsign(warn.getLocation());
+            lv.setLastspsign(signloc);
             int warnsp = parseInt(warn.getLine(2));
             lv.setLastspsp(warnsp);
             if (warnsp < MAX_SPEED) {

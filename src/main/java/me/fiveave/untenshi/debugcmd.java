@@ -39,11 +39,11 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 lv.setAtospeed(Double.parseDouble(args[3]));
                 break;
             case "atodest":
-                Location loc1 = new Location(lv.getSavedworld(), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+                Location loc1 = new Location(lv.getSavedworld(), Double.parseDouble(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]));
                 lv.setAtodest(loc1);
                 break;
             case "stoppos":
-                Location loc5 = new Location(lv.getSavedworld(), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+                Location loc5 = new Location(lv.getSavedworld(), Double.parseDouble(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]));
                 lv.setStoppos(loc5);
                 break;
             case "stopoutput":
@@ -54,14 +54,14 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 lv.setLastspsp(Integer.parseInt(args[3]));
                 break;
             case "lastspsign":
-                Location loc2 = new Location(lv.getSavedworld(), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+                Location loc2 = new Location(lv.getSavedworld(), Double.parseDouble(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]));
                 lv.setLastspsign(loc2);
                 break;
             case "lastsisp":
                 lv.setLastsisp(Integer.parseInt(args[3]));
                 break;
             case "lastsisign":
-                Location loc3 = new Location(lv.getSavedworld(), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+                Location loc3 = new Location(lv.getSavedworld(), Double.parseDouble(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]));
                 lv.setLastsisign(loc3);
                 break;
             case "rsposlist":
@@ -286,9 +286,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
     public static String locToString(Location loc) {
         String retstr = "null";
         try {
-            for (int i = 0; i < 3; i++) {
-                retstr = loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ();
-            }
+            retstr = loc.getX() + " " + loc.getY() + " " + loc.getZ();
         } catch (Exception ignored) {
 
         }

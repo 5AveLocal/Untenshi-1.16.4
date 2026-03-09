@@ -1,13 +1,11 @@
 package me.fiveave.untenshi;
 
 import com.bergerkiller.bukkit.coasters.TCCoasters;
-import com.bergerkiller.bukkit.coasters.rails.TrackRailsWorld;
 import com.bergerkiller.bukkit.coasters.tracks.TrackNode;
 import com.bergerkiller.bukkit.coasters.tracks.TrackNodeSign;
 import com.bergerkiller.bukkit.coasters.tracks.TrackWorld;
 import com.bergerkiller.bukkit.coasters.world.CoasterWorld;
 import com.bergerkiller.bukkit.common.math.Quaternion;
-import com.bergerkiller.bukkit.tc.TCConfig;
 import com.bergerkiller.bukkit.tc.attachments.config.AttachmentModel;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
@@ -17,7 +15,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -27,9 +24,7 @@ import org.bukkit.util.Vector;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.ato.*;

@@ -12,7 +12,6 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Rail;
 
 import static java.lang.Boolean.parseBoolean;
-import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
@@ -43,23 +42,17 @@ class stoppos extends SignAction {
         }
     }
 
-    static void stopPosDefault(utsvehicle lv, String[] l3split, String l4) {
+    static void stopPosDefault(utsvehicle lv, Location signloc, String l3, String l4) {
         if (lv != null) {
-            String[] l4split = l4.split(" ");
             double[] loc = new double[3];
-            int[] loc2 = new int[3];
-            for (int a = 0; a <= 2; a++) {
-                loc[a] = Double.parseDouble(l3split[a]);
-                if (!l4.isEmpty()) {
-                    loc2[a] = parseInt(l4split[a]);
-                }
-            }
+            getLocFromString(l3, signloc, loc);
             curveRailPosFix(lv, loc);
-            loc[0] += 0.5;
+            // Minecart always has y-offset
             loc[1] += CART_Y_POS_DIFF;
-            loc[2] += 0.5;
             lv.setStoppos(new Location(lv.getSavedworld(), loc[0], loc[1], loc[2]));
             if (!l4.isEmpty()) {
+                double[] loc2 = new double[3];
+                getLocFromString(l4, signloc, loc2);
                 lv.setStopoutput(new Location(lv.getSavedworld(), loc2[0], loc2[1], loc2[2]));
             }
             lv.setReqstopping(true);
@@ -82,8 +75,7 @@ class stoppos extends SignAction {
             if (l3.equals("autoopen")) {
                 stopPosAutoOpen(lv, l4);
             } else {
-                String[] l3split = l3.split(" ");
-                stopPosDefault(lv, l3split, l4);
+                stopPosDefault(lv, cartevent.getLocation(), l3, l4);
             }
         }
     }

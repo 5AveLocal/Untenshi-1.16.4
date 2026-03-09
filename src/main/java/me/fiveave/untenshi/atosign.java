@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 
+import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.events.toB8;
@@ -59,24 +60,26 @@ class atosign extends SignAction {
         String[] sloc = s.split(" ");
         for (int a = 0; a <= 2; a++) {
             String strloc = sloc[a];
+            boolean useactualcoord = s.contains(".");
             if (strloc.startsWith("~")) {
                 String rstr = strloc.replaceFirst("~", "");
-                int offset = rstr.isEmpty() ? 0 : parseInt(rstr);
-                int coord;
+                double offset = rstr.isEmpty() ? 0 : parseDouble(rstr);
+                double coord;
                 switch (a) {
                     case 0:
-                        coord = signloc.getBlockX();
+                        coord = useactualcoord ? signloc.getX() : signloc.getBlockX() + 0.5;
                         break;
                     case 1:
-                        coord = signloc.getBlockY();
+                        coord = useactualcoord ? signloc.getY() : signloc.getBlockY();
                         break;
                     default: // 2
-                        coord = signloc.getBlockZ();
+                        coord = useactualcoord ? signloc.getZ() : signloc.getBlockZ() + 0.5;
                         break;
                 }
                 loc[a] = coord + offset;
             } else {
-                loc[a] = parseInt(sloc[a]);
+                // If have decimal point then use actual coordinates, else block coordinates
+                loc[a] = parseDouble(sloc[a]) + (useactualcoord || a == 1 ? 0 : 0.5);
             }
         }
     }
@@ -127,7 +130,7 @@ class atosign extends SignAction {
                         default:
                             // Only activate if train is not overrun
                             if (!lv.isOverrun() && cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
-                                double val = Double.parseDouble(cartevent.getLine(2));
+                                double val = parseDouble(cartevent.getLine(2));
                                 double[] loc = new double[3];
                                 getLocFromString(cartevent.getLine(3), cartevent.getLocation(), loc);
                                 atoSignDefault(lv, val, loc);

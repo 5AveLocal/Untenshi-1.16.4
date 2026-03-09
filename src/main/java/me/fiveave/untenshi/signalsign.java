@@ -285,10 +285,11 @@ class signalsign extends SignAction {
     static void signalSignWarn(utsvehicle lv, Location eventloc, String l4) {
         String signalmsg;
         if (lv.getAtsforced() != 2 && (lv.getSafetysystype().equals("ats-p") || lv.getSafetysystype().equals("atc"))) {
-            Sign warn = getSignFromLoc(getFullLoc(l4, eventloc));
+            Location signloc = getFullLoc(l4, eventloc);
+            Sign warn = getSignFromLoc(signloc);
             if (warn != null && warn.getLine(1).equals("signalsign")) {
                 // lastsisign and lastsisp are for detecting signal change
-                lv.setLastsisign(warn.getLocation());
+                lv.setLastsisign(signloc);
                 String warnsi = warn.getLine(2).split(" ")[1];
                 int warnsp = parseInt(warn.getLine(2).split(" ")[2]);
                 lv.setLastsisp(warnsp);

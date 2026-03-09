@@ -86,7 +86,7 @@ class ato {
                 distnow = signaldist;
                 slopeaccelsel = slopeaccelsi;
             }
-            if (signaldistdiff != Double.MAX_VALUE && priority == speeddistdiff) {
+            if (speeddistdiff != Double.MAX_VALUE && priority == speeddistdiff) {
                 lowerSpeed = lv.getLastspsp();
                 distnow = speeddist;
                 slopeaccelsel = slopeaccelsp;
@@ -284,7 +284,7 @@ class ato {
                         if (stopped && timesplit[0].equals(status) || timesplit[0].equals("init") && timecount == 0) {
                             for (String onesplitstr : trysplitstr) {
                                 // Run action string
-                                actionCmdRunner(lv, refchest, onesplitstr);
+                                stopActionCmdRunner(lv, refchest, onesplitstr);
                             }
                         }
                     }
@@ -299,7 +299,7 @@ class ato {
         }
     }
 
-    static void actionCmdRunner(utsvehicle lv, Chest refchest, String runstr) {
+    static void stopActionCmdRunner(utsvehicle lv, Chest refchest, String runstr) {
         String[] splitstr = runstr.split(" ", 2);
         String actionstr = splitstr[1];
         String[] actionstrsplit = actionstr.split(" ");
@@ -307,12 +307,12 @@ class ato {
         switch (splitstr[0]) {
             case "stoppos":
                 // stoppos <x> <y> <z> (stop position) <x> <y> <z> (redstone output)
-                String[] sl3split = {actionstrsplit[0], actionstrsplit[1], actionstrsplit[2]};
+                String sl3 = actionstrsplit[0] + " " + actionstrsplit[1] + " " + actionstrsplit[2];
                 String sl4 = "";
                 if (actionstrsplit.length == 6) {
                     sl4 = actionstrsplit[3] + " " + actionstrsplit[4] + " " + actionstrsplit[5];
                 }
-                stopPosDefault(lv, sl3split, sl4);
+                stopPosDefault(lv, eventloc, sl3, sl4);
                 break;
             case "atosign":
                 switch (actionstrsplit[0]) {
