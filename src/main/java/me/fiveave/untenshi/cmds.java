@@ -99,6 +99,7 @@ class cmds implements CommandExecutor, TabCompleter {
             // For each arg need check length of arg to ensure safety
             if (args.length > 0) {
                 switch (args[0].toLowerCase()) {
+                    // TODO: Test TCC functions here, remove after test is finished
                     case "test":
                         if (args.length > 3) {
                             tccTest(p, Double.parseDouble(args[1]), Double.parseDouble(args[2]), Double.parseDouble(args[3]));
