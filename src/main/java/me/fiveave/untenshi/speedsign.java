@@ -51,17 +51,17 @@ class speedsign extends SignAction {
             if (sign instanceof WallSign) {
                 blkoffset[1] = 1;
                 WallSign ws = (WallSign) sign;
-                switch (String.valueOf(ws.getFacing())) {
-                    case "NORTH":
+                switch (ws.getFacing()) {
+                    case NORTH:
                         blkoffset[2] = 1;
                         break;
-                    case "SOUTH":
+                    case SOUTH:
                         blkoffset[2] = -1;
                         break;
-                    case "WEST":
+                    case WEST:
                         blkoffset[0] = 1;
                         break;
-                    case "EAST":
+                    case EAST:
                         blkoffset[0] = -1;
                         break;
                 }
