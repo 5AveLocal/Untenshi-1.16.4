@@ -73,12 +73,27 @@ class motion {
         CoasterWorld cw = tcc.getCoasterWorld(p.getWorld());
         TrackWorld tw = cw.getTracks();
         List<TrackNode> tnlist = tw.findNodesNear(null, new Vector(x, y, z), 0.01);
+        TrackNode nearesttn = getNearestTrackNode(tnlist, x, y, z);
+        TrackNodeSign[] tns = nearesttn.getSigns();
+        if (tns.length > 0) {
+            p.sendMessage("Found nearest sign at " + nearesttn.getPosition().getX() + " " + nearesttn.getPosition().getY() + " " + nearesttn.getPosition().getZ());
+        } else {
+            p.sendMessage("Nearest node does not contain a sign!");
+        }
+    }
+
+    private static TrackNode getNearestTrackNode(List<TrackNode> tnlist, double x, double y, double z) {
+        Vector v = new Vector(x,y,z);
+        TrackNode rettn = null;
+        double mindistance = Integer.MAX_VALUE;
         for (TrackNode tn : tnlist) {
-            TrackNodeSign[] tns = tn.getSigns();
-            if (tns.length > 0) {
-                p.sendMessage("Found sign at " + tn.getPosition().getX() + " " + tn.getPosition().getY() + " " + tn.getPosition().getZ());
+            double dist = tn.getPosition().distance(v);
+            if (dist < mindistance) {
+                mindistance = dist;
+                rettn = tn;
             }
         }
+        return rettn;
     }
 
     static void motionSystem(utsvehicle lv) {
