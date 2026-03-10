@@ -83,6 +83,7 @@ class utsvehicle {
     private MinecartMember driverseat; // Cart belonging to driver seat
     private long ilenterqueuetime; // Enter queue time for interlocking
 
+    // Often shortened to "lv" (= listed vehicle)
     utsvehicle(MinecartGroup mg) {
         try {
             this.setTrain(mg);

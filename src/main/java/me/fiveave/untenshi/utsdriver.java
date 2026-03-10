@@ -15,6 +15,7 @@ class utsdriver {
     private boolean allowatousage;
     private utsvehicle lv;
 
+    // Often shortened to "ld" (= listed driver)
     utsdriver(Player p, Boolean freemode, Boolean allowatousage) {
         this.p = p;
         this.setPlaying(false);
