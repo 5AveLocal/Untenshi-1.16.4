@@ -1,5 +1,6 @@
 package me.fiveave.untenshi;
 
+import com.bergerkiller.bukkit.coasters.tracks.TrackNode;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroupStore;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
@@ -27,7 +28,7 @@ import java.util.List;
 
 import static me.fiveave.untenshi.events.*;
 import static me.fiveave.untenshi.main.*;
-import static me.fiveave.untenshi.motion.tccTest;
+import static me.fiveave.untenshi.motion.getNearestTrackNode;
 import static me.fiveave.untenshi.utsdriver.initDriver;
 import static me.fiveave.untenshi.utsvehicle.initVehicle;
 
@@ -102,7 +103,12 @@ class cmds implements CommandExecutor, TabCompleter {
                     // TODO: Test TCC functions here, remove after test is finished
                     case "test":
                         if (args.length > 3) {
-                            tccTest(p, Double.parseDouble(args[1]), Double.parseDouble(args[2]), Double.parseDouble(args[3]));
+                            TrackNode tn = getNearestTrackNode(ld.getP().getWorld(), Double.parseDouble(args[1]), Double.parseDouble(args[2]), Double.parseDouble(args[3]));
+                            if (tn != null) {
+                                p.sendMessage("Found nearest at " + tn.getPosition().getX() + " " + tn.getPosition().getY() + " " + tn.getPosition().getZ());
+                            } else {
+                                p.sendMessage("Cannot find!");
+                            }
                         } else {
                             p.sendMessage(PURE_UTS_TITLE + "Provide coords!");
                         }

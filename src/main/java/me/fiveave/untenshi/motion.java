@@ -2,7 +2,6 @@ package me.fiveave.untenshi;
 
 import com.bergerkiller.bukkit.coasters.TCCoasters;
 import com.bergerkiller.bukkit.coasters.tracks.TrackNode;
-import com.bergerkiller.bukkit.coasters.tracks.TrackNodeSign;
 import com.bergerkiller.bukkit.coasters.tracks.TrackWorld;
 import com.bergerkiller.bukkit.coasters.world.CoasterWorld;
 import com.bergerkiller.bukkit.common.math.Quaternion;
@@ -15,14 +14,15 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -68,32 +68,28 @@ class motion {
         }
     }
 
-    static void tccTest(Player p, double x, double y, double z) {
+    static TrackNode getNearestTrackNode(World world, double x, double y, double z) {
         TCCoasters tcc = TCCoasters.getPlugin(TCCoasters.class);
-        CoasterWorld cw = tcc.getCoasterWorld(p.getWorld());
+        CoasterWorld cw = tcc.getCoasterWorld(world);
         TrackWorld tw = cw.getTracks();
-        List<TrackNode> tnlist = tw.findNodesNear(null, new Vector(x, y, z), 0.01);
-        TrackNode nearesttn = getNearestTrackNode(tnlist, x, y, z);
-        TrackNodeSign[] tns = nearesttn.getSigns();
-        if (tns.length > 0) {
-            p.sendMessage("Found nearest sign at " + nearesttn.getPosition().getX() + " " + nearesttn.getPosition().getY() + " " + nearesttn.getPosition().getZ());
-        } else {
-            p.sendMessage("Nearest node does not contain a sign!");
-        }
-    }
-
-    private static TrackNode getNearestTrackNode(List<TrackNode> tnlist, double x, double y, double z) {
-        Vector v = new Vector(x, y, z);
-        TrackNode rettn = null;
-        double mindistance = Integer.MAX_VALUE;
-        for (TrackNode tn : tnlist) {
-            double dist = tn.getPosition().distance(v);
-            if (dist < mindistance) {
-                mindistance = dist;
-                rettn = tn;
+        List<TrackNode> tnlist = new ArrayList<>();
+        // Find all nodes near this coordinate
+        tnlist = tw.findNodesNear(tnlist, new Vector(x, y, z), 1);
+        if (tnlist != null) {
+            Vector v = new Vector(x, y, z);
+            TrackNode rettn = null;
+            double mindistance = Integer.MAX_VALUE;
+            // Find nearest node
+            for (TrackNode tn : tnlist) {
+                double dist = tn.getPosition().distance(v);
+                if (dist < mindistance) {
+                    mindistance = dist;
+                    rettn = tn;
+                }
             }
+            return rettn;
         }
-        return rettn;
+        return null;
     }
 
     static void motionSystem(utsvehicle lv) {
