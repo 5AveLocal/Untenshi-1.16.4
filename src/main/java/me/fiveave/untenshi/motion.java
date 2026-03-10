@@ -83,7 +83,7 @@ class motion {
     }
 
     private static TrackNode getNearestTrackNode(List<TrackNode> tnlist, double x, double y, double z) {
-        Vector v = new Vector(x,y,z);
+        Vector v = new Vector(x, y, z);
         TrackNode rettn = null;
         double mindistance = Integer.MAX_VALUE;
         for (TrackNode tn : tnlist) {
