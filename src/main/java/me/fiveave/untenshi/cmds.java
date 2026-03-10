@@ -100,7 +100,11 @@ class cmds implements CommandExecutor, TabCompleter {
             if (args.length > 0) {
                 switch (args[0].toLowerCase()) {
                     case "test":
-                        tccTest(p);
+                        if (args.length > 3) {
+                            tccTest(p, Double.parseDouble(args[1]), Double.parseDouble(args[2]), Double.parseDouble(args[3]));
+                        } else {
+                            p.sendMessage(PURE_UTS_TITLE + "Provide coords!");
+                        }
                         break;
                     case "help":
                         if (args.length == 1) {

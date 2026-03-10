@@ -24,6 +24,7 @@ import org.bukkit.util.Vector;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import static java.lang.Integer.parseInt;
@@ -67,15 +68,15 @@ class motion {
         }
     }
 
-    static void tccTest(Player p) {
+    static void tccTest(Player p, double x, double y, double z) {
         TCCoasters tcc = TCCoasters.getPlugin(TCCoasters.class);
         CoasterWorld cw = tcc.getCoasterWorld(p.getWorld());
         TrackWorld tw = cw.getTracks();
-        TrackNode tn = tw.findNodeLookingAt(p.getLocation(), 90, 5);
-        TrackNodeSign[] tns = tn.getSigns();
-        if (tns.length > 0) {
-            for (int i = 0; i < 4; i++) {
-                p.sendMessage(tns[0].getLines()[i]);
+        List<TrackNode> tnlist = tw.findNodesNear(null, new Vector(x, y, z), 0.01);
+        for (TrackNode tn : tnlist) {
+            TrackNodeSign[] tns = tn.getSigns();
+            if (tns.length > 0) {
+                p.sendMessage("Found sign at " + tn.getPosition().getX() + " " + tn.getPosition().getY() + " " + tn.getPosition().getZ());
             }
         }
     }
