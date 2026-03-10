@@ -1,5 +1,6 @@
 package me.fiveave.untenshi;
 
+import com.bergerkiller.bukkit.coasters.tracks.TrackNode;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.events.SignActionEvent;
 import com.bergerkiller.bukkit.tc.events.SignChangeActionEvent;
@@ -10,12 +11,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
+import static me.fiveave.untenshi.motion.getNearestTrackNode;
 import static me.fiveave.untenshi.motion.minSpeedLimit;
 import static me.fiveave.untenshi.signalcmd.isIlClear;
 import static me.fiveave.untenshi.speedsign.*;
@@ -38,13 +40,12 @@ class signalsign extends SignAction {
         }
     }
 
-    static void resetSignals(World world, Location[] locs) {
+    static void resetSignals(Location[] locs) {
         try {
             // Get resettable signs
             for (Location loc : locs) {
-                BlockState bs = world.getBlockAt(loc).getState();
-                if (bs instanceof Sign) {
-                    Sign resettable = (Sign) world.getBlockAt(loc).getState();
+                Sign resettable = getSignFromLoc(loc);
+                if (resettable != null) {
                     // Copy signal and speed from line 4 to line 3
                     updateSignals(resettable, "set " + resettable.getLine(3).split(" ")[1] + " " + resettable.getLine(3).split(" ")[2]);
                 }
@@ -121,7 +122,7 @@ class signalsign extends SignAction {
             if (resetlen != -1) {
                 Location[] resetlocs = new Location[resetlen];
                 System.arraycopy(oldoccupied, 0, resetlocs, 0, resetlen);
-                resetSignals(lv.getSavedworld(), resetlocs);
+                resetSignals(resetlocs);
                 Location[] newoccupied = new Location[oldoccupied.length - resetlen];
                 System.arraycopy(oldoccupied, resetlen, newoccupied, 0, newoccupied.length);
                 lv.setIlposoccupied(newoccupied);
@@ -324,13 +325,27 @@ class signalsign extends SignAction {
         if (oldloc.length != 0) {
             System.arraycopy(oldloc, 0, newloc, 1, oldloc.length);
         }
-        newloc[0] = loc;
+        newloc[0] = getRealSignLoc(loc);
         // Remove variables
         lv.setLastsisign(null);
         lv.setLastsisp(MAX_SPEED);
         lv.setRsposlist(newloc);
         // Make blocked section longer by 1
         lv.setRsoccupiedpos(lv.getRsoccupiedpos() + 1);
+    }
+
+    private static Location getRealSignLoc(Location loc) {
+        Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
+        World w = loc.getWorld();
+        if (tcc != null && tcc.isEnabled()) {
+            assert w != null;
+            if (!(w.getBlockAt(loc).getState() instanceof Sign)) {
+                // From cartevent to real location conversion
+                TrackNode tn = getNearestTrackNode(w, loc.getX() + 0.5, loc.getY(), loc.getZ() + 0.5);
+                return tn == null ? null : tn.getPosition().toLocation(w);
+            }
+        }
+        return loc;
     }
 
     boolean checkType(SignActionEvent e) {
@@ -398,18 +413,18 @@ class signalsign extends SignAction {
                                         generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_set") + " " + signalmsg + ChatColor.GRAY + " " + temp);
                                     }
                                     // Update resettable sign
-                                    Location loc = cartevent.getLocation();
-                                    shiftRs(lv, loc);
+                                    shiftRs(lv, eventloc);
                                     // Update this signal
                                     String str = (lv.getSafetysystype().equals("atc") ? "atc" : "r") + " " + 0;
                                     Bukkit.getScheduler().runTaskLater(plugin, () -> {
                                         updateSignals(cartevent.getSign(), "set " + str);
                                         // If location is in interlocking list, then remove location and shift list
-                                        iLListandOccupiedRemoveShift(lv, cartevent.getLocation(), false);
+                                        iLListandOccupiedRemoveShift(lv, eventloc, false);
                                     }, 1);
                                     // Prevent non-resettable ATS Run caused by red light but without receiving warning
                                     if (signalspeed == 0 && lv.getLastsisign() == null) {
-                                        lv.setLastsisign(loc);
+                                        // Get real location or else cannot reset sign
+                                        lv.setLastsisign(getRealSignLoc(eventloc));
                                         lv.setLastsisp(signalspeed);
                                     }
                                 }

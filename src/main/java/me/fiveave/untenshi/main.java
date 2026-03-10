@@ -162,10 +162,10 @@ public final class main extends JavaPlugin implements Listener {
         }
         // Reset signals (resettablesign)
         final Location[] locs = lv.getRsposlist();
-        resetSignals(lv.getSavedworld(), locs);
+        resetSignals(locs);
         // Reset signals (ilposoccupied)
         final Location[] locs2 = lv.getIlposoccupied();
-        resetSignals(lv.getSavedworld(), locs2);
+        resetSignals(locs2);
         vehicle.put(lv.getTrain(), new utsvehicle(lv.getTrain()));
     }
 

@@ -546,7 +546,8 @@ class motion {
     private static void catchSignalUpdate(utsvehicle lv) {
         Location signalloc = lv.getLastsisign();
         if (signalloc != null && lv.getLastsisp() != MAX_SPEED) {
-            Sign warnsign = (Sign) lv.getSavedworld().getBlockAt(signalloc).getState();
+            Sign warnsign = getSignFromLoc(signalloc);
+            if (warnsign == null) return;
             String warnsi = warnsign.getLine(2).split(" ")[1];
             int warnsp = parseInt(warnsign.getLine(2).split(" ")[2]);
             // Detect difference (sign speed now != saved sign speed)

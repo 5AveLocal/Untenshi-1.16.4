@@ -1,5 +1,7 @@
 package me.fiveave.untenshi;
 
+import com.bergerkiller.bukkit.coasters.tracks.TrackNode;
+import com.bergerkiller.bukkit.coasters.tracks.TrackNodeSign;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.events.SignActionEvent;
 import com.bergerkiller.bukkit.tc.events.SignChangeActionEvent;
@@ -13,11 +15,13 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
+import static me.fiveave.untenshi.motion.getNearestTrackNode;
 import static me.fiveave.untenshi.motion.minSpeedLimit;
 
 class speedsign extends SignAction {
@@ -36,7 +40,12 @@ class speedsign extends SignAction {
 
     static Sign getSignFromLoc(Location loc) {
         BlockState bl = loc.getBlock().getState();
-        return bl instanceof Sign ? (Sign) bl : null;
+        if (bl instanceof Sign) {
+            return (Sign) bl;
+        }
+        Sign s = null;
+        s = getTcCoastersSign(s, loc);
+        return s;
     }
 
     static Chest getChestFromLoc(Location loc) {
@@ -126,6 +135,21 @@ class speedsign extends SignAction {
         } else if (eventloc != null) {
             signImproper(eventloc, lv.getLd());
         }
+    }
+
+    static Sign getTcCoastersSign(Sign sign, Location signloc) {
+        // Using Sign.getLocation() will truncate values
+        Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
+        if (tcc != null && tcc.isEnabled() && sign == null) {
+            TrackNode tn = getNearestTrackNode(signloc.getWorld(), signloc.getX(), signloc.getY(), signloc.getZ());
+            if (tn != null) {
+                TrackNodeSign[] tnsigns = tn.getSigns();
+                if (tnsigns.length > 0) {
+                    sign = tnsigns[0].getTrackedSign().sign;
+                }
+            }
+        }
+        return sign;
     }
 
     static void speedSignSet(utsvehicle lv, Location eventloc, int speed) {
