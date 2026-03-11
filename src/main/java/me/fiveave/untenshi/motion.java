@@ -559,7 +559,7 @@ class motion {
                 if (lv.getAtsforced() == 2 && lv.getSignallimit() == 0) {
                     // Update signal limit and resettable sign
                     lv.setSignallimit(warnsp);
-                    shiftRs(lv, signalloc);
+                    shiftRs(lv, getRealSignLoc(signalloc));
                 }
                 if (lv.getSafetysystype().equals("atc")) {
                     warnsp = Math.min(warnsp, lv.getSpeedlimit());

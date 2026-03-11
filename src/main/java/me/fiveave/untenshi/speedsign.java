@@ -43,9 +43,8 @@ class speedsign extends SignAction {
         if (bl instanceof Sign) {
             return (Sign) bl;
         }
-        Sign s = null;
-        s = getTcCoastersSign(s, loc);
-        return s;
+        // If cannot get sign directly from location
+        return getTcCoastersSign(loc);
     }
 
     static Chest getChestFromLoc(Location loc) {
@@ -97,7 +96,7 @@ class speedsign extends SignAction {
     }
 
     static void signImproper(Location loc, utsdriver ld) {
-        String s = UTS_HEAD + ChatColor.RED + getLang("signimproper") + " (" + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + ")";
+        String s = UTS_HEAD + ChatColor.RED + getLang("signimproper") + " (" + loc.getX() + " " + loc.getY() + " " + loc.getZ() + ")";
         if (ld != null && ld.getP() != null) {
             ld.getP().sendMessage(s);
         }
@@ -137,10 +136,11 @@ class speedsign extends SignAction {
         }
     }
 
-    static Sign getTcCoastersSign(Sign sign, Location signloc) {
+    static Sign getTcCoastersSign(Location signloc) {
+        Sign sign = null;
         // Using Sign.getLocation() will truncate values
         Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
-        if (tcc != null && tcc.isEnabled() && sign == null) {
+        if (tcc != null && tcc.isEnabled()) {
             TrackNode tn = getNearestTrackNode(signloc.getWorld(), signloc.getX(), signloc.getY(), signloc.getZ());
             if (tn != null) {
                 TrackNodeSign[] tnsigns = tn.getSigns();

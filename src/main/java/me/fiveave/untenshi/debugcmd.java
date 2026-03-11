@@ -298,7 +298,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
         int i = 0;
         try {
             while (i < locs.length) {
-                retstr.append(String.format("\n%s%d%s:%s %d %d %d", ChatColor.AQUA, i, ChatColor.WHITE, ChatColor.GREEN, locs[i].getBlockX(), locs[i].getBlockY(), locs[i].getBlockZ()));
+                retstr.append(String.format("\n%s%d%s:%s %s", ChatColor.AQUA, i, ChatColor.WHITE, ChatColor.GREEN, locs[i].getX() + " " + locs[i].getY() + " " + locs[i].getZ()));
                 i++;
             }
         } catch (Exception e) {

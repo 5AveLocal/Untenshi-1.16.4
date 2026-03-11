@@ -196,7 +196,7 @@ class signalsign extends SignAction {
                     // No reading other locations after try statement
                     break;
                 }
-                Location setloc = getFullLoc(str, refchestloc);
+                Location setloc = getRealRefLoc(getFullLoc(str, refchestloc));
                 // Anti duplicating causing interlock pattern to be set twice, thus bugging out
                 if (lv.getLastilchest() != null && lv.getLastilchest().equals(refchestloc)) {
                     break;
@@ -212,7 +212,7 @@ class signalsign extends SignAction {
                     newilpos = new Location[oldilposlen + 1];
                     // Array copy and set new positions
                     System.arraycopy(oldilpos, 0, newilpos, 0, oldilposlen);
-                    newilpos[oldilposlen] = getFullLoc(str, refchestloc);
+                    newilpos[oldilposlen] = setloc;
                 }
                 // If duplicated just copy old to new
                 else {
@@ -325,7 +325,7 @@ class signalsign extends SignAction {
         if (oldloc.length != 0) {
             System.arraycopy(oldloc, 0, newloc, 1, oldloc.length);
         }
-        newloc[0] = getRealSignLoc(loc);
+        newloc[0] = loc;
         // Remove variables
         lv.setLastsisign(null);
         lv.setLastsisp(MAX_SPEED);
@@ -334,7 +334,8 @@ class signalsign extends SignAction {
         lv.setRsoccupiedpos(lv.getRsoccupiedpos() + 1);
     }
 
-    private static Location getRealSignLoc(Location loc) {
+    static Location getRealSignLoc(Location loc) {
+        // For Sign.getLocation() only, use getRealRefLoc() for others
         Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
         World w = loc.getWorld();
         if (tcc != null && tcc.isEnabled()) {
@@ -342,7 +343,22 @@ class signalsign extends SignAction {
             if (!(w.getBlockAt(loc).getState() instanceof Sign)) {
                 // From cartevent to real location conversion
                 TrackNode tn = getNearestTrackNode(w, loc.getX() + 0.5, loc.getY(), loc.getZ() + 0.5);
-                return tn == null ? null : tn.getPosition().toLocation(w);
+                return tn == null ? loc : tn.getPosition().toLocation(w);
+            }
+        }
+        return loc.add(0.5, 0, 0.5);
+    }
+
+    static Location getRealRefLoc(Location loc) {
+        // For non-Sign.getLocation(), use getRealSignLoc() for Sign.getLocation()
+        Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
+        World w = loc.getWorld();
+        if (tcc != null && tcc.isEnabled()) {
+            assert w != null;
+            if (!(w.getBlockAt(loc).getState() instanceof Sign)) {
+                // From cartevent to real location conversion
+                TrackNode tn = getNearestTrackNode(w, loc.getX(), loc.getY(), loc.getZ());
+                return tn == null ? loc : tn.getPosition().toLocation(w);
             }
         }
         return loc;
@@ -365,12 +381,13 @@ class signalsign extends SignAction {
             MinecartGroup mg = cartevent.getGroup();
             utsvehicle lv = vehicle.get(mg);
             Location eventloc = cartevent.getLocation();
+            Location realsignloc = getRealSignLoc(eventloc);
             if (lv != null) {
                 String[] l3 = cartevent.getLine(2).toLowerCase().split(" ");
                 int signalspeed = l3[0].equals("set") ? parseInt(l3[2]) : 0;
                 // Main content starts here
                 if (limitSpeedIncorrect(null, signalspeed)) {
-                    signImproper(eventloc, lv.getLd());
+                    signImproper(realsignloc, lv.getLd());
                     return;
                 }
                 if ((!(l3[0].equals("warn") || l3[0].equals("interlock")) && l3[1].equals("del")) || checkType(cartevent)) {
@@ -389,10 +406,9 @@ class signalsign extends SignAction {
                                 if (lv.getRsposlist().length == 0 || !lv.getRsposlist()[0].equals(cartevent.getLocation())) {
                                     // Except red light, signal must get reset first
                                     if (signalspeed != 0) {
-                                        Location currentloc = cartevent.getLocation();
                                         // FIXME: If in 3 trains middle train disappears, back train will receive ALL green lights ((rs only, il is issue-free) r, 0 (front), g, 360 (back), g, 360 (back), ...)
                                         // Check if that location exists in any other train, then delete that record
-                                        deleteOthersRs(lv, currentloc);
+                                        deleteOthersRs(lv, realsignloc);
                                     }
                                     int oldsignallimit = lv.getSignallimit();
                                     // Set values and signal name
@@ -400,7 +416,7 @@ class signalsign extends SignAction {
                                     lv.setSafetysystype(l3[1].equals("atc") ? "atc" : "ats-p");
                                     signalmsg = signalName(l3[1]);
                                     if (signalmsg.isEmpty()) {
-                                        signImproper(eventloc, lv.getLd());
+                                        signImproper(realsignloc, lv.getLd());
                                         break;
                                     }
                                     int shownspeed = signalspeed;
@@ -413,18 +429,18 @@ class signalsign extends SignAction {
                                         generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("signal_set") + " " + signalmsg + ChatColor.GRAY + " " + temp);
                                     }
                                     // Update resettable sign
-                                    shiftRs(lv, eventloc);
+                                    shiftRs(lv, realsignloc);
                                     // Update this signal
                                     String str = (lv.getSafetysystype().equals("atc") ? "atc" : "r") + " " + 0;
                                     Bukkit.getScheduler().runTaskLater(plugin, () -> {
                                         updateSignals(cartevent.getSign(), "set " + str);
                                         // If location is in interlocking list, then remove location and shift list
-                                        iLListandOccupiedRemoveShift(lv, eventloc, false);
+                                        iLListandOccupiedRemoveShift(lv, realsignloc, false);
                                     }, 1);
                                     // Prevent non-resettable ATS Run caused by red light but without receiving warning
                                     if (signalspeed == 0 && lv.getLastsisign() == null) {
                                         // Get real location or else cannot reset sign
-                                        lv.setLastsisign(getRealSignLoc(eventloc));
+                                        lv.setLastsisign(realsignloc);
                                         lv.setLastsisp(signalspeed);
                                     }
                                 }
@@ -438,7 +454,7 @@ class signalsign extends SignAction {
                                 Location[] oldlocreset = lv.getRsposlist();
                                 int len = oldlocreset.length;
                                 Location lastloc = oldlocreset[len - 1];
-                                if (!lastloc.equals(eventloc) && len > result.halfptnlen) {
+                                if (!lastloc.equals(realsignloc) && len > result.halfptnlen) {
                                     rsPosListRemoveShift(lv, lastloc);
                                 }
                                 // This signal has been updated when train touches the sign, so update next ones
@@ -466,7 +482,7 @@ class signalsign extends SignAction {
                         case "warn":
                             if (cartevent.isAction(SignActionType.GROUP_ENTER, SignActionType.REDSTONE_ON) && cartevent.hasRailedMember() && cartevent.isPowered()) {
                                 String l4 = cartevent.getLine(3);
-                                signalSignWarn(lv, eventloc, l4);
+                                signalSignWarn(lv, realsignloc, l4);
                             }
                             break;
                         case "interlock":
@@ -476,7 +492,7 @@ class signalsign extends SignAction {
                             }
                             break;
                         default:
-                            signImproper(eventloc, lv.getLd());
+                            signImproper(realsignloc, lv.getLd());
                             break;
                     }
                 }
