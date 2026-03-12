@@ -327,10 +327,8 @@ class ato {
                     default:
                         // atosign <target_speed> <x> <y> <z> (target location)
                         double[] loc = new double[3];
-                        String[] sloc = {actionstrsplit[1], actionstrsplit[2], actionstrsplit[3]};
-                        for (int a = 0; a <= 2; a++) {
-                            loc[a] = parseInt(sloc[a]);
-                        }
+                        String sloc = actionstrsplit[1] + " " + actionstrsplit[2] + " " + actionstrsplit[3];
+                        getLocFromString(sloc, eventloc, loc);
                         atoSignDefault(lv, parseInt(actionstrsplit[0]), loc);
                         break;
                 }
