@@ -49,7 +49,14 @@ class events implements Listener {
     }
 
     static void hornPedalAction(utsvehicle lv) {
-        trainSound(lv, "hornpedal");
+        hornLoop(lv, 0);
+    }
+
+    static void hornLoop(utsvehicle lv, int i) {
+        if (i < 3) {
+            trainSound(lv, "hornpedal");
+            Bukkit.getScheduler().runTaskLater(plugin, () -> hornLoop(lv, i + 1), 2);
+        }
     }
 
     static void switchBack(utsvehicle lv) {
@@ -230,7 +237,9 @@ class events implements Listener {
                     break;
                 case "hornpedal":
                     if (lv.getLd() != null) {
-                        lv.getSavedworld().playSound(lv.getDriverseat().getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_COW_BELL, 10f, 1f);
+                        lv.getSavedworld().playSound(lv.getDriverseat().getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_FLUTE, 10f, 2f);
+                        lv.getSavedworld().playSound(lv.getDriverseat().getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_FLUTE, 10f, 1.925f);
+                        lv.getSavedworld().playSound(lv.getDriverseat().getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_FLUTE, 10f, 1.875f);
                     }
                     break;
             }

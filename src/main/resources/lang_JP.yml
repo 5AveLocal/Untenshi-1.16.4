@@ -19,6 +19,7 @@ item_nwand: 切
 item_downwand: 下
 item_leftwand: 左
 item_rightwand: 右
+item_hornpedal: 警笛
 item_doorbutton: ドアボタン
 item_sblever: 方向切替
 item_ebbutton: 非常停止

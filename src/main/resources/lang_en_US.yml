@@ -19,6 +19,7 @@ item_nwand: Neutral
 item_downwand: Down
 item_leftwand: Left
 item_rightwand: Right
+item_hornpedal: Horn
 item_doorbutton: Door Button
 item_sblever: Switchback
 item_ebbutton: Emergency Stop
