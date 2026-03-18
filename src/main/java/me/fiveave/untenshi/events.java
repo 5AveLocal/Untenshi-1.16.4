@@ -2,10 +2,7 @@ package me.fiveave.untenshi;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroupStore;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -46,6 +43,10 @@ class events implements Listener {
     static void toB8(utsvehicle lv) {
         lv.setMascon(0);
         lv.setBrake(8);
+    }
+
+    static void hornPedalAction(utsvehicle lv) {
+        trainSound(lv, "hornpedal");
     }
 
     static void switchBack(utsvehicle lv) {
@@ -126,6 +127,10 @@ class events implements Listener {
 
     protected static ItemStack ebButton() {
         return getItem(Material.STONE_BUTTON, ChatColor.DARK_RED, getLang("item_ebbutton"));
+    }
+
+    protected static ItemStack hornPedal() {
+        return getItem(Material.HEAVY_WEIGHTED_PRESSURE_PLATE, ChatColor.YELLOW, getLang("item_hornpedal"));
     }
 
     private static void downWandAction(utsvehicle lv) {
@@ -220,6 +225,11 @@ class events implements Listener {
                         lv.getLd().getP().playSound(lv.getLd().getP().getLocation(), Sound.BLOCK_WOODEN_TRAPDOOR_CLOSE, 0.5f, 1.5f);
                     }
                     break;
+                case "hornpedal":
+                    if (lv.getLd() != null) {
+                        lv.getSavedworld().playSound(lv.getDriverseat().getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_COW_BELL, 10f, 1f);
+                    }
+                    break;
             }
         }
     }
@@ -257,6 +267,10 @@ class events implements Listener {
                     rightWandAction(lv);
                     event.setCancelled(true);
                 }
+            }
+            if (hornPedal().equals(item)) {
+                hornPedalAction(lv);
+                event.setCancelled(true);
             }
             if (doorButton().equals(item)) {
                 event.setCancelled(true);
@@ -330,7 +344,7 @@ class events implements Listener {
     }
 
     private boolean isItems(ItemStack item) {
-        ItemStack[] is = new ItemStack[]{upWand(), nWand(), downWand(), leftWand(), rightWand(), doorButton(), sbLever(), ebButton()};
+        ItemStack[] is = new ItemStack[]{upWand(), nWand(), downWand(), leftWand(), rightWand(), hornPedal(), doorButton(), sbLever(), ebButton()};
         return Arrays.asList(is).contains(item);
     }
 

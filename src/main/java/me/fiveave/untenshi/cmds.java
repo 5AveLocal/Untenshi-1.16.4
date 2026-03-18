@@ -200,6 +200,7 @@ class cmds implements CommandExecutor, TabCompleter {
                                             p.getInventory().setItem(1, nWand());
                                             p.getInventory().setItem(2, downWand());
                                         }
+                                        p.getInventory().setItem(5, hornPedal());
                                         p.getInventory().setItem(6, ebButton());
                                         p.getInventory().setItem(7, sbLever());
                                         p.getInventory().setItem(8, doorButton());
