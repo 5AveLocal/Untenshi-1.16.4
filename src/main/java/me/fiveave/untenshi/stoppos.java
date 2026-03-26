@@ -19,7 +19,7 @@ import static me.fiveave.untenshi.main.*;
 class stoppos extends SignAction {
 
     static void curveRailPosFix(utsvehicle lv, double[] loc) {
-        BlockData bs = lv.getSavedworld().getBlockAt((int) loc[0], (int) loc[1], (int) loc[2]).getBlockData();
+        BlockData bs = lv.getSavedworld().getBlockAt((int) (loc[0] - 0.5), (int) loc[1], (int) (loc[2] - 0.5)).getBlockData();
         if (bs instanceof Rail) {
             switch (((Rail) bs).getShape()) {
                 case NORTH_EAST:
