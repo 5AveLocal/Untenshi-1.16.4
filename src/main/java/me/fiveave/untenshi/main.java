@@ -79,6 +79,8 @@ public final class main extends JavaPlugin implements Listener {
 
     static void pointCounter(utsdriver ld, ChatColor color, String s, int pts, String str) {
         if (ld != null) {
+            // 0-point modifying should not exist, only exists for stop position (< 50 cm)
+            if (pts == 0) pts = -1;
             ChatColor color2 = pts > 0 ? ChatColor.GREEN : ChatColor.RED;
             String ptsstr = !noFreemodeOrATO(ld) ? "" : String.valueOf(pts);
             generalMsg(ld.getP(), color, s + color2 + ptsstr + str);
