@@ -11,7 +11,6 @@ import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Rail;
 
-import static java.lang.Boolean.parseBoolean;
 import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
@@ -60,6 +59,28 @@ class stoppos extends SignAction {
         }
     }
 
+    static void stopPosAutoOpen(utsvehicle lv, String l4) {
+        if (lv != null) {
+            boolean autoopen = Boolean.parseBoolean(l4);
+            boolean oldautoopen = lv.isStopautoopen();
+            if (autoopen != oldautoopen) {
+                lv.setStopautoopen(autoopen);
+                generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("stoppos_autoopen_" + autoopen));
+            }
+        }
+    }
+
+    static void stopPosMargin(utsvehicle lv, String l4) {
+        if (lv != null) {
+            double margin = Double.parseDouble(l4);
+            double oldmargin = lv.getStopmargin();
+            if (margin != oldmargin) {
+                lv.setStopmargin(margin);
+                generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("stoppos_margin") + " " + ChatColor.GRAY + (int) Math.round(margin * 100) + " cm");
+            }
+        }
+    }
+
     @Override
     public boolean match(SignActionEvent info) {
         return info.isType("stoppos");
@@ -72,21 +93,16 @@ class stoppos extends SignAction {
             String l3 = cartevent.getLine(2);
             String l4 = cartevent.getLine(3);
             utsvehicle lv = vehicle.get(mg);
-            if (l3.equals("autoopen")) {
-                stopPosAutoOpen(lv, l4);
-            } else {
-                stopPosDefault(lv, cartevent.getLocation(), l3, l4);
-            }
-        }
-    }
-
-    private void stopPosAutoOpen(utsvehicle lv, String l4) {
-        if (lv != null) {
-            boolean autoopen = parseBoolean(l4);
-            boolean oldautoopen = lv.isStopautoopen();
-            if (autoopen != oldautoopen) {
-                lv.setStopautoopen(autoopen);
-                generalMsg(lv.getLd(), ChatColor.YELLOW, getLang("stoppos_autoopen_" + autoopen));
+            switch (l3) {
+                case "autoopen":
+                    stopPosAutoOpen(lv, l4);
+                    break;
+                case "margin":
+                    stopPosMargin(lv, l4);
+                    break;
+                default:
+                    stopPosDefault(lv, cartevent.getLocation(), l3, l4);
+                    break;
             }
         }
     }
@@ -96,14 +112,21 @@ class stoppos extends SignAction {
         if (noSignPerm(e)) return true;
         try {
             SignBuildOptions opt = SignBuildOptions.create().setName(ChatColor.GOLD + "Stop positioner");
-            if (e.getLine(2).equals("autoopen")) {
-                opt.setDescription("set if doors will open automatically after train stop at a stop");
-            } else {
-                opt.setDescription("set stop position for train");
-                getLocFromString(e.getLine(2), e.getLocation(), new double[3]);
-                if (!e.getLine(3).isEmpty()) {
-                    getLocFromString(e.getLine(3), e.getLocation(), new double[3]);
-                }
+            switch (e.getLine(2)) {
+                case "autoopen":
+                    opt.setDescription("set if doors will open automatically after train stop at a stop");
+                    break;
+                case "margin":
+                    opt.setDescription("set stop position margin for train");
+                    Double.parseDouble(e.getLine(3));
+                    break;
+                default:
+                    opt.setDescription("set stop position for train");
+                    getLocFromString(e.getLine(2), e.getLocation(), new double[3]);
+                    if (!e.getLine(3).isEmpty()) {
+                        getLocFromString(e.getLine(3), e.getLocation(), new double[3]);
+                    }
+                    break;
             }
             return opt.handle(e.getPlayer());
         } catch (Exception exception) {

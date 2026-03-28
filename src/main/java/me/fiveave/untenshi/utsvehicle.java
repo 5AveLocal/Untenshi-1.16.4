@@ -28,6 +28,7 @@ class utsvehicle {
     private double dooropenspeed; // Opening door speed (to reach 1 = open)
     private double doorclosespeed; // Closing door speed (to reach 0 = close)
     private double stopposoffset; // Stop position offset (- to back, + to front)
+    private double stopmargin; // Stop margin (default 1 m)
     private int[] speedsteps; // Speed steps for acceleration and deceleration
     private utsdriver ld; // Driver
     private World savedworld; // World
@@ -198,6 +199,7 @@ class utsvehicle {
         this.setAtoautodep(false);
         this.setLastilchest(null);
         this.setStopautoopen(true);
+        this.setStopmargin(1);
     }
 
     private static double getDoubleIfExists(String tDataInfo, String x, double data) {
@@ -691,5 +693,13 @@ class utsvehicle {
 
     public void setStopposoffset(double stopposoffset) {
         this.stopposoffset = stopposoffset;
+    }
+
+    public double getStopmargin() {
+        return stopmargin;
+    }
+
+    public void setStopmargin(double stopmargin) {
+        this.stopmargin = stopmargin;
     }
 }

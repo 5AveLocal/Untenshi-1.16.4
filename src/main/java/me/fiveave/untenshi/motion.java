@@ -430,7 +430,7 @@ class motion {
             // Get stop location
             StopPosResult spresult = getStopPosResult(lv);
             // Start Overrun (prevent escaping overrun over 144 km/h)
-            if (!lv.isOverrun() && (spresult.stopdist - ONE_TICK_IN_S * div3p6(lv.getSpeed()) < 0 || spresult.stopdist < 1)) {
+            if (!lv.isOverrun() && spresult.stopdist - ONE_TICK_IN_S * div3p6(lv.getSpeed()) < 0) {
                 lv.setOverrun(true);
             }
             // Rewards and penalties
@@ -443,8 +443,8 @@ class motion {
                 lv.setStaaccel(true);
             }
             // Stop positions
-            // <= 1 m
-            if (spresult.stopdist <= 1.00 && lv.getSpeed() == 0) {
+            // <= 1 m by default (Within stop margin)
+            if (spresult.stopdist <= lv.getStopmargin() && lv.getSpeed() == 0) {
                 // 25 cm
                 if (spresult.stopdist <= 0.25) {
                     showStopPos(lv, "stoppos_perfect", spresult.stopdistcm, shock, 10);

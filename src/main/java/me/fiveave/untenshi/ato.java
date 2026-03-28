@@ -21,7 +21,7 @@ import static me.fiveave.untenshi.motion.*;
 import static me.fiveave.untenshi.signalsign.signalSignInterlock;
 import static me.fiveave.untenshi.signalsign.signalSignWarn;
 import static me.fiveave.untenshi.speedsign.*;
-import static me.fiveave.untenshi.stoppos.stopPosDefault;
+import static me.fiveave.untenshi.stoppos.*;
 
 class ato {
 
@@ -306,13 +306,23 @@ class ato {
         Location eventloc = refchest.getLocation();
         switch (splitstr[0]) {
             case "stoppos":
-                // stoppos <x> <y> <z> (stop position) <x> <y> <z> (redstone output)
-                String sl3 = actionstrsplit[0] + " " + actionstrsplit[1] + " " + actionstrsplit[2];
-                String sl4 = "";
-                if (actionstrsplit.length == 6) {
-                    sl4 = actionstrsplit[3] + " " + actionstrsplit[4] + " " + actionstrsplit[5];
+                switch (actionstrsplit[0]) {
+                    case "autoopen":
+                        stopPosAutoOpen(lv, actionstrsplit[1]);
+                        break;
+                    case "margin":
+                        stopPosMargin(lv, actionstrsplit[1]);
+                        break;
+                    default:
+                        // stoppos <x> <y> <z> (stop position) <x> <y> <z> (redstone output)
+                        String sl3 = actionstrsplit[0] + " " + actionstrsplit[1] + " " + actionstrsplit[2];
+                        String sl4 = "";
+                        if (actionstrsplit.length == 6) {
+                            sl4 = actionstrsplit[3] + " " + actionstrsplit[4] + " " + actionstrsplit[5];
+                        }
+                        stopPosDefault(lv, eventloc, sl3, sl4);
+                        break;
                 }
-                stopPosDefault(lv, eventloc, sl3, sl4);
                 break;
             case "atosign":
                 switch (actionstrsplit[0]) {

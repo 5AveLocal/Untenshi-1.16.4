@@ -119,3 +119,4 @@ signdirwrong: サインの方向が間違っています。
 signreqseldir: サインと方向を選択してください!
 stoppos_autoopen_true: 次駅からドアは自動では開きます。
 stoppos_autoopen_false: 次駅からドアは自動では開きません。
+stoppos_margin: 停止許容範囲が変わりました。

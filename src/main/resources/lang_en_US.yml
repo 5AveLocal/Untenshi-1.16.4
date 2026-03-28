@@ -119,3 +119,4 @@ signdirwrong: Sign direction is incorrect.
 signreqseldir: Please select sign and direction first!
 stoppos_autoopen_true: Doors will open automatically from the next station.
 stoppos_autoopen_false: Doors will not open automatically from the next station.
+stoppos_margin: Stop position margin has been changed.
