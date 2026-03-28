@@ -364,6 +364,16 @@ class signalsign extends SignAction {
         return loc;
     }
 
+    static void updatePassedSignal(utsvehicle lv, Sign sign, Location realsignloc) {
+        // Update this signal
+        String str = (lv.getSafetysystype().equals("atc") ? "atc" : "r") + " " + 0;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            updateSignals(sign, "set " + str);
+            // If location is in interlocking list, then remove location and shift list
+            iLListandOccupiedRemoveShift(lv, realsignloc, false);
+        }, 1);
+    }
+
     boolean checkType(SignActionEvent e) {
         String[] l3 = e.getLine(2).toLowerCase().split(" ");
         return l3[0].equals("warn") || l3[0].equals("interlock") || (l3[0].equals("set") && isSignalType(l3[1]));
@@ -430,18 +440,13 @@ class signalsign extends SignAction {
                                     }
                                     // Update resettable sign
                                     shiftRs(lv, realsignloc);
-                                    // Update this signal
-                                    String str = (lv.getSafetysystype().equals("atc") ? "atc" : "r") + " " + 0;
-                                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                                        updateSignals(cartevent.getSign(), "set " + str);
-                                        // If location is in interlocking list, then remove location and shift list
-                                        iLListandOccupiedRemoveShift(lv, realsignloc, false);
-                                    }, 1);
                                     // Prevent non-resettable ATS Run caused by red light but without receiving warning
                                     if (signalspeed == 0 && lv.getLastsisign() == null) {
                                         // Get real location or else cannot reset sign
                                         lv.setLastsisign(realsignloc);
                                         lv.setLastsisp(signalspeed);
+                                    } else {
+                                        updatePassedSignal(lv, cartevent.getSign(), realsignloc);
                                     }
                                 }
                             }

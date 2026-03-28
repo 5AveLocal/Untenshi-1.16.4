@@ -98,7 +98,9 @@ public final class main extends JavaPlugin implements Listener {
                     lv.getTrain().getProperties().clearOwners();
                 }
                 // Stop train (Untenshi side)
-                toB8(lv);
+                if (lv.getBrake() != 9) {
+                    toB8(lv);
+                }
                 // Open doors (to prevent driver and passengers from being trapped)
                 waitStopOpenDoor(lv);
             }
