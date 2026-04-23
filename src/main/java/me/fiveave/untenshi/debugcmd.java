@@ -64,6 +64,13 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 Location loc3 = new Location(lv.getSavedworld(), Double.parseDouble(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]));
                 lv.setLastsisign(loc3);
                 break;
+            case "singlepsp":
+                Location loc6 = new Location(lv.getSavedworld(), Double.parseDouble(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]));
+                lv.setSinglepsign(loc6);
+                break;
+            case "singlepsign":
+                lv.setSinglepsp(Integer.parseInt(args[3]));
+                break;
             case "rsposlist":
             case "ilposlist":
             case "ilposoccupied":
@@ -194,6 +201,12 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 break;
             case "lastsisign":
                 retstr = locToString(lv.getLastsisign());
+                break;
+            case "singlepsp":
+                retstr = String.valueOf(lv.getSinglepsp());
+                break;
+            case "singlepsign":
+                retstr = locToString(lv.getSinglepsign());
                 break;
             case "rsposlist":
                 retstr = locListToString(lv.getRsposlist());
@@ -375,7 +388,7 @@ class debugcmd implements CommandExecutor, TabCompleter {
                 ta.addAll(Arrays.asList("get", "set"));
                 break;
             case 3:
-                ta.addAll(Arrays.asList("speed", "mascon", "brake", "speedlimit", "signallimit", "atospeed", "atodest", "stoppos", "stopoutput", "lastspsp", "lastspsign", "lastsisp", "lastsisign", "rsposlist", "ilposlist", "ilposoccupied", "ilpriority", "ilenterqueuetime", "atsforced", "atsping", "atspnear", "ld", "accel", "decel", "ebdecel", "speeddrop", "current", "bcpressure", "currentpertick", "bcppertick", "ebbcppertick", "dooropenspeed", "doorclosespeed", "reqstopping", "overrun", "fixstoppos", "dooropen", "doordiropen", "doorconfirm", "atopisdirect", "atoforcebrake", "atoautodep", "stopautoopen", "stopmargin"));
+                ta.addAll(Arrays.asList("speed", "mascon", "brake", "speedlimit", "signallimit", "atospeed", "atodest", "stoppos", "stopoutput", "lastspsp", "lastspsign", "lastsisp", "lastsisign", "singlepsp", "singlepsign", "rsposlist", "ilposlist", "ilposoccupied", "ilpriority", "ilenterqueuetime", "atsforced", "atsping", "atspnear", "ld", "accel", "decel", "ebdecel", "speeddrop", "current", "bcpressure", "currentpertick", "bcppertick", "ebbcppertick", "dooropenspeed", "doorclosespeed", "reqstopping", "overrun", "fixstoppos", "dooropen", "doordiropen", "doorconfirm", "atopisdirect", "atoforcebrake", "atoautodep", "stopautoopen", "stopmargin"));
                 break;
         }
         ta.forEach(a -> {

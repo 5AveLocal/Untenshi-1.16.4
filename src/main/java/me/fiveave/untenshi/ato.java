@@ -28,7 +28,7 @@ class ato {
     static void atoSys(utsvehicle lv, MinecartGroup mg) {
         if (lv.getAtodest() != null && lv.getAtospeed() != -1 && lv.getAtsping() == 0 && lv.getAtsforced() == 0 && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
             /*
-             Get distances, test which (atodest, speedsign, signalsign) has greater priority
+             Get distances, test which (atodest, singlep, speedsign, signalsign) has greater priority
              (distnow: smaller value of atodist and signaldist)
              reqatodist rate must be higher than others to prevent ATS-P or ATC run
             */
@@ -40,10 +40,13 @@ class ato {
             // Prevent upslope then downslope causing braking delay
             Location tailorheadsel = actualAtoRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
             double slopeaccelsel = getSlopeAccel(actualAtoRefPos, tailorheadsel);
+            double slopeaccelsinglep = 0;
             double slopeaccelsi = 0;
             double slopeaccelsp = 0;
             double reqatodist = getSingleReqdist(lv, lv.getSpeed(), lv.getAtospeed(), 6, slopeaccelsel, 0)
                     + getThinkingDistance(lv, lv.getSpeed(), lv.getAtospeed(), 6, slopeaccelsel, 0);
+            double singlepdist = Double.MAX_VALUE;
+            double singlepdistdiff = Double.MAX_VALUE;
             double signaldist = Double.MAX_VALUE;
             double signaldistdiff = Double.MAX_VALUE;
             double speeddist = Double.MAX_VALUE;
@@ -53,6 +56,7 @@ class ato {
             Vector cartoffsetvector = getCartOffsetVector(lv, cartactualpos);
             double atodist = distFormula(actualAtoRefPos, result.headLoc.add(cartoffsetvector));
             double atodistdiff = atodist - reqatodist;
+            double reqsinglepdist;
             double reqsidist;
             double reqspdist;
             double distnow = atodist;
@@ -60,6 +64,16 @@ class ato {
             int finalmascon = 0;
             int finalbrake = 0;
             // Find either ATO, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
+            if (lv.getSinglepsign() != null && lv.getSinglepsp() != MAX_SPEED) {
+                Location actualSinglepRefPos = getActualRefPos(lv.getSinglepsign(), mg.getWorld());
+                // Prevent upslope then downslope causing braking delay
+                Location tailorheadsinglep = actualSinglepRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
+                slopeaccelsinglep = getSlopeAccel(actualSinglepRefPos, tailorheadsinglep);
+                reqsinglepdist = getSingleReqdist(lv, lv.getSpeed(), lv.getSinglepsp(), 6, slopeaccelsinglep, 0)
+                        + getThinkingDistance(lv, lv.getSpeed(), lv.getSinglepsp(), 6, slopeaccelsinglep, 0);
+                singlepdist = distFormula(actualSinglepRefPos, result.headLoc);
+                singlepdistdiff = singlepdist - reqsinglepdist;
+            }
             if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
                 Location actualSiRefPos = getActualRefPos(lv.getLastsisign(), mg.getWorld());
                 // Prevent upslope then downslope causing braking delay
@@ -80,7 +94,13 @@ class ato {
                 speeddist = distFormula(actualSpRefPos, result.headLoc);
                 speeddistdiff = speeddist - reqspdist;
             }
+            // Get priority
             double priority = Math.min(atodistdiff, Math.min(speeddistdiff, signaldistdiff));
+            if (singlepdistdiff != Double.MAX_VALUE && priority == singlepdistdiff) {
+                lowerSpeed = lv.getSinglepsp();
+                distnow = singlepdist;
+                slopeaccelsel = slopeaccelsinglep;
+            }
             if (signaldistdiff != Double.MAX_VALUE && priority == signaldistdiff) {
                 lowerSpeed = lv.getLastsisp();
                 distnow = signaldist;

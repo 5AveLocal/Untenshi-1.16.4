@@ -151,7 +151,18 @@ class signalsign extends SignAction {
 
     static SignalOrderPtnResult getSignalOrderPtnResult(utsvehicle lv) {
         // Get signal order (ptnlen: length of string, halfptnlen: actual number of signal orders)
-        List<String> ptn = signalorder.dataconfig.getStringList("signal." + lv.getSignalorderptn());
+        List<String> ptn = signalorder.dataconfig.getStringList("signal." + lv.getSignalorderptn() + ".order");
+        // Format updater from old format
+        if (ptn.isEmpty()) {
+            ptn = signalorder.dataconfig.getStringList("signal." + lv.getSignalorderptn());
+            // Delete old entry
+            signalorder.dataconfig.set("signal." + lv.getSignalorderptn(), null);
+            // New entries
+            signalorder.dataconfig.set("signal." + lv.getSignalorderptn() + ".order", ptn);
+            signalorder.dataconfig.set("signal." + lv.getSignalorderptn() + ".usesinglepattern", false);
+            signalorder.save();
+        }
+        // Get signal order pattern
         int ptnlen = ptn.size();
         int halfptnlen = ptnlen / 2;
         // ptnsisi: Signal itself, ptnsisp: Signal speed
@@ -165,7 +176,9 @@ class signalsign extends SignAction {
                 ptnsisp[(i - 1) / 2] = parseInt(ptn.get(i));
             }
         }
-        return new SignalOrderPtnResult(halfptnlen, ptnsisi, ptnsisp);
+        // Get if signalorder uses single braking pattern
+        boolean usesignlepattern = signalorder.dataconfig.getBoolean("signal." + lv.getSignalorderptn() + ".usesinglepattern");
+        return new SignalOrderPtnResult(halfptnlen, ptnsisi, ptnsisp, usesignlepattern);
     }
 
     static void deleteOthersRs(utsvehicle lv, Location currentloc) {
@@ -565,11 +578,13 @@ class signalsign extends SignAction {
         public final int halfptnlen;
         public final String[] ptnsisi;
         public final int[] ptnsisp;
+        public final boolean usesinglepattern;
 
-        public SignalOrderPtnResult(int halfptnlen, String[] ptnsisi, int[] ptnsisp) {
+        public SignalOrderPtnResult(int halfptnlen, String[] ptnsisi, int[] ptnsisp, boolean usesinglepattern) {
             this.halfptnlen = halfptnlen;
             this.ptnsisi = ptnsisi;
             this.ptnsisp = ptnsisp;
+            this.usesinglepattern = usesinglepattern;
         }
     }
 }

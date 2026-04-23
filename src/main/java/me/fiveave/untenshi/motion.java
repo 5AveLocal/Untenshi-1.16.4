@@ -177,11 +177,8 @@ class motion {
         catchSignalUpdate(lv);
         // Interlocking stuff
         interlocking(lv);
-        // Types of speeding
-        boolean isoverspeed0 = lv.getSpeed() > minSpeedLimit(lv);
-        boolean isoverspeed3 = lv.getSpeed() > minSpeedLimit(lv) + 3 || lv.getSignallimit() == 0;
         // ATS-P or ATC
-        safetySys(lv, mg, isoverspeed0, isoverspeed3);
+        safetySys(lv, mg);
         // ATO (Must be placed after actions)
         atoSys(lv, mg);
         // Stop action
@@ -248,9 +245,9 @@ class motion {
         if (oldposlist == null || oldposlist.length == 0) {
             return;
         }
+        // Condition checking part
         // Check conditions to change signal
         int furthestoccupied = oldposlist.length - 1;
-        boolean ispriority = true;
         /* Prevent front train being blocked due to train at back due to lack of iloccupied
            Ignore blocked status until first signal is found,
            no worries for direct collision as if rs exists, train will be blocked;
@@ -327,65 +324,98 @@ class motion {
                         // firstsign == lastsign means the front sign of train is last before blocked section
                         // Check priority
                         if (firstsign == lastsign && lv.getIlenterqueuetime() > lv2.getIlenterqueuetime() && lv.getIlpriority() <= lv2.getIlpriority()) {
-                            ispriority = false;
-                            break;
+                            // Is first priority? If yes then continue, if no then wait
+                            return;
                         }
                     }
                 }
             }
         }
-        // Is first priority? If yes then continue, if no then wait
-        if (ispriority) {
-            // Occupy and set signals when ok
-            SignalOrderPtnResult result = getSignalOrderPtnResult(lv);
-            int orderno = 0;
-            // Set signs with new signal and speed
-            // Prevent repeated updating
-            if (lv.getIlposoccupied() == null || lv.getIlposoccupied().length < furthestoccupied + 1) {
-                for (int signno = furthestoccupied; signno >= 0; signno--) {
-                    // settable: Sign to be set
-                    Sign settable = getSignFromLoc(oldposlist[signno]);
-                    if (settable != null) {
-                        try {
-                            String[] settablesplit = settable.getLine(2).split(" ");
-                            String currentsi = settablesplit[1];
-                            int currentsp = parseInt(settablesplit[2]);
-                            // Check if new speed to be set is lower than current, if yes choose current instead
-                            String sistr = result.ptnsisp[orderno] < currentsp ? currentsi : result.ptnsisi[orderno];
-                            int sp = Math.max(result.ptnsisp[orderno], currentsp);
-                            // Update only if changed
-                            if (sp != currentsp) {
-                                updateSignals(settable, "set " + sistr + " " + sp);
-                            }
-                            // Orderno must not exceed halfptnlen
-                            if (orderno + 1 < result.halfptnlen) {
-                                orderno++;
-                            }
-                            // If next signal is lower than this
-                            if (result.ptnsisp[orderno] <= sp) {
-                                // For next orderno, must be higher than this
-                                for (int i = orderno; i < result.halfptnlen; i++) {
-                                    if (result.ptnsisp[i] >= sp) {
-                                        orderno = i;
-                                        break;
+        // Signal setting part
+        // Occupy and set signals when ok
+        SignalOrderPtnResult result = getSignalOrderPtnResult(lv);
+        int orderno = 0;
+        // Set signs with new signal and speed
+        // Prevent repeated updating
+        if (lv.getIlposoccupied() == null || lv.getIlposoccupied().length < furthestoccupied + 1) {
+            boolean usesinglepattern = result.usesinglepattern;
+            // Not use single pattern then delete
+            if (!usesinglepattern) {
+                lv.setSinglepsp(MAX_SPEED);
+                lv.setSinglepsign(null);
+            }
+            for (int signno = furthestoccupied; signno >= 0; signno--) {
+                // settable: Sign to be set
+                Sign settable = getSignFromLoc(oldposlist[signno]);
+                if (settable != null) {
+                    try {
+                        // Get settable sign data
+                        String[] settablesplit = settable.getLine(2).split(" ");
+                        String currentsi = settablesplit[1];
+                        int currentsp = parseInt(settablesplit[2]);
+                        // Check if new speed to be set is lower than current, if yes choose current instead
+                        String sistr = result.ptnsisp[orderno] < currentsp ? currentsi : result.ptnsisi[orderno];
+                        int sp = Math.max(result.ptnsisp[orderno], currentsp);
+                        // Single pattern settings
+                        if (usesinglepattern) {
+                            if (signno == furthestoccupied) {
+                                // First run: set target
+                                lv.setSinglepsp(sp);
+                                lv.setSinglepsign(settable.getLocation());
+                            } else {
+                                // Just in case none is found below, set highest to prevent wasting time
+                                int setsp = result.ptnsisp[result.halfptnlen - 1];
+                                sistr = result.ptnsisi[result.halfptnlen - 1];
+                                // Other runs: set signals to match single braking pattern
+                                Location actualTestRefPos = getActualRefPos(lv.getSinglepsign(), lv.getSavedworld());
+                                Location actualSignRefPos = getActualRefPos(settable.getLocation(), lv.getSavedworld());
+                                double actualdist = distFormula(actualTestRefPos, actualSignRefPos);
+                                double slopeaccel = getSlopeAccel(actualTestRefPos, actualSignRefPos);
+                                for (int i = result.halfptnlen - 1; i >= orderno; i--) {
+                                    int testsp = result.ptnsisp[i];
+                                    double testdist = getSingleReqdist(lv, testsp, lv.getSinglepsp(), 8, slopeaccel, 0);
+                                    // If possible to get a higher signal speed limit
+                                    if (testdist > actualdist && testsp > sp) {
+                                        setsp = testsp;
+                                        sistr = result.ptnsisi[i];
                                     }
                                 }
+                                // Set final speed
+                                sp = setsp;
                             }
-                        } catch (IndexOutOfBoundsException | NumberFormatException e) {
-                            signImproper(settable.getLocation(), lv.getLd());
-                            throw new RuntimeException(e);
                         }
+                        // Update only if changed
+                        if (sp != currentsp) {
+                            updateSignals(settable, "set " + sistr + " " + sp);
+                        }
+                        // Orderno must not exceed halfptnlen
+                        if (orderno + 1 < result.halfptnlen) {
+                            orderno++;
+                        }
+                        // If next signal is lower than this
+                        if (result.ptnsisp[orderno] <= sp) {
+                            // For next orderno, must be higher than this
+                            for (int i = orderno; i < result.halfptnlen; i++) {
+                                if (result.ptnsisp[i] >= sp) {
+                                    orderno = i;
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (IndexOutOfBoundsException | NumberFormatException e) {
+                        signImproper(settable.getLocation(), lv.getLd());
+                        throw new RuntimeException(e);
                     }
                 }
             }
-            // Set as occupied
-            Location[] newiloccupied = new Location[furthestoccupied];
-            // Put in ilposoccupied
-            System.arraycopy(oldposlist, 0, newiloccupied, 0, furthestoccupied);
-            lv.setIlposoccupied(newiloccupied);
-            // Delete other's resettable sign (check all locations to prevent bug)
-            Arrays.stream(newiloccupied).forEach(eachloc -> deleteOthersRs(lv, eachloc));
         }
+        // Set as occupied
+        Location[] newiloccupied = new Location[furthestoccupied];
+        // Put in ilposoccupied
+        System.arraycopy(oldposlist, 0, newiloccupied, 0, furthestoccupied);
+        lv.setIlposoccupied(newiloccupied);
+        // Delete other's resettable sign (check all locations to prevent bug)
+        Arrays.stream(newiloccupied).forEach(eachloc -> deleteOthersRs(lv, eachloc));
     }
 
     private static int getIlBlocked(int searchstart, Location[] oldposlist, Location[] il2poslist) {
@@ -574,17 +604,23 @@ class motion {
         }
     }
 
-    private static void safetySys(utsvehicle lv, MinecartGroup mg, boolean isoverspeed0, boolean isoverspeed3) {
+    private static void safetySys(utsvehicle lv, MinecartGroup mg) {
+        boolean isoverspeed0 = lv.getSpeed() > minSpeedLimit(lv);
+        boolean isoverspeed3 = lv.getSpeed() > minSpeedLimit(lv) + 3 || lv.getSignallimit() == 0;
         double lowerSpeed = minSpeedLimit(lv);
         // 0.0625 from result of getting mg.head() y-location
         HeadAndTailResult result = getHeadAndTailResult(mg);
         double slopeaccel = 0;
+        double slopeaccelsinglep = 0;
         double slopeaccelsi = 0;
         double slopeaccelsp = 0;
+        double singlepdist = Double.MAX_VALUE;
+        double singlepdistdiff = Double.MAX_VALUE;
         double signaldist = Double.MAX_VALUE;
         double signaldistdiff = Double.MAX_VALUE;
         double speeddist = Double.MAX_VALUE;
         double speeddistdiff = Double.MAX_VALUE;
+        double reqsinglepdist;
         double reqsidist;
         double reqspdist;
         double distnow = Double.MAX_VALUE;
@@ -603,7 +639,17 @@ class motion {
         if (lv.getAtsforced() == -1 && !mg.isObstacleAhead(mg.getProperties().getWaitDistance() + getThinkingDistance(lv, lv.getSpeed(), lowerSpeed, 8, slopeaccel, 0) * 2, true, true)) {
             lv.setAtsforced(0);
         }
-        // Find either signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
+        // Find either single braking pattern, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
+        boolean considersinglep = true;
+        if (lv.getSinglepsign() != null && lv.getSinglepsp() != MAX_SPEED) {
+            Location actualSinglepRefPos = getActualRefPos(lv.getSinglepsign(), mg.getWorld());
+            slopeaccelsinglep = getSlopeAccel(actualSinglepRefPos, result.tailLoc);
+            reqsinglepdist = getSingleReqdist(lv, lv.getSpeed(), lv.getSinglepsp(), 6, slopeaccelsinglep, 0);
+            singlepdist = distFormula(actualSinglepRefPos, result.headLoc);
+            singlepdistdiff = singlepdist - reqsinglepdist;
+            // Prevent brake cannot be released due to singlepsp being lowerSpeed despite being far away
+            if (singlepdistdiff > div3p6(lv.getSpeed()) * 5) considersinglep = false;
+        }
         if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
             Location actualSiRefPos = getActualRefPos(lv.getLastsisign(), mg.getWorld());
             slopeaccelsi = getSlopeAccel(actualSiRefPos, result.tailLoc);
@@ -618,7 +664,13 @@ class motion {
             speeddist = distFormula(actualSpRefPos, result.headLoc);
             speeddistdiff = speeddist - reqspdist;
         }
-        double priority = Math.min(signaldistdiff, speeddistdiff);
+        // Check priority
+        double priority = Math.min(singlepdistdiff, Math.min(signaldistdiff, speeddistdiff));
+        if (lv.getSinglepsign() != null && lv.getSinglepsp() != MAX_SPEED && priority == singlepdistdiff && considersinglep) {
+            lowerSpeed = lv.getSinglepsp();
+            distnow = singlepdist;
+            slopeaccel = slopeaccelsinglep;
+        }
         if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED && priority == signaldistdiff) {
             lowerSpeed = lv.getLastsisp();
             distnow = signaldist;
@@ -630,24 +682,17 @@ class motion {
             slopeaccel = slopeaccelsp;
         }
         // Get brake distance (reqdist)
-        double[] reqdist = new double[10];
-        getAllReqdist(lv, lv.getSpeed(), lowerSpeed, reqdist, slopeaccel, 0);
+        double reqdist7 = getSingleReqdist(lv, lv.getSpeed(), lowerSpeed, 7, slopeaccel, 0);
+        double reqdist8 = getSingleReqdist(lv, lv.getSpeed(), lowerSpeed, 8, slopeaccel, 0);
         // Actual controlling part
         // Check if next is red light
         boolean nextredlight = lv.getLastsisp() == 0 && priority == signaldistdiff;
         // tempdist is for anti-ATS-run, stop at 1 m before 0 km/h signal
         double tempdist = nextredlight ? Math.max(distnow - 1, 0) : distnow;
-        // Find minimum brake needed
-        int reqbrake = 9;
-        for (int b = 8; b >= 0; b--) {
-            if (tempdist >= reqdist[b]) {
-                reqbrake = b;
-            }
-        }
         // Pattern run
-        if (reqbrake >= 8 && lv.getSpeed() > lowerSpeed + 3 || isoverspeed3) {
+        if (tempdist < reqdist7 && lv.getSpeed() > lowerSpeed + 3 || isoverspeed3) {
             // Or SPAD (0 km/h signal) EB
-            if ((reqbrake == 9 || lv.getSignallimit() == 0) && lv.getAtsping() != 2) {
+            if ((tempdist < reqdist8 || lv.getSignallimit() == 0) && lv.getAtsping() != 2) {
                 lv.setBrake(9);
                 lv.setMascon(0);
                 lv.setAtsping(2);
@@ -661,14 +706,14 @@ class motion {
             lv.setAtsping(0);
         }
         // Pattern near
-        boolean pnear = (tempdist < reqdist[8] + div3p6(lv.getSpeed()) * 5 && lv.getSpeed() > lowerSpeed) || isoverspeed0;
+        boolean pnear = (tempdist < reqdist8 + div3p6(lv.getSpeed()) * 5 && lv.getSpeed() > lowerSpeed) || isoverspeed0;
         if (!lv.isAtspnear() && pnear) {
             generalMsg(lv.getLd(), ChatColor.GOLD, lv.getSafetysystype().toUpperCase() + " " + getLang("p_near"));
         }
         lv.setAtspnear(pnear);
     }
 
-    static void getAllReqdist(utsvehicle lv, double upperSpeed, double lowerSpeed, double[] reqdist, double slopeaccel, double extra) {
+    static void getAllReqdist(utsvehicle lv, double upperSpeed, double lowerSpeed, double[] reqdist, double slopeaccel, @SuppressWarnings("SameParameterValue") double extra) {
         for (int a = 0; a <= 9; a++) {
             reqdist[a] = getSingleReqdist(lv, upperSpeed, lowerSpeed, a, slopeaccel, extra);
         }

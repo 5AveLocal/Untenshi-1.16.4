@@ -1,2 +1,4 @@
 signal:
-  default: [ r, 0, y, 45, yg, 70, g, 360 ]
+  default:
+    order: [ "r", "0", "y", "45", "yg", "70", "g", "360" ]
+    usesinglepattern: false

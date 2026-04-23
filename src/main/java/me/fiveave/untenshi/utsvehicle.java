@@ -37,6 +37,7 @@ class utsvehicle {
     private int speedlimit; // Speed limit
     private int signallimit; // Signal speed limit
     private int atsforced; // ATS (ATC) forced status (-1: TrainCarts forced stop, 0: normal, 1: EB applied, 2: ATS Run)
+    private int singlepsp; // Speed limit of single braking pattern for safety systems
     private int lastsisp; // Speed limit of last recognized signal sign
     private int lastspsp; // Speed limit of last recognized speed limit sign
     private Location stopoutput; // Redstone output position after stopping at station
@@ -55,6 +56,7 @@ class utsvehicle {
     private Location stoppos; // Stop position at station
     private Location stopactionpos; // Stop action chest reference position at station
     private Location atodest; // ATO target destination
+    private Location singlepsign; // Location of single braking pattern for safety systems
     private Location lastsisign; // Location of last recognized signal sign
     private Location lastspsign; // Location of last recognized speed limit sign
     private Location lastilchest; // Location of last recognized interlocking chest
@@ -186,8 +188,10 @@ class utsvehicle {
         this.setAtospeed(-1);
         this.setAtodest(null);
         this.setAtostoptime(-1);
+        this.setSinglepsign(null);
         this.setLastsisign(null);
         this.setLastspsign(null);
+        this.setSinglepsp(MAX_SPEED);
         this.setLastsisp(MAX_SPEED);
         this.setLastspsp(MAX_SPEED);
         this.setIlposlist(null);
@@ -701,5 +705,21 @@ class utsvehicle {
 
     public void setStopmargin(double stopmargin) {
         this.stopmargin = stopmargin;
+    }
+
+    public int getSinglepsp() {
+        return singlepsp;
+    }
+
+    public void setSinglepsp(int singlepsp) {
+        this.singlepsp = singlepsp;
+    }
+
+    public Location getSinglepsign() {
+        return singlepsign;
+    }
+
+    public void setSinglepsign(Location singlepsign) {
+        this.singlepsign = singlepsign;
     }
 }
