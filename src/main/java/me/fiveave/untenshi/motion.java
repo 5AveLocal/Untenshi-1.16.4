@@ -367,21 +367,23 @@ class motion {
                                 int setsp = result.ptnsisp[result.halfptnlen - 1];
                                 sistr = result.ptnsisi[result.halfptnlen - 1];
                                 // Other runs: set signals to match single braking pattern
-                                Location actualTestRefPos = getActualRefPos(lv.getSinglepsign(), lv.getSavedworld());
-                                Location actualSignRefPos = getActualRefPos(settable.getLocation(), lv.getSavedworld());
-                                double actualdist = distFormula(actualTestRefPos, actualSignRefPos);
-                                double slopeaccel = getSlopeAccel(actualTestRefPos, actualSignRefPos);
-                                for (int i = result.halfptnlen - 1; i >= orderno; i--) {
-                                    int testsp = result.ptnsisp[i];
-                                    double testdist = getSingleReqdist(lv, testsp, lv.getSinglepsp(), 8, slopeaccel, 0);
-                                    // If possible to get a higher signal speed limit
-                                    if (testdist > actualdist && testsp > sp) {
-                                        setsp = testsp;
-                                        sistr = result.ptnsisi[i];
+                                if (lv.getSinglepsign() != null) {
+                                    Location actualTestRefPos = getActualRefPos(lv.getSinglepsign(), lv.getSavedworld());
+                                    Location actualSignRefPos = getActualRefPos(settable.getLocation(), lv.getSavedworld());
+                                    double actualdist = distFormula(actualTestRefPos, actualSignRefPos);
+                                    double slopeaccel = getSlopeAccel(actualTestRefPos, actualSignRefPos);
+                                    for (int i = result.halfptnlen - 1; i >= orderno; i--) {
+                                        int testsp = result.ptnsisp[i];
+                                        double testdist = getSingleReqdist(lv, testsp, lv.getSinglepsp(), 8, slopeaccel, 0);
+                                        // If possible to get a higher signal speed limit
+                                        if (testdist > actualdist && testsp > sp) {
+                                            setsp = testsp;
+                                            sistr = result.ptnsisi[i];
+                                        }
                                     }
+                                    // Set final speed
+                                    sp = setsp;
                                 }
-                                // Set final speed
-                                sp = setsp;
                             }
                         }
                         // Update only if changed
