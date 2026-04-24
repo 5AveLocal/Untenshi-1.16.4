@@ -344,6 +344,8 @@ class motion {
                 lv.setSinglepsp(MAX_SPEED);
                 lv.setSinglepsign(null);
             }
+            // For first sign detection
+            boolean firstsign = false;
             for (int signno = furthestoccupied; signno >= 0; signno--) {
                 // settable: Sign to be set
                 Sign settable = getSignFromLoc(oldposlist[signno]);
@@ -358,14 +360,13 @@ class motion {
                         int sp = Math.max(result.ptnsisp[orderno], currentsp);
                         // Single pattern settings
                         if (usesinglepattern) {
-                            if (signno == furthestoccupied) {
+                            if (!firstsign) {
+                                firstsign = true;
                                 // First run: set target
                                 lv.setSinglepsp(sp);
                                 lv.setSinglepsign(settable.getLocation());
                             } else {
-                                // Just in case none is found below, set highest to prevent wasting time
-                                int setsp = result.ptnsisp[result.halfptnlen - 1];
-                                sistr = result.ptnsisi[result.halfptnlen - 1];
+                                int setsp = sp;
                                 // Other runs: set signals to match single braking pattern
                                 if (lv.getSinglepsign() != null) {
                                     Location actualTestRefPos = getActualRefPos(lv.getSinglepsign(), lv.getSavedworld());
@@ -375,10 +376,11 @@ class motion {
                                     for (int i = result.halfptnlen - 1; i >= orderno; i--) {
                                         int testsp = result.ptnsisp[i];
                                         double testdist = getSingleReqdist(lv, testsp, lv.getSinglepsp(), 8, slopeaccel, 0);
-                                        // If possible to get a higher signal speed limit
-                                        if (testdist > actualdist && testsp > sp) {
-                                            setsp = testsp;
-                                            sistr = result.ptnsisi[i];
+                                        // Try until braking distance is shorter
+                                        setsp = testsp;
+                                        sistr = result.ptnsisi[i];
+                                        if (testdist < actualdist || testsp < sp) {
+                                            break;
                                         }
                                     }
                                     // Set final speed
@@ -394,11 +396,11 @@ class motion {
                         if (orderno + 1 < result.halfptnlen) {
                             orderno++;
                         }
-                        // If next signal is lower than this
+                        // If next signal is lower or equal to this
                         if (result.ptnsisp[orderno] <= sp) {
                             // For next orderno, must be higher than this
                             for (int i = orderno; i < result.halfptnlen; i++) {
-                                if (result.ptnsisp[i] >= sp) {
+                                if (result.ptnsisp[i] > sp || i == result.halfptnlen - 1) {
                                     orderno = i;
                                     break;
                                 }

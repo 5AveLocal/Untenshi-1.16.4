@@ -160,7 +160,7 @@ class ato {
                 finalbrake = 8;
             }
             // Potentially over speed limit / next speed limit in 1 s
-            double aspeed = lv.getSpeed() + slopeaccelnow;
+            double aspeed = lv.getSpeed() + slopeaccelnow * ONE_TICK_IN_S;
             double slopeselspeed = tempdist < div3p6(aspeed) ? lowerSpeed : currentlimit;
             if (aspeed > slopeselspeed) {
                 lv.setAtoforceslopebrake(true);
@@ -170,8 +170,8 @@ class ato {
                 int thisfinalbrake = 8;
                 for (int a = 7; a >= 1; a--) {
                     double ssavgdecel = avgRangeDecel(decel, aspeed, currentlimit, a + 1, lv.getSpeedsteps());
-                    // If braking decel is greater than slope accel, use the brake
-                    if (ssavgdecel > slopeaccelnow) {
+                    // If braking decel is greater or equal than slope accel, use the brake
+                    if (ssavgdecel >= slopeaccelnow) {
                         thisfinalbrake = a;
                     }
                 }
@@ -179,8 +179,8 @@ class ato {
                     finalbrake = thisfinalbrake;
                 }
             }
-            // 3 s needed for release
-            if (lv.getSpeed() + 3 * slopeaccelnow < slopeselspeed) {
+            // 2 s needed for release
+            if (lv.getSpeed() + 2 * slopeaccelnow < slopeselspeed) {
                 lv.setAtoforceslopebrake(false);
             }
             // Final value
