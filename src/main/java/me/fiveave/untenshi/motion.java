@@ -367,24 +367,27 @@ class motion {
                                 lv.setSinglepsign(settable.getLocation());
                             } else {
                                 int setsp = sp;
+                                String setsistr = sistr;
                                 // Other runs: set signals to match single braking pattern
                                 if (lv.getSinglepsign() != null) {
-                                    Location actualTestRefPos = getActualRefPos(lv.getSinglepsign(), lv.getSavedworld());
-                                    Location actualSignRefPos = getActualRefPos(settable.getLocation(), lv.getSavedworld());
-                                    double actualdist = distFormula(actualTestRefPos, actualSignRefPos);
-                                    double slopeaccel = getSlopeAccel(actualTestRefPos, actualSignRefPos);
+                                    Location actualTargetRefPos = getActualRefPos(lv.getSinglepsign());
+                                    Location actualSignRefPos = getActualRefPos(settable.getLocation());
+                                    double actualdist = distFormula(actualTargetRefPos, actualSignRefPos);
+                                    double slopeaccel = getSlopeAccel(actualTargetRefPos, actualSignRefPos);
                                     for (int i = result.halfptnlen - 1; i >= orderno; i--) {
                                         int testsp = result.ptnsisp[i];
+                                        String testsistr = result.ptnsisi[i];
                                         double testdist = getSingleReqdist(lv, testsp, lv.getSinglepsp(), 8, slopeaccel, 0);
                                         // Try until braking distance is shorter
-                                        setsp = testsp;
-                                        sistr = result.ptnsisi[i];
                                         if (testdist < actualdist || testsp < sp) {
                                             break;
                                         }
+                                        setsp = testsp;
+                                        setsistr = testsistr;
                                     }
                                     // Set final speed
                                     sp = setsp;
+                                    sistr = setsistr;
                                 }
                             }
                         }
@@ -646,7 +649,7 @@ class motion {
         // Find either single braking pattern, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
         boolean considersinglep = true;
         if (lv.getSinglepsign() != null && lv.getSinglepsp() != MAX_SPEED) {
-            Location actualSinglepRefPos = getActualRefPos(lv.getSinglepsign(), mg.getWorld());
+            Location actualSinglepRefPos = getActualRefPos(lv.getSinglepsign());
             slopeaccelsinglep = getSlopeAccel(actualSinglepRefPos, result.tailLoc);
             reqsinglepdist = getSingleReqdist(lv, lv.getSpeed(), lv.getSinglepsp(), 6, slopeaccelsinglep, 0);
             singlepdist = distFormula(actualSinglepRefPos, result.headLoc);
@@ -655,14 +658,14 @@ class motion {
             if (singlepdistdiff > div3p6(lv.getSpeed()) * 5) considersinglep = false;
         }
         if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
-            Location actualSiRefPos = getActualRefPos(lv.getLastsisign(), mg.getWorld());
+            Location actualSiRefPos = getActualRefPos(lv.getLastsisign());
             slopeaccelsi = getSlopeAccel(actualSiRefPos, result.tailLoc);
             reqsidist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastsisp(), 6, slopeaccelsi, 0);
             signaldist = distFormula(actualSiRefPos, result.headLoc);
             signaldistdiff = signaldist - reqsidist;
         }
         if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED) {
-            Location actualSpRefPos = getActualRefPos(lv.getLastspsign(), mg.getWorld());
+            Location actualSpRefPos = getActualRefPos(lv.getLastspsign());
             slopeaccelsp = getSlopeAccel(actualSpRefPos, result.tailLoc);
             reqspdist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastspsp(), 6, slopeaccelsp, 0);
             speeddist = distFormula(actualSpRefPos, result.headLoc);

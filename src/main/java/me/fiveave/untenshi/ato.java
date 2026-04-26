@@ -35,7 +35,7 @@ class ato {
             double lowerSpeed = lv.getAtospeed();
             double decel = lv.getDecel();
             HeadAndTailResult result = getHeadAndTailResult(mg);
-            Location actualAtoRefPos = getActualRefPos(lv.getAtodest(), mg.getWorld());
+            Location actualAtoRefPos = getActualRefPos(lv.getAtodest());
             double slopeaccelnow = getSlopeAccel(result.headLoc, result.tailLoc);
             // Prevent upslope then downslope causing braking delay
             Location tailorheadsel = actualAtoRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
@@ -65,7 +65,7 @@ class ato {
             int finalbrake = 0;
             // Find either ATO, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
             if (lv.getSinglepsign() != null && lv.getSinglepsp() != MAX_SPEED) {
-                Location actualSinglepRefPos = getActualRefPos(lv.getSinglepsign(), mg.getWorld());
+                Location actualSinglepRefPos = getActualRefPos(lv.getSinglepsign());
                 // Prevent upslope then downslope causing braking delay
                 Location tailorheadsinglep = actualSinglepRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
                 slopeaccelsinglep = getSlopeAccel(actualSinglepRefPos, tailorheadsinglep);
@@ -75,7 +75,7 @@ class ato {
                 singlepdistdiff = singlepdist - reqsinglepdist;
             }
             if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
-                Location actualSiRefPos = getActualRefPos(lv.getLastsisign(), mg.getWorld());
+                Location actualSiRefPos = getActualRefPos(lv.getLastsisign());
                 // Prevent upslope then downslope causing braking delay
                 Location tailorheadsi = actualSiRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
                 slopeaccelsi = getSlopeAccel(actualSiRefPos, tailorheadsi);
@@ -85,7 +85,7 @@ class ato {
                 signaldistdiff = signaldist - reqsidist;
             }
             if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED) {
-                Location actualSpRefPos = getActualRefPos(lv.getLastspsign(), mg.getWorld());
+                Location actualSpRefPos = getActualRefPos(lv.getLastspsign());
                 // Prevent upslope then downslope causing braking delay
                 Location tailorheadsp = actualSpRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
                 slopeaccelsp = getSlopeAccel(actualSpRefPos, tailorheadsp);

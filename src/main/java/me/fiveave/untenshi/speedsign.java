@@ -17,6 +17,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Objects;
+
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
@@ -52,10 +54,10 @@ class speedsign extends SignAction {
         return bl instanceof Chest ? (Chest) bl : null;
     }
 
-    static Location getActualRefPos(Location loc, World w) {
+    static Location getActualRefPos(Location loc) {
         int[] blkoffset = new int[]{0, 0, 0};
         if (isLocOfSign(loc)) {
-            Sign sign = (Sign) w.getBlockAt(loc).getState();
+            Sign sign = (Sign) Objects.requireNonNull(loc.getWorld()).getBlockAt(loc).getState();
             if (sign instanceof WallSign) {
                 blkoffset[1] = 1;
                 WallSign ws = (WallSign) sign;
@@ -92,7 +94,7 @@ class speedsign extends SignAction {
                 }
             } while (true);
         }
-        return new Location(w, loc.getX() + blkoffset[0], loc.getY() + blkoffset[1] + CART_Y_POS_DIFF, loc.getZ() + blkoffset[2]);
+        return new Location(loc.getWorld(), loc.getX() + blkoffset[0], loc.getY() + blkoffset[1] + CART_Y_POS_DIFF, loc.getZ() + blkoffset[2]);
     }
 
     static void signImproper(Location loc, utsdriver ld) {
