@@ -43,8 +43,9 @@ class ato {
             double slopeaccelsinglep = 0;
             double slopeaccelsi = 0;
             double slopeaccelsp = 0;
-            double reqatodist = getSingleReqdist(lv, lv.getSpeed(), lv.getAtospeed(), 6, slopeaccelsel, 0)
-                    + getThinkingDistance(lv, lv.getSpeed(), lv.getAtospeed(), 6, slopeaccelsel, 0);
+            double speed = lv.getSpeed();
+            double reqatodist = getSingleReqdist(lv, speed, lv.getAtospeed(), 6, slopeaccelsel, 0)
+                    + getThinkingDistance(lv, speed, lv.getAtospeed(), 6, slopeaccelsel, 0);
             double singlepdist = Double.MAX_VALUE;
             double singlepdistdiff = Double.MAX_VALUE;
             double signaldist = Double.MAX_VALUE;
@@ -63,69 +64,74 @@ class ato {
             int currentlimit = minSpeedLimit(lv);
             int finalmascon = 0;
             int finalbrake = 0;
-            // Find either ATO, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
-            if (lv.getSinglepsign() != null && lv.getSinglepsp() != MAX_SPEED) {
+            // Find either ATO, single brake pattern, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
+            int singlepsp = lv.getSinglepsp();
+            if (lv.getSinglepsign() != null && singlepsp != MAX_SPEED) {
                 Location actualSinglepRefPos = getActualRefPos(lv.getSinglepsign());
                 // Prevent upslope then downslope causing braking delay
                 Location tailorheadsinglep = actualSinglepRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
                 slopeaccelsinglep = getSlopeAccel(actualSinglepRefPos, tailorheadsinglep);
-                reqsinglepdist = getSingleReqdist(lv, lv.getSpeed(), lv.getSinglepsp(), 6, slopeaccelsinglep, 0)
-                        + getThinkingDistance(lv, lv.getSpeed(), lv.getSinglepsp(), 6, slopeaccelsinglep, 0);
+                reqsinglepdist = getSingleReqdist(lv, speed, singlepsp, 6, slopeaccelsinglep, 0)
+                        + getThinkingDistance(lv, speed, singlepsp, 6, slopeaccelsinglep, 0);
                 singlepdist = distFormula(actualSinglepRefPos, result.headLoc);
                 singlepdistdiff = singlepdist - reqsinglepdist;
             }
-            if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
+            int lastsisp = lv.getLastsisp();
+            if (lv.getLastsisign() != null && lastsisp != MAX_SPEED) {
                 Location actualSiRefPos = getActualRefPos(lv.getLastsisign());
                 // Prevent upslope then downslope causing braking delay
                 Location tailorheadsi = actualSiRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
                 slopeaccelsi = getSlopeAccel(actualSiRefPos, tailorheadsi);
-                reqsidist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastsisp(), 6, slopeaccelsi, 0)
-                        + getThinkingDistance(lv, lv.getSpeed(), lv.getLastsisp(), 6, slopeaccelsi, 0);
+                reqsidist = getSingleReqdist(lv, speed, lastsisp, 6, slopeaccelsi, 0)
+                        + getThinkingDistance(lv, speed, lastsisp, 6, slopeaccelsi, 0);
                 signaldist = distFormula(actualSiRefPos, result.headLoc);
                 signaldistdiff = signaldist - reqsidist;
             }
-            if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED) {
+            int lastspsp = lv.getLastspsp();
+            if (lv.getLastspsign() != null && lastspsp != MAX_SPEED) {
                 Location actualSpRefPos = getActualRefPos(lv.getLastspsign());
                 // Prevent upslope then downslope causing braking delay
                 Location tailorheadsp = actualSpRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
                 slopeaccelsp = getSlopeAccel(actualSpRefPos, tailorheadsp);
-                reqspdist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastspsp(), 6, slopeaccelsp, 0)
-                        + getThinkingDistance(lv, lv.getSpeed(), lv.getLastspsp(), 6, slopeaccelsp, 0);
+                reqspdist = getSingleReqdist(lv, speed, lastspsp, 6, slopeaccelsp, 0)
+                        + getThinkingDistance(lv, speed, lastspsp, 6, slopeaccelsp, 0);
                 speeddist = distFormula(actualSpRefPos, result.headLoc);
                 speeddistdiff = speeddist - reqspdist;
             }
             // Get priority
-            double priority = Math.min(atodistdiff, Math.min(speeddistdiff, signaldistdiff));
+            double priority = Math.min(atodistdiff, Math.min(singlepdistdiff, Math.min(speeddistdiff, signaldistdiff)));
             if (singlepdistdiff != Double.MAX_VALUE && priority == singlepdistdiff) {
-                lowerSpeed = lv.getSinglepsp();
+                lowerSpeed = singlepsp;
                 distnow = singlepdist;
                 slopeaccelsel = slopeaccelsinglep;
             }
             if (signaldistdiff != Double.MAX_VALUE && priority == signaldistdiff) {
-                lowerSpeed = lv.getLastsisp();
+                lowerSpeed = lastsisp;
                 distnow = signaldist;
                 slopeaccelsel = slopeaccelsi;
             }
             if (speeddistdiff != Double.MAX_VALUE && priority == speeddistdiff) {
-                lowerSpeed = lv.getLastspsp();
+                lowerSpeed = lastspsp;
                 distnow = speeddist;
                 slopeaccelsel = slopeaccelsp;
             }
             // Get brake distance (reqdist)
             double[] reqdist = new double[10];
             // Potential speed after acceleration (acceleration after P5 to N)
-            double potentialspeed = getSpeedAfterPotentialAccel(lv, lv.getSpeed(), slopeaccelnow);
+            double potentialspeed = getSpeedAfterPotentialAccel(lv, speed, slopeaccelnow);
             // To prevent redundant setting of mascon to N when approaching any signal
-            boolean nextredlight = lv.getLastsisp() == 0 && priority == signaldistdiff;
+            boolean nextredlight = lastsisp == 0 && priority == signaldistdiff;
             // tempdist is for anti-ATS-run, stop at 1 m before 0 km/h signal
             double tempdist = nextredlight ? (distnow - 1 < 0 ? 0 : distnow - 1) : distnow;
             // Speed with slope acceleration considered
             double safeslopeaccelsel = Math.max(slopeaccelsel, 0); // Non-negative slope acceleration
-            double saspeed = lv.getSpeed() + safeslopeaccelsel; // Speed with slope acceleration
+            double saspeed = speed + safeslopeaccelsel; // Speed with slope acceleration
             // Actual controlling part, extra tick to prevent huge shock on stopping
-            getAllReqdist(lv, lv.getSpeed(), lowerSpeed, reqdist, slopeaccelsel, ONE_TICK_IN_S);
+            getAllReqdist(lv, speed, lowerSpeed, reqdist, slopeaccelsel, ONE_TICK_IN_S);
             // Require accel? (no need to prepare for braking for next object and ATO target destination + additional thinking distance)
-            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - lv.getSpeed() > 5 && (lowerSpeed - lv.getSpeed() > 5 || tempdist > div3p6(lv.getSpeed())) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
+            boolean allowaccel = lv.getBrake() == 0 // Not braking
+                    && (lv.getMascon() > 0 // Already accelerating
+                    || currentlimit - speed > 5 && lowerSpeed - speed > 5 && tempdist > div3p6(speed)) // Or 5 km/h under speed limit / target speed (requires distance to be of 1 s)
                     && potentialspeed <= currentlimit // Will not go over speed limit
                     && (potentialspeed <= lowerSpeed || tempdist > div3p6(potentialspeed)) // Will not go over target speed
                     && lv.getDooropen() == 0 && lv.isDoorconfirm(); // Doors closed
@@ -156,11 +162,11 @@ class ato {
                 lv.setAtoforcebrake(false);
             }
             // 0 km/h signal waiting procedure (if no need accel)
-            if (nextredlight && lv.getSpeed() == 0 && finalmascon == 0 && finalbrake < 8) {
+            if (nextredlight && speed == 0 && finalmascon == 0 && finalbrake < 8) {
                 finalbrake = 8;
             }
             // Potentially over speed limit / next speed limit in 1 s
-            double aspeed = lv.getSpeed() + slopeaccelnow * ONE_TICK_IN_S;
+            double aspeed = speed + slopeaccelnow * ONE_TICK_IN_S;
             double slopeselspeed = tempdist < div3p6(aspeed) ? lowerSpeed : currentlimit;
             if (aspeed > slopeselspeed) {
                 lv.setAtoforceslopebrake(true);
@@ -169,7 +175,7 @@ class ato {
             if (lv.isAtoforceslopebrake()) {
                 int thisfinalbrake = 8;
                 for (int a = 7; a >= 1; a--) {
-                    double ssavgdecel = avgRangeDecel(decel, aspeed, currentlimit, a + 1, lv.getSpeedsteps());
+                    double ssavgdecel = avgRangeDecel(decel, aspeed, slopeselspeed, a + 1, lv.getSpeedsteps());
                     // If braking decel is greater or equal than slope accel, use the brake
                     if (ssavgdecel >= slopeaccelnow) {
                         thisfinalbrake = a;
@@ -180,7 +186,7 @@ class ato {
                 }
             }
             // 2 s needed for release
-            if (lv.getSpeed() + 2 * slopeaccelnow < slopeselspeed) {
+            if (speed + 2 * slopeaccelnow < slopeselspeed) {
                 lv.setAtoforceslopebrake(false);
             }
             // Final value
