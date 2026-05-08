@@ -79,13 +79,14 @@ class speedsign extends SignAction {
                 blkoffset[1] = 2;
             }
             do {
-                int railsuccess = 0;
+                boolean railsuccess = false;
                 for (Material mat : new Material[]{Material.RAIL, Material.ACTIVATOR_RAIL, Material.DETECTOR_RAIL, Material.POWERED_RAIL}) {
                     if (sign.getWorld().getBlockAt(loc.getBlockX() + blkoffset[0], loc.getBlockY() + blkoffset[1], loc.getBlockZ() + blkoffset[2]).getType().equals(mat)) {
-                        railsuccess++;
+                        railsuccess = true;
+                        break;
                     }
                 }
-                if (railsuccess > 0) break;
+                if (!railsuccess) break;
                 blkoffset[1]++;
                 // Anti over height limit / finding rail failed
                 if (loc.getY() + blkoffset[1] > 320) {

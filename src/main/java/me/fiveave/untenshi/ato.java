@@ -129,9 +129,7 @@ class ato {
             // Actual controlling part, extra tick to prevent huge shock on stopping
             getAllReqdist(lv, speed, lowerSpeed, reqdist, slopeaccelsel, ONE_TICK_IN_S);
             // Require accel? (no need to prepare for braking for next object and ATO target destination + additional thinking distance)
-            boolean allowaccel = lv.getBrake() == 0 // Not braking
-                    && (lv.getMascon() > 0 // Already accelerating
-                    || currentlimit - speed > 5 && lowerSpeed - speed > 5 && tempdist > div3p6(speed)) // Or 5 km/h under speed limit / target speed (requires distance to be of 1 s)
+            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - lv.getSpeed() > 5 && (lowerSpeed - lv.getSpeed() > 5 || tempdist > div3p6(lv.getSpeed())) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
                     && potentialspeed <= currentlimit // Will not go over speed limit
                     && (potentialspeed <= lowerSpeed || tempdist > div3p6(potentialspeed)) // Will not go over target speed
                     && lv.getDooropen() == 0 && lv.isDoorconfirm(); // Doors closed
