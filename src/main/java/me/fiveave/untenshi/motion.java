@@ -95,7 +95,7 @@ class motion {
     static void motionSystem(utsvehicle lv) {
         // From Config
         double oldspeed = lv.getSpeed();
-        boolean stationstop = plugin.getConfig().getBoolean("stationsignstop");
+        boolean stationstop = main.cfgStationSignStop;
         // Init train
         MinecartGroup mg = lv.getTrain();
         TrainProperties tprop = mg.getProperties();
@@ -472,11 +472,11 @@ class motion {
             }
             // Rewards and penalties
             // In station EB
-            if (lv.getMascon() == -9 && !lv.isStaeb() && !plugin.getConfig().getBoolean("allowebstop")) {
+            if (lv.getMascon() == -9 && !lv.isStaeb() && !main.cfgAllowEbStop) {
                 lv.setStaeb(true);
             }
             // In station accel
-            if (lv.getMascon() >= 1 && !lv.isStaaccel() && !lv.isFixstoppos() && !plugin.getConfig().getBoolean("allowreaccel")) {
+            if (!(lv.getMascon() < 1 || lv.isStaaccel() || lv.isFixstoppos() || main.cfgAllowReaccel)) {
                 lv.setStaaccel(true);
             }
             // Stop positions

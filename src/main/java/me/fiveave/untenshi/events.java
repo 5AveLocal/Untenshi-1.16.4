@@ -103,7 +103,20 @@ class events implements Listener {
         ItemMeta wanditm = wand.getItemMeta();
         Objects.requireNonNull(wanditm).setDisplayName(color + name);
         wand.setItemMeta(wanditm);
-        wand.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
+        // Enchantment.DURABILITY was removed in MC 1.20.5; the field that
+        // replaced it (UNBREAKING) doesn't exist in 1.16.4 spigot-api which
+        // this plugin compiles against. Resolve by namespaced key at runtime —
+        // works on every Bukkit version since 1.13.
+        Enchantment unbreaking = Enchantment.getByKey(
+                org.bukkit.NamespacedKey.minecraft("unbreaking"));
+        if (unbreaking == null) {
+            // Fallback for pre-1.20.5 servers where the key is still "durability".
+            unbreaking = Enchantment.getByKey(
+                    org.bukkit.NamespacedKey.minecraft("durability"));
+        }
+        if (unbreaking != null) {
+            wand.addUnsafeEnchantment(unbreaking, 10);
+        }
         return wand;
     }
 

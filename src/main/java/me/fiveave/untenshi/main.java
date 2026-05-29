@@ -45,6 +45,10 @@ public final class main extends JavaPlugin implements Listener {
     static absyaml traindata;
     static absyaml playerdata;
     static absyaml signalorder;
+    static boolean cfgStationSignStop;
+    static boolean cfgAllowEbStop;
+    static boolean cfgAllowReaccel;
+    static double cfgSpeedDropRate;
     static absyaml invdata;
     final stoppos sign1 = new stoppos();
     final speedsign sign2 = new speedsign();
@@ -53,6 +57,13 @@ public final class main extends JavaPlugin implements Listener {
     final utstrain sign5 = new utstrain();
     final drivermsg sign6 = new drivermsg();
     final SignAction[] signs = new SignAction[]{sign1, sign2, sign3, sign4, sign5, sign6};
+
+    static void cacheConfigValues() {
+        cfgStationSignStop = plugin.getConfig().getBoolean("stationsignstop");
+        cfgAllowEbStop = plugin.getConfig().getBoolean("allowebstop");
+        cfgAllowReaccel = plugin.getConfig().getBoolean("allowreaccel");
+        cfgSpeedDropRate = plugin.getConfig().getDouble("speeddroprate");
+    }
 
     static String getLang(String path) {
         langdata.reloadConfig();
@@ -192,6 +203,7 @@ public final class main extends JavaPlugin implements Listener {
         signalorder = new absyaml(this, "signalorder.yml");
         invdata = new absyaml(this, "inventories.yml");
         this.saveDefaultConfig();
+        cacheConfigValues();
         PluginManager pm = this.getServer().getPluginManager();
         Objects.requireNonNull(this.getCommand("uts")).setExecutor(new cmds());
         Objects.requireNonNull(this.getCommand("uts")).setTabCompleter(new cmds());
