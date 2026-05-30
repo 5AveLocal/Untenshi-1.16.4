@@ -1,8 +1,8 @@
 name: Untenshi
-version: 1.13.3
+version: ${project.version}
 main: me.fiveave.untenshi.main
 api-version: 1.15
-description: Untenshi Plugin
+description: Train driving plugin with reference to Japanese railways.
 author: 5_AvenueLocal
 depend: [ Train_Carts ]
 softdepend: [ TCCoasters ]

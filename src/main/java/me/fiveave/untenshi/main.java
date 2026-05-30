@@ -66,7 +66,6 @@ public final class main extends JavaPlugin implements Listener {
     }
 
     static String getLang(String path) {
-        langdata.reloadConfig();
         String result;
         try {
             result = langdata.dataconfig.getString(path);

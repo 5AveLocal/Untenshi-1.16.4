@@ -19,6 +19,7 @@ import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -101,21 +102,22 @@ class events implements Listener {
     protected static ItemStack getItem(Material m, ChatColor color, String name) {
         ItemStack wand = new ItemStack(m, 1);
         ItemMeta wanditm = wand.getItemMeta();
-        Objects.requireNonNull(wanditm).setDisplayName(color + name);
-        wand.setItemMeta(wanditm);
-        // Enchantment.DURABILITY was removed in MC 1.20.5; the field that
-        // replaced it (UNBREAKING) doesn't exist in 1.16.4 spigot-api which
-        // this plugin compiles against. Resolve by namespaced key at runtime —
-        // works on every Bukkit version since 1.13.
-        Enchantment unbreaking = Enchantment.getByKey(
-                org.bukkit.NamespacedKey.minecraft("unbreaking"));
-        if (unbreaking == null) {
-            // Fallback for pre-1.20.5 servers where the key is still "durability".
-            unbreaking = Enchantment.getByKey(
-                    org.bukkit.NamespacedKey.minecraft("durability"));
-        }
-        if (unbreaking != null) {
-            wand.addUnsafeEnchantment(unbreaking, 10);
+        if (wanditm != null) {
+            wanditm.setDisplayName(color + name);
+            wanditm.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            wand.setItemMeta(wanditm);
+            // Enchantment.DURABILITY was removed in MC 1.20.5; the field that
+            // replaced it (UNBREAKING) doesn't exist in 1.16.4 spigot-api which
+            // this plugin compiles against. Resolve by namespaced key at runtime —
+            // works on every Bukkit version since 1.13.
+            Enchantment unbreaking = Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft("unbreaking"));
+            if (unbreaking == null) {
+                // Fallback for pre-1.20.5 servers where the key is still "durability".
+                unbreaking = Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft("durability"));
+            }
+            if (unbreaking != null) {
+                wand.addUnsafeEnchantment(unbreaking, 10);
+            }
         }
         return wand;
     }

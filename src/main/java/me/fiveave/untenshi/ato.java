@@ -66,7 +66,7 @@ class ato {
             int finalbrake = 0;
             // Find either ATO, single brake pattern, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
             int singlepsp = lv.getSinglepsp();
-            if (lv.getSinglepsign() != null && singlepsp != MAX_SPEED) {
+            if (lv.getSinglepsign() != null && speed >= singlepsp) {
                 Location actualSinglepRefPos = getActualRefPos(lv.getSinglepsign());
                 // Prevent upslope then downslope causing braking delay
                 Location tailorheadsinglep = actualSinglepRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
@@ -77,7 +77,7 @@ class ato {
                 singlepdistdiff = singlepdist - reqsinglepdist;
             }
             int lastsisp = lv.getLastsisp();
-            if (lv.getLastsisign() != null && lastsisp != MAX_SPEED) {
+            if (lv.getLastsisign() != null && speed >= lastsisp) {
                 Location actualSiRefPos = getActualRefPos(lv.getLastsisign());
                 // Prevent upslope then downslope causing braking delay
                 Location tailorheadsi = actualSiRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
@@ -88,7 +88,7 @@ class ato {
                 signaldistdiff = signaldist - reqsidist;
             }
             int lastspsp = lv.getLastspsp();
-            if (lv.getLastspsign() != null && lastspsp != MAX_SPEED) {
+            if (lv.getLastspsign() != null && speed >= lastspsp) {
                 Location actualSpRefPos = getActualRefPos(lv.getLastspsign());
                 // Prevent upslope then downslope causing braking delay
                 Location tailorheadsp = actualSpRefPos.getY() < result.tailLoc.getY() && slopeaccelnow < 0 ? result.headLoc : result.tailLoc;
@@ -139,7 +139,7 @@ class ato {
                 finalmascon = 5;
             }
             // Require braking? (with additional thinking time, if thinking distance is less than 1 m then consider as 1 m (prevent hard braking at low speeds))
-            if (tempdist < reqdist[targetBrake] + Math.max(1, 2 * ONE_TICK_IN_S * getThinkingDistance(lv, saspeed, lowerSpeed, targetBrake, slopeaccelsel, ONE_TICK_IN_S))) {
+            if (!lv.isAtoforcebrake() && tempdist < reqdist[targetBrake] + Math.max(1, 2 * ONE_TICK_IN_S * getThinkingDistance(lv, saspeed, lowerSpeed, targetBrake, slopeaccelsel, ONE_TICK_IN_S))) {
                 lv.setAtoforcebrake(true);
             }
             // Direct pattern or forced?
@@ -156,7 +156,7 @@ class ato {
                 }
             }
             // Cancel braking? (with additional thinking time)
-            if (tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed + safeslopeaccelsel, lowerSpeed, targetBrake, slopeaccelsel, 3)) {
+            if (lv.isAtoforcebrake() && tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed + safeslopeaccelsel, lowerSpeed, targetBrake, slopeaccelsel, 3)) {
                 lv.setAtoforcebrake(false);
             }
             // 0 km/h signal waiting procedure (if no need accel)
