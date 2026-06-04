@@ -26,13 +26,14 @@ import static me.fiveave.untenshi.stoppos.*;
 class ato {
 
     static void atoSys(utsvehicle lv, MinecartGroup mg) {
-        if (lv.getAtodest() != null && lv.getAtospeed() != -1 && lv.getAtsping() == 0 && lv.getAtsforced() == 0 && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
+        double atospeed = lv.getAtospeed();
+        if (lv.getAtodest() != null && atospeed != -1 && lv.getAtsping() == 0 && lv.getAtsforced() == 0 && (lv.getLd() == null || lv.getLd().isAllowatousage())) {
             /*
              Get distances, test which (atodest, singlep, speedsign, signalsign) has greater priority
              (distnow: smaller value of atodist and signaldist)
              reqatodist rate must be higher than others to prevent ATS-P or ATC run
             */
-            double lowerSpeed = lv.getAtospeed();
+            double lowerSpeed = atospeed;
             double decel = lv.getDecel();
             HeadAndTailResult result = getHeadAndTailResult(mg);
             Location actualAtoRefPos = getActualRefPos(lv.getAtodest());
@@ -44,8 +45,8 @@ class ato {
             double slopeaccelsi = 0;
             double slopeaccelsp = 0;
             double speed = lv.getSpeed();
-            double reqatodist = getSingleReqdist(lv, speed, lv.getAtospeed(), 6, slopeaccelsel, 0)
-                    + getThinkingDistance(lv, speed, lv.getAtospeed(), 6, slopeaccelsel, 0);
+            double reqatodist = getSingleReqdist(lv, speed, atospeed, 6, slopeaccelsel, 0)
+                    + getThinkingDistance(lv, speed, atospeed, 6, slopeaccelsel, 0);
             double singlepdist = Double.MAX_VALUE;
             double singlepdistdiff = Double.MAX_VALUE;
             double signaldist = Double.MAX_VALUE;
@@ -129,7 +130,7 @@ class ato {
             // Actual controlling part, extra tick to prevent huge shock on stopping
             getAllReqdist(lv, speed, lowerSpeed, reqdist, slopeaccelsel, ONE_TICK_IN_S);
             // Require accel? (no need to prepare for braking for next object and ATO target destination + additional thinking distance)
-            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - lv.getSpeed() > 5 && (lowerSpeed - lv.getSpeed() > 5 || tempdist > div3p6(lv.getSpeed())) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
+            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - speed > 5 && (lowerSpeed - speed > 5 || tempdist > div3p6(speed)) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
                     && potentialspeed <= currentlimit // Will not go over speed limit
                     && (potentialspeed <= lowerSpeed || tempdist > div3p6(potentialspeed)) // Will not go over target speed
                     && lv.getDooropen() == 0 && lv.isDoorconfirm(); // Doors closed
@@ -194,7 +195,7 @@ class ato {
             if (lv.isOverrun() && atodist > 1) {
                 toEB(lv);
             }
-        } else if (lv.getAtodest() != null && lv.getAtospeed() != -1 && lv.getLd() != null && !lv.getLd().isAllowatousage()) {
+        } else if (lv.getAtodest() != null && atospeed != -1 && lv.getLd() != null && !lv.getLd().isAllowatousage()) {
             lv.setAtodest(null);
             lv.setAtospeed(-1);
             generalMsg(lv.getLd().getP(), ChatColor.GOLD, getLang("ato_patterncancel"));
