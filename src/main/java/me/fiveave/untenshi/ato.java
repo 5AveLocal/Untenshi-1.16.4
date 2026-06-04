@@ -105,13 +105,11 @@ class ato {
                 lowerSpeed = singlepsp;
                 distnow = singlepdist;
                 slopeaccelsel = slopeaccelsinglep;
-            }
-            if (signaldistdiff != Double.MAX_VALUE && priority == signaldistdiff) {
+            } else if (signaldistdiff != Double.MAX_VALUE && priority == signaldistdiff) {
                 lowerSpeed = lastsisp;
                 distnow = signaldist;
                 slopeaccelsel = slopeaccelsi;
-            }
-            if (speeddistdiff != Double.MAX_VALUE && priority == speeddistdiff) {
+            } else if (speeddistdiff != Double.MAX_VALUE && priority == speeddistdiff) {
                 lowerSpeed = lastspsp;
                 distnow = speeddist;
                 slopeaccelsel = slopeaccelsp;
