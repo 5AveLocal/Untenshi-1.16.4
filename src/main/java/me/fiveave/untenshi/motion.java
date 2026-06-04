@@ -94,7 +94,10 @@ class motion {
 
     static void motionSystem(utsvehicle lv) {
         // From Config
+        double oldbrake = lv.getBrake();
+        double oldmascon = lv.getMascon();
         double oldspeed = lv.getSpeed();
+        double setspeed = oldspeed;
         boolean stationstop = main.cfgStationSignStop;
         // Init train
         MinecartGroup mg = lv.getTrain();
@@ -107,7 +110,7 @@ class motion {
         // Electric current
         double ecnow = lv.getCurrent();
         // Set current for current mascon
-        double ectarget = getCurrentFromNotch(lv.getMascon());
+        double ectarget = getCurrentFromNotch(oldmascon);
         double currentpertick = lv.getCurrentpertick();
         // Set real current
         if (ectarget < ecnow) {
@@ -120,7 +123,7 @@ class motion {
         // Brake cylinder pressure
         double bcpnow = lv.getBcpressure();
         // Set pressure for current brake
-        double bcptarget = getPressureFromBrake(lv.getBrake());
+        double bcptarget = getPressureFromBrake(oldbrake);
         double bcppertick = lv.getBcppertick();
         double ebbcppertick = lv.getEbbcppertick();
         // Set real pressure
@@ -136,36 +139,38 @@ class motion {
         HeadAndTailResult result = getHeadAndTailResult(mg);
         double slopeaccel = getSlopeAccel(result.headLoc, result.tailLoc);
         // Accel and decel
-        double accelnow = accelSwitch(lv, lv.getSpeed(), (int) (getNotchFromCurrent(ecnow)));
-        double decelnow = decelSwitch(lv, lv.getSpeed(), slopeaccel);
+        double accelnow = accelSwitch(lv, oldspeed, (int) (getNotchFromCurrent(ecnow)));
+        double decelnow = decelSwitch(lv, oldspeed, slopeaccel);
         if (lv.getDooropen() == 0) {
             // If door is closed
-            lv.setSpeed(lv.getSpeed() //
+            setspeed = oldspeed //
                     + accelnow * ONE_TICK_IN_S // Acceleration
-                    - decelnow * ONE_TICK_IN_S); // Deceleration (speed drop included)
+                    - decelnow * ONE_TICK_IN_S // Deceleration (speed drop included)
             // Prevent negative speed
-            if (lv.getSpeed() < 0) {
-                lv.setSpeed(0);
+            if (oldspeed < 0) {
+                setspeed = 0;
             }
             // Prevent speed over 360 km/h (TC Limit)
-            if (lv.getSpeed() > 360) {
-                lv.setSpeed(360);
+            if (oldspeed > 360) {
+                setspeed = 360;
             }
         } else {
             // If door is open
-            lv.setSpeed(0);
-            if (lv.getMascon() > 0) {
+            setspeed = 0;
+            if (oldmascon > 0) {
                 lv.setMascon(0);
             }
         }
+        // Set final speed
+        lv.setSpeed(setspeed);
         // Cancel TC motion-related sign actions
         if (!stationstop) mg.getActions().clear();
         // Shock when stopping
-        String shock = lv.getSpeed() == 0 && lv.getSpeed() < oldspeed ? " " + ChatColor.GRAY + String.format("%.2f km/h/s", decelnow) : "";
+        String shock = setspeed == 0 && setspeed < oldspeed ? " " + ChatColor.GRAY + String.format("%.2f km/h/s", decelnow) : "";
         // Combine properties and action bar
         double blockpertick = 0;
         try {
-            blockpertick = Double.parseDouble(df3.format(lv.getSpeed() / 72));
+            blockpertick = Double.parseDouble(df3.format(setspeed / 72));
         } catch (NumberFormatException ignored) {
         }
         tprop.setSpeedLimit(blockpertick);
