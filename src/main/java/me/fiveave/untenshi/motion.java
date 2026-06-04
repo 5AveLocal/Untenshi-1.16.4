@@ -590,8 +590,9 @@ class motion {
         if (signalloc != null && lv.getLastsisp() != MAX_SPEED) {
             Sign warnsign = getSignFromLoc(signalloc);
             if (warnsign == null) return;
-            String warnsi = warnsign.getLine(2).split(" ")[1];
-            int warnsp = parseInt(warnsign.getLine(2).split(" ")[2]);
+            String[] warnstr = warnsign.getLine(2).split(" ");
+            String warnsi = warnstr[1];
+            int warnsp = parseInt(warnstr[2]);
             // Detect difference (sign speed now != saved sign speed)
             if (warnsp != lv.getLastsisp()) {
                 int oldsignallimit = lv.getLastsisp();
