@@ -94,10 +94,10 @@ class motion {
 
     static void motionSystem(utsvehicle lv) {
         // From Config
-        double oldbrake = lv.getBrake();
-        double oldmascon = lv.getMascon();
+        int oldbrake = lv.getBrake();
+        int oldmascon = lv.getMascon();
         double oldspeed = lv.getSpeed();
-        double setspeed = oldspeed;
+        double setspeed;
         boolean stationstop = main.cfgStationSignStop;
         // Init train
         MinecartGroup mg = lv.getTrain();
@@ -145,7 +145,7 @@ class motion {
             // If door is closed
             setspeed = oldspeed //
                     + accelnow * ONE_TICK_IN_S // Acceleration
-                    - decelnow * ONE_TICK_IN_S // Deceleration (speed drop included)
+                    - decelnow * ONE_TICK_IN_S; // Deceleration (speed drop included)
             // Prevent negative speed
             if (oldspeed < 0) {
                 setspeed = 0;
