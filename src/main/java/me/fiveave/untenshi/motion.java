@@ -38,12 +38,16 @@ import static me.fiveave.untenshi.speedsign.*;
 
 class motion {
 
-    private static DecimalFormat df3 = new DecimalFormat("#.###");
-    df3.setRoundingMode(RoundingMode.CEILING);
-    private static DecimalFormat df0up = new DecimalFormat("#");
-    df0up.setRoundingMode(RoundingMode.UP);
-    private static DecimalFormat df0he = new DecimalFormat("#");
-    df0he.setRoundingMode(RoundingMode.HALF_EVEN);
+    private static DecimalFormat df3;
+    
+    private static DecimalFormat df0;
+    
+    static {
+        df3 = new DecimalFormat("#.###");
+        df3.setRoundingMode(RoundingMode.CEILING);
+        df0 = new DecimalFormat("#");
+        df0.setRoundingMode(RoundingMode.HALF_EVEN);
+    }
 
     static void recursiveClockLv(utsvehicle lv) {
         if (lv.getTrain() != null && !lv.getTrain().isEmpty()) {
@@ -80,7 +84,7 @@ class motion {
         CoasterWorld cw = tcc.getCoasterWorld(world);
         TrackWorld tw = cw.getTracks();
         // Find all nodes near this coordinate
-        List<TrackNode> tnlist = tw.findNodesNear(tnlist, new Vector(x, y, z), 1);
+        List<TrackNode> tnlist = tw.findNodesNear(new ArrayList<>(), new Vector(x, y, z), 1);
         if (tnlist != null) {
             Vector v = new Vector(x, y, z);
             TrackNode rettn = null;
