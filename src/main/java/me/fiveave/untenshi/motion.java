@@ -370,30 +370,28 @@ class motion {
                                 // First run: set target
                                 lv.setSinglepsp(sp);
                                 lv.setSinglepsign(settable.getLocation());
-                            } else {
+                            } else if (lv.getSinglepsign() != null) {
                                 int setsp = sp;
                                 String setsistr = sistr;
                                 // Other runs: set signals to match single braking pattern
-                                if (lv.getSinglepsign() != null) {
-                                    Location actualTargetRefPos = getActualRefPos(lv.getSinglepsign());
-                                    Location actualSignRefPos = getActualRefPos(settable.getLocation());
-                                    double actualdist = distFormula(actualTargetRefPos, actualSignRefPos);
-                                    double slopeaccel = getSlopeAccel(actualTargetRefPos, actualSignRefPos);
-                                    for (int i = result.halfptnlen - 1; i >= orderno; i--) {
-                                        int testsp = result.ptnsisp[i];
-                                        String testsistr = result.ptnsisi[i];
-                                        double testdist = getSingleReqdist(lv, testsp, lv.getSinglepsp(), 8, slopeaccel, 0);
-                                        // Try until braking distance is shorter
-                                        if (testdist < actualdist || testsp < sp) {
-                                            break;
-                                        }
-                                        setsp = testsp;
-                                        setsistr = testsistr;
+                                Location actualTargetRefPos = getActualRefPos(lv.getSinglepsign());
+                                Location actualSignRefPos = getActualRefPos(settable.getLocation());
+                                double actualdist = distFormula(actualTargetRefPos, actualSignRefPos);
+                                double slopeaccel = getSlopeAccel(actualTargetRefPos, actualSignRefPos);
+                                for (int i = result.halfptnlen - 1; i >= orderno; i--) {
+                                    int testsp = result.ptnsisp[i];
+                                    String testsistr = result.ptnsisi[i];
+                                    double testdist = getSingleReqdist(lv, testsp, lv.getSinglepsp(), 8, slopeaccel, 0);
+                                    // Try until braking distance is shorter
+                                    if (testdist < actualdist || testsp < sp) {
+                                        break;
                                     }
-                                    // Set final speed
-                                    sp = setsp;
-                                    sistr = setsistr;
+                                    setsp = testsp;
+                                    setsistr = testsistr;
                                 }
+                                // Set final speed
+                                sp = setsp;
+                                sistr = setsistr;
                             }
                         }
                         // Update only if changed
