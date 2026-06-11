@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Map;
+import java.util.HashMap;
 
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.ato.*;
@@ -318,9 +320,8 @@ class motion {
                         // Sign closer to this train
                         int firstsign = 0;
                         for (int i = 0; i <= blocked; i++) {
-                            firstsign = i;
-                            // If sign is found
                             if (isLocOfSign(oldposlist[i])) {
+                                firstsign = i;
                                 break;
                             }
                         }
@@ -624,9 +625,10 @@ class motion {
     }
 
     private static void safetySys(utsvehicle lv, MinecartGroup mg) {
+        double speed = lv.getSpeed();
         double minspeedlimit = minSpeedLimit(lv);
-        boolean isoverspeed0 = lv.getSpeed() > minspeedlimit;
-        boolean isoverspeed3 = lv.getSpeed() > minspeedlimit + 3 || lv.getSignallimit() == 0;
+        boolean isoverspeed0 = speed > minspeedlimit;
+        boolean isoverspeed3 = speed > minspeedlimit + 3 || lv.getSignallimit() == 0;
         double lowerSpeed = minspeedlimit;
         // 0.0625 from result of getting mg.head() y-location
         HeadAndTailResult result = getHeadAndTailResult(mg);
@@ -653,10 +655,10 @@ class motion {
             generalMsg(lv.getLd(), ChatColor.RED, getLang("tcblocking"));
         }
         if (lv.getAtsforced() == -1 && lv.getAtsping() > 0 && lv.getMascon() == -9) {
-            lv.setSpeed(Math.max(lv.getSpeed() - lv.getEbdecel() * ONE_TICK_IN_S * 45 / 7, 0));
+            lv.setSpeed(Math.max(speed - lv.getEbdecel() * ONE_TICK_IN_S * 45 / 7, 0));
         }
         // If no obstacle need braking in 2s then release
-        if (lv.getAtsforced() == -1 && !mg.isObstacleAhead(mg.getProperties().getWaitDistance() + getThinkingDistance(lv, lv.getSpeed(), lowerSpeed, 8, slopeaccel, 0) * 2, true, true)) {
+        if (lv.getAtsforced() == -1 && !mg.isObstacleAhead(mg.getProperties().getWaitDistance() + getThinkingDistance(lv, speed, lowerSpeed, 8, slopeaccel, 0) * 2, true, true)) {
             lv.setAtsforced(0);
         }
         // Find either single braking pattern, signal or speed limit distance, figure out which has the greatest priority (distnow - reqdist is the smallest value)
@@ -664,23 +666,23 @@ class motion {
         if (lv.getSinglepsign() != null && lv.getSinglepsp() != MAX_SPEED) {
             Location actualSinglepRefPos = getActualRefPos(lv.getSinglepsign());
             slopeaccelsinglep = getSlopeAccel(actualSinglepRefPos, result.tailLoc);
-            reqsinglepdist = getSingleReqdist(lv, lv.getSpeed(), lv.getSinglepsp(), 6, slopeaccelsinglep, 0);
+            reqsinglepdist = getSingleReqdist(lv, speed, lv.getSinglepsp(), 6, slopeaccelsinglep, 0);
             singlepdist = distFormula(actualSinglepRefPos, result.headLoc);
             singlepdistdiff = singlepdist - reqsinglepdist;
             // Prevent brake cannot be released due to singlepsp being lowerSpeed despite being far away
-            if (singlepdistdiff > div3p6(lv.getSpeed()) * 5) considersinglep = false;
+            if (singlepdistdiff > div3p6(speed) * 5) considersinglep = false;
         }
         if (lv.getLastsisign() != null && lv.getLastsisp() != MAX_SPEED) {
             Location actualSiRefPos = getActualRefPos(lv.getLastsisign());
             slopeaccelsi = getSlopeAccel(actualSiRefPos, result.tailLoc);
-            reqsidist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastsisp(), 6, slopeaccelsi, 0);
+            reqsidist = getSingleReqdist(lv, speed, lv.getLastsisp(), 6, slopeaccelsi, 0);
             signaldist = distFormula(actualSiRefPos, result.headLoc);
             signaldistdiff = signaldist - reqsidist;
         }
         if (lv.getLastspsign() != null && lv.getLastspsp() != MAX_SPEED) {
             Location actualSpRefPos = getActualRefPos(lv.getLastspsign());
             slopeaccelsp = getSlopeAccel(actualSpRefPos, result.tailLoc);
-            reqspdist = getSingleReqdist(lv, lv.getSpeed(), lv.getLastspsp(), 6, slopeaccelsp, 0);
+            reqspdist = getSingleReqdist(lv, speed, lv.getLastspsp(), 6, slopeaccelsp, 0);
             speeddist = distFormula(actualSpRefPos, result.headLoc);
             speeddistdiff = speeddist - reqspdist;
         }
@@ -702,15 +704,15 @@ class motion {
             slopeaccel = slopeaccelsp;
         }
         // Get brake distance (reqdist)
-        double reqdist7 = getSingleReqdist(lv, lv.getSpeed(), lowerSpeed, 7, slopeaccel, 0);
-        double reqdist8 = getSingleReqdist(lv, lv.getSpeed(), lowerSpeed, 8, slopeaccel, 0);
+        double reqdist7 = getSingleReqdist(lv, speed, lowerSpeed, 7, slopeaccel, 0);
+        double reqdist8 = getSingleReqdist(lv, speed, lowerSpeed, 8, slopeaccel, 0);
         // Actual controlling part
         // Check if next is red light
         boolean nextredlight = lv.getLastsisp() == 0 && priority == signaldistdiff;
         // tempdist is for anti-ATS-run, stop at 1 m before 0 km/h signal
         double tempdist = nextredlight ? Math.max(distnow - 1, 0) : distnow;
         // Pattern run
-        if (tempdist < reqdist7 && lv.getSpeed() > lowerSpeed + 3 || isoverspeed3) {
+        if (tempdist < reqdist7 && speed > lowerSpeed + 3 || isoverspeed3) {
             // Or SPAD (0 km/h signal) EB
             if ((tempdist < reqdist8 || lv.getSignallimit() == 0) && lv.getAtsping() != 2) {
                 lv.setBrake(9);
@@ -722,11 +724,11 @@ class motion {
                 lv.setAtsping(1);
                 pointCounter(lv.getLd(), ChatColor.RED, lv.getSafetysystype().toUpperCase() + " " + getLang("p_b8") + " ", -5, "");
             }
-        } else if (lv.getSpeed() <= lowerSpeed + 3 && !isoverspeed0 && lv.getAtsforced() != 2 && lv.getAtsforced() != -1) {
+        } else if (speed <= lowerSpeed + 3 && !isoverspeed0 && lv.getAtsforced() != 2 && lv.getAtsforced() != -1) {
             lv.setAtsping(0);
         }
         // Pattern near
-        boolean pnear = (tempdist < reqdist8 + div3p6(lv.getSpeed()) * 5 && lv.getSpeed() > lowerSpeed) || isoverspeed0;
+        boolean pnear = (tempdist < reqdist8 + div3p6(speed) * 5 && lv.getSpeed() > lowerSpeed) || isoverspeed0;
         if (!lv.isAtspnear() && pnear) {
             generalMsg(lv.getLd(), ChatColor.GOLD, lv.getSafetysystype().toUpperCase() + " " + getLang("p_near"));
         }
@@ -853,7 +855,7 @@ class motion {
         // Need to fix stop pos? If no then add points
         if (!lv.isFixstoppos() && ld != null) {
             String s = " ";
-            if (noFreemodeOrATO(lv.getLd())) {
+            if (noFreemodeOrATO(ld) {
                 s = " " + ChatColor.GREEN + "+" + pts + " ";
                 ld.setPoints(lv.getLd().getPoints() + pts);
             }
