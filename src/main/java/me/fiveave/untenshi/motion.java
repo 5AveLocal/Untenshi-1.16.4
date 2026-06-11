@@ -38,8 +38,12 @@ import static me.fiveave.untenshi.speedsign.*;
 
 class motion {
 
-    private DecimalFormat df3 = new DecimalFormat("#.###");
-    private DecimalFormat df0 = new DecimalFormat("#");
+    private static DecimalFormat df3 = new DecimalFormat("#.###");
+    df3.setRoundingMode(RoundingMode.CEILING);
+    private static DecimalFormat df0up = new DecimalFormat("#");
+    df0up.setRoundingMode(RoundingMode.UP);
+    private static DecimalFormat df0he = new DecimalFormat("#");
+    df0he.setRoundingMode(RoundingMode.HALF_EVEN);
 
     static void recursiveClockLv(utsvehicle lv) {
         if (lv.getTrain() != null && !lv.getTrain().isEmpty()) {
@@ -75,9 +79,8 @@ class motion {
         TCCoasters tcc = TCCoasters.getPlugin(TCCoasters.class);
         CoasterWorld cw = tcc.getCoasterWorld(world);
         TrackWorld tw = cw.getTracks();
-        List<TrackNode> tnlist = new ArrayList<>();
         // Find all nodes near this coordinate
-        tnlist = tw.findNodesNear(tnlist, new Vector(x, y, z), 1);
+        List<TrackNode> tnlist = tw.findNodesNear(tnlist, new Vector(x, y, z), 1);
         if (tnlist != null) {
             Vector v = new Vector(x, y, z);
             TrackNode rettn = null;
@@ -105,9 +108,6 @@ class motion {
         // Init train
         MinecartGroup mg = lv.getTrain();
         TrainProperties tprop = mg.getProperties();
-        // Rounding
-        df3.setRoundingMode(RoundingMode.CEILING);
-        df0.setRoundingMode(RoundingMode.UP);
         // Electric current
         double ecnow = lv.getCurrent();
         // Set current for current mascon
@@ -194,11 +194,12 @@ class motion {
             if (refchest != null) {
                 // Test for all items in chest
                 for (int itemno = 0; itemno < 27; itemno++) {
-                    ItemMeta mat;
-                    try {
-                        mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
-                        stopActionClock(lv, refchest, mat, 0, 0, lv.isDoordiropen(), lv.isDoorconfirm(), true);
-                    } catch (Exception ignored) {
+                    ItemStack item = refchest.getBlockInventory().getItem(itemno);
+                    if (item != null) {
+                        ItemMeta mat = item.getItemMeta();
+                        if (mat != null) {
+                            stopActionClock(lv, refchest, mat, 0, 0, lv.isDoordiropen(), lv.isDoorconfirm(), true);
+                        }
                     }
                 }
                 lv.setStopactionpos(null);
@@ -210,8 +211,6 @@ class motion {
 
     static void driverSystem(utsdriver ld) {
         utsvehicle lv = ld.getLv();
-        // Rounding
-        df0.setRoundingMode(RoundingMode.HALF_EVEN);
         // Combine properties and action bar
         String doortxt = doorText(lv);
         // Display speed
@@ -266,20 +265,24 @@ class motion {
         }
         // mg2: other trains
         for (MinecartGroup mg2 : vehicle.keySet()) {
-            if (!mg2.equals(lv.getTrain()) && vehicle.get(mg2) != null) {
+            if (!mg2.equals(lv.getTrain())) {
                 utsvehicle lv2 = vehicle.get(mg2);
+                if (lv2 != null) {
                 // Check resettable sign of other trains
                 Location[] rssign2locs = lv2.getRsposlist();
                 if (rssign2locs != null) {
                     SignalOrderPtnResult result2 = getSignalOrderPtnResult(lv2);
-                    // Check for each location
+                    // Create a map for O(1) lookups while preserving indices
+                    Map<String, Integer> locationIndexMap = new HashMap<>();
+                    for (int j = 0; j < rssign2locs.length; j++) {
+                        locationIndexMap.put(rssign2locs[j].getBlockX() + "," + rssign2locs[j].getBlockY() + "," + rssign2locs[j].getBlockZ(), j);
+                    }
                     for (int i = oldposlist.length - 1; i >= 0; i--) {
-                        for (int j = 0; j < rssign2locs.length; j++) {
-                            Location location = rssign2locs[j];
-                            // Maximum is result.halfptnlen - 1, cannot exceed (else index not exist and value will be null)
+                        String key = oldposlist[i].getBlockX() + "," + oldposlist[i].getBlockY() + "," + oldposlist[i].getBlockZ();
+                        if (locationIndexMap.containsKey(key)) {
+                            int j = locationIndexMap.get(key);
                             int minno = Math.min(result2.halfptnlen - 1, Math.max(0, j - lv2.getRsoccupiedpos()));
-                            // Resettable sign signal of lv2 is supposed to be 0 km/h by resettable sign
-                            if (oldposlist[i].equals(location) && i < furthestoccupied && result2.ptnsisp[minno] == 0) {
+                            if (i < furthestoccupied && result2.ptnsisp[minno] == 0) {
                                 furthestoccupied = i;
                                 break;
                             }
@@ -334,6 +337,7 @@ class motion {
                         }
                     }
                 }
+            }
             }
         }
         // Signal setting part
@@ -616,9 +620,10 @@ class motion {
     }
 
     private static void safetySys(utsvehicle lv, MinecartGroup mg) {
-        boolean isoverspeed0 = lv.getSpeed() > minSpeedLimit(lv);
-        boolean isoverspeed3 = lv.getSpeed() > minSpeedLimit(lv) + 3 || lv.getSignallimit() == 0;
-        double lowerSpeed = minSpeedLimit(lv);
+        double minspeedlimit = minSpeedLimit(lv);
+        boolean isoverspeed0 = lv.getSpeed() > minspeedlimit;
+        boolean isoverspeed3 = lv.getSpeed() > minspeedlimit + 3 || lv.getSignallimit() == 0;
+        double lowerSpeed = minspeedlimit;
         // 0.0625 from result of getting mg.head() y-location
         HeadAndTailResult result = getHeadAndTailResult(mg);
         double slopeaccel = 0;
