@@ -38,6 +38,9 @@ import static me.fiveave.untenshi.speedsign.*;
 
 class motion {
 
+    private DecimalFormat df3 = new DecimalFormat("#.###");
+    private DecimalFormat df0 = new DecimalFormat("#");
+
     static void recursiveClockLv(utsvehicle lv) {
         if (lv.getTrain() != null && !lv.getTrain().isEmpty()) {
             try {
@@ -103,8 +106,6 @@ class motion {
         MinecartGroup mg = lv.getTrain();
         TrainProperties tprop = mg.getProperties();
         // Rounding
-        DecimalFormat df3 = new DecimalFormat("#.###");
-        DecimalFormat df0 = new DecimalFormat("#");
         df3.setRoundingMode(RoundingMode.CEILING);
         df0.setRoundingMode(RoundingMode.UP);
         // Electric current
@@ -210,7 +211,6 @@ class motion {
     static void driverSystem(utsdriver ld) {
         utsvehicle lv = ld.getLv();
         // Rounding
-        DecimalFormat df0 = new DecimalFormat("#");
         df0.setRoundingMode(RoundingMode.HALF_EVEN);
         // Combine properties and action bar
         String doortxt = doorText(lv);
