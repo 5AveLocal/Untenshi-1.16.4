@@ -372,27 +372,24 @@ class motion {
                                 lv.setSinglepsp(sp);
                                 lv.setSinglepsign(getRealSignLoc(settable.getLocation()));
                             } else if (lv.getSinglepsign() != null) {
-                                int setsp = sp;
-                                String setsistr = sistr;
                                 // Other runs: set signals to match single braking pattern
                                 Location actualTargetRefPos = getActualRefPos(lv.getSinglepsign());
-                                Location actualSignRefPos = getActualRefPos(settable.getLocation());
+                                Location actualSignRefPos = getActualRefPos(getRealSignLoc(settable.getLocation()));
                                 double actualdist = distFormula(actualTargetRefPos, actualSignRefPos);
                                 double slopeaccel = getSlopeAccel(actualTargetRefPos, actualSignRefPos);
-                                for (int i = result.halfptnlen - 1; i >= orderno; i--) {
+                                int index = result.halfptnlen - 1;
+                                for (int i = index; i >= orderno; i--) {
                                     int testsp = result.ptnsisp[i];
-                                    String testsistr = result.ptnsisi[i];
                                     double testdist = getSingleReqdist(lv, testsp, lv.getSinglepsp(), 8, slopeaccel, 0);
                                     // Try until braking distance is shorter
                                     if (testdist < actualdist || testsp < sp) {
                                         break;
                                     }
-                                    setsp = testsp;
-                                    setsistr = testsistr;
+                                    index = i;
                                 }
                                 // Set final speed
-                                sp = setsp;
-                                sistr = setsistr;
+                                sp = result.ptnsisp[index];
+                                sistr = result.ptnsisi[index];
                             }
                         }
                         // Update only if changed

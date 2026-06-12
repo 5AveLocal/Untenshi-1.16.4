@@ -114,7 +114,10 @@ public final class main extends JavaPlugin implements Listener {
                     toB8(lv);
                 }
                 // Open doors (to prevent driver and passengers from being trapped)
-                waitStopOpenDoor(lv);
+                try {
+                    waitStopOpenDoor(lv);
+                } catch (Exception ignored) {
+                }
             }
             // Reset inventory
             retrieveInv(ld);
