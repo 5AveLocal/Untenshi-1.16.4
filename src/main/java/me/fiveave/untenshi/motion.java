@@ -36,14 +36,12 @@ import static me.fiveave.untenshi.speedsign.*;
 
 class motion {
 
-    private static final DecimalFormat df3;
+    private static final DecimalFormat df3 = new DecimalFormat("#.###");
 
-    private static final DecimalFormat df0;
+    private static final DecimalFormat df0 = new DecimalFormat("#");
 
     static {
-        df3 = new DecimalFormat("#.###");
         df3.setRoundingMode(RoundingMode.CEILING);
-        df0 = new DecimalFormat("#");
         df0.setRoundingMode(RoundingMode.HALF_EVEN);
     }
 
@@ -150,7 +148,7 @@ class motion {
                     + accelnow * ONE_TICK_IN_S // Acceleration
                     - decelnow * ONE_TICK_IN_S; // Deceleration (speed drop included)
             // Prevent negative speed
-            if (oldspeed < 0) {
+            if (setspeed < 0) {
                 setspeed = 0;
             }
             // Prevent speed over 360 km/h (TC Limit)
