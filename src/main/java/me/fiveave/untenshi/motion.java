@@ -152,7 +152,7 @@ class motion {
                 setspeed = 0;
             }
             // Prevent speed over 360 km/h (TC Limit)
-            if (oldspeed > 360) {
+            if (setspeed > 360) {
                 setspeed = 360;
             }
         } else {
@@ -370,7 +370,7 @@ class motion {
                                 firstsign = true;
                                 // First run: set target
                                 lv.setSinglepsp(sp);
-                                lv.setSinglepsign(settable.getLocation());
+                                lv.setSinglepsign(getRealSignLoc(settable.getLocation()));
                             } else if (lv.getSinglepsign() != null) {
                                 int setsp = sp;
                                 String setsistr = sistr;
@@ -700,7 +700,7 @@ class motion {
         double reqdist8 = getSingleReqdist(lv, speed, lowerSpeed, 8, slopeaccel, 0);
         // Actual controlling part
         // Check if next is red light
-        boolean nextredlight = lv.getLastsisp() == 0 && priority == signaldistdiff;
+        boolean nextredlight = lv.getLastsisp() == 0 && (priority == signaldistdiff || priority == singlepdistdiff);
         // tempdist is for anti-ATS-run, stop at 1 m before 0 km/h signal
         double tempdist = nextredlight ? Math.max(distnow - 1, 0) : distnow;
         // Pattern run
@@ -892,7 +892,7 @@ class motion {
             } else {
                 // SPAD EB on 0 km/h signal
                 lv.setAtsforced(2);
-                lv.setSpeed(lv.getSpeed() - ebdecel * ONE_TICK_IN_S * 45 / 7);
+                retdecel = ebdecel * ONE_TICK_IN_S * 45 / 7;
             }
         }
         return retdecel - slopeaccel;

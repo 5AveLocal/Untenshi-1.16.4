@@ -119,7 +119,7 @@ class ato {
             // Potential speed after acceleration (acceleration after P5 to N)
             double potentialspeed = getSpeedAfterPotentialAccel(lv, speed, slopeaccelnow);
             // To prevent redundant setting of mascon to N when approaching any signal
-            boolean nextredlight = lastsisp == 0 && priority == signaldistdiff;
+            boolean nextredlight = lastsisp == 0 && (priority == signaldistdiff || priority == singlepdistdiff);
             // tempdist is for anti-ATS-run, stop at 1 m before 0 km/h signal
             double tempdist = nextredlight ? (distnow - 1 < 0 ? 0 : distnow - 1) : distnow;
             // Speed with slope acceleration considered
