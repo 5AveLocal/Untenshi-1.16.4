@@ -74,9 +74,6 @@ class ato {
                 slopeaccelsinglep = getSlopeAccel(actualSinglepRefPos, tailorheadsinglep);
                 reqsinglepdist = getSingleReqdist(lv, speed, singlepsp, 6, slopeaccelsinglep, 0)
                         + getThinkingDistance(lv, speed, singlepsp, 6, slopeaccelsinglep, 0);
-                if (lv.getLd() != null) {
-                    lv.getLd().getP().sendMessage(actualSinglepRefPos + " <-> " + result.headLoc);
-                }
                 singlepdist = distFormula(actualSinglepRefPos, result.headLoc);
                 singlepdistdiff = singlepdist - reqsinglepdist;
             }
