@@ -78,7 +78,7 @@ class speedsign extends SignAction {
                 }
                 tempyoffset++;
                 // Anti over height limit / finding rail failed
-                if (loc.getY() + blkoffset[1] > 320) {
+                if (loc.getY() + tempyoffset > 320) {
                     break;
                 }
             }

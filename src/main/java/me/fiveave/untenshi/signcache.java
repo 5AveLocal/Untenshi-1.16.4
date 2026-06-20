@@ -28,7 +28,13 @@ public class signcache {
         if (sign.getLine(1).equals("signalsign")) {
             sign.setLine(2, str);
             sign.update();
-            locsignmap.put(loc, (Sign) loc.getBlock().getState());
+            BlockState bl = loc.getBlock().getState();
+            if (bl instanceof Sign) {
+                locsignmap.put(loc, (Sign) bl);
+            } else {
+                sign = getTcCoastersSign(loc);
+                locsignmap.put(loc, sign);
+            }
         }
     }
 
