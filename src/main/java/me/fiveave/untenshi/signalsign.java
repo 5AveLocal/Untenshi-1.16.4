@@ -28,17 +28,12 @@ import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.motion.getNearestTrackNode;
 import static me.fiveave.untenshi.motion.minSpeedLimit;
 import static me.fiveave.untenshi.signalcmd.isIlClear;
+import static me.fiveave.untenshi.signcache.getSignFromLoc;
+import static me.fiveave.untenshi.signcache.updateSignalsIfChanged;
 import static me.fiveave.untenshi.speedsign.*;
 import static me.fiveave.untenshi.utsvehicle.initVehicle;
 
 class signalsign extends SignAction {
-
-    static void updateSignals(Sign sign, String str) {
-        if (sign.getLine(1).equals("signalsign")) {
-            sign.setLine(2, str);
-            sign.update();
-        }
-    }
 
     static void resetSignals(Location[] locs) {
         try {
@@ -47,7 +42,7 @@ class signalsign extends SignAction {
                 Sign resettable = getSignFromLoc(loc);
                 if (resettable != null) {
                     // Copy signal and speed from line 4 to line 3
-                    updateSignals(resettable, "set " + resettable.getLine(3).split(" ")[1] + " " + resettable.getLine(3).split(" ")[2]);
+                    updateSignalsIfChanged(loc, "set " + resettable.getLine(3).split(" ")[1] + " " + resettable.getLine(3).split(" ")[2]);
                 }
             }
         } catch (Exception ignored) {
@@ -351,13 +346,10 @@ class signalsign extends SignAction {
         // For Sign.getLocation() only, use getRealRefLoc() for others
         Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
         World w = loc.getWorld();
-        if (tcc != null && tcc.isEnabled()) {
-            assert w != null;
-            if (!(w.getBlockAt(loc).getState() instanceof Sign)) {
-                // From cartevent to real location conversion
-                TrackNode tn = getNearestTrackNode(w, loc.getX() + 0.5, loc.getY(), loc.getZ() + 0.5);
-                return tn == null ? loc : tn.getPosition().toLocation(w);
-            }
+        if (tcc != null && tcc.isEnabled() && w != null && !(w.getBlockAt(loc).getState() instanceof Sign)) {
+            // From cartevent to real location conversion
+            TrackNode tn = getNearestTrackNode(w, loc.getX() + 0.5, loc.getY(), loc.getZ() + 0.5);
+            return tn == null ? loc : tn.getPosition().toLocation(w);
         }
         return loc.add(0.5, 0, 0.5);
     }
@@ -366,22 +358,19 @@ class signalsign extends SignAction {
         // For non-Sign.getLocation(), use getRealSignLoc() for Sign.getLocation()
         Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
         World w = loc.getWorld();
-        if (tcc != null && tcc.isEnabled()) {
-            assert w != null;
-            if (!(w.getBlockAt(loc).getState() instanceof Sign)) {
-                // From cartevent to real location conversion
-                TrackNode tn = getNearestTrackNode(w, loc.getX(), loc.getY(), loc.getZ());
-                return tn == null ? loc : tn.getPosition().toLocation(w);
-            }
+        if (tcc != null && tcc.isEnabled() && w != null && !(w.getBlockAt(loc).getState() instanceof Sign)) {
+            // From cartevent to real location conversion
+            TrackNode tn = getNearestTrackNode(w, loc.getX(), loc.getY(), loc.getZ());
+            return tn == null ? loc : tn.getPosition().toLocation(w);
         }
         return loc;
     }
 
-    static void updatePassedSignal(utsvehicle lv, Sign sign, Location realsignloc) {
+    static void updatePassedSignal(utsvehicle lv, Location realsignloc) {
         // Update this signal
         String str = (lv.getSafetysystype().equals("atc") ? "atc" : "r") + " " + 0;
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            updateSignals(sign, "set " + str);
+            updateSignalsIfChanged(realsignloc, "set " + str);
             // If location is in interlocking list, then remove location and shift list
             iLListandOccupiedRemoveShift(lv, realsignloc, false);
         }, 1);
@@ -459,7 +448,7 @@ class signalsign extends SignAction {
                                         lv.setLastsisign(realsignloc);
                                         lv.setLastsisp(signalspeed);
                                     } else {
-                                        updatePassedSignal(lv, cartevent.getSign(), realsignloc);
+                                        updatePassedSignal(lv, realsignloc);
                                     }
                                 }
                             }
@@ -481,7 +470,8 @@ class signalsign extends SignAction {
                                     // settable: Sign to be set
                                     Sign settable;
                                     try {
-                                        settable = getSignFromLoc(oldloc[i1]);
+                                        Location oldloc2 = oldloc[i1];
+                                        settable = getSignFromLoc(oldloc2);
                                         if (settable != null) {
                                             String defaultsi = settable.getLine(3).split(" ")[1];
                                             int defaultsp = parseInt(settable.getLine(3).split(" ")[2]);
@@ -489,7 +479,7 @@ class signalsign extends SignAction {
                                             int minno = Math.min(result.halfptnlen - 1, Math.max(0, i1 - lv.getRsoccupiedpos()));
                                             // Check if new speed to be set is larger than default, if yes choose default instead
                                             String str = result.ptnsisp[minno] > defaultsp ? defaultsi + " " + defaultsp : result.ptnsisi[minno] + " " + result.ptnsisp[minno];
-                                            Bukkit.getScheduler().runTaskLater(plugin, () -> updateSignals(settable, "set " + str), 1);
+                                            Bukkit.getScheduler().runTaskLater(plugin, () -> updateSignalsIfChanged(oldloc2, "set " + str), 1);
                                         }
                                     } catch (Exception ignored) {
                                     }

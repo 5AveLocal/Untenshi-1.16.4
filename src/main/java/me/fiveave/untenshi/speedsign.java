@@ -8,7 +8,10 @@ import com.bergerkiller.bukkit.tc.events.SignChangeActionEvent;
 import com.bergerkiller.bukkit.tc.signactions.SignAction;
 import com.bergerkiller.bukkit.tc.signactions.SignActionType;
 import com.bergerkiller.bukkit.tc.utils.SignBuildOptions;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
@@ -17,7 +20,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.List;
 
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.getLocFromString;
@@ -25,6 +29,7 @@ import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.motion.getNearestTrackNode;
 import static me.fiveave.untenshi.motion.minSpeedLimit;
+import static me.fiveave.untenshi.signcache.getSignFromLoc;
 
 class speedsign extends SignAction {
 
@@ -35,20 +40,6 @@ class speedsign extends SignAction {
         return new Location(signloc.getWorld(), newloc[0], newloc[1], newloc[2]);
     }
 
-    static boolean isLocOfSign(Location loc) {
-        BlockState bl = loc.getBlock().getState();
-        return bl instanceof Sign;
-    }
-
-    static Sign getSignFromLoc(Location loc) {
-        BlockState bl = loc.getBlock().getState();
-        if (bl instanceof Sign) {
-            return (Sign) bl;
-        }
-        // If cannot get sign directly from location
-        return getTcCoastersSign(loc);
-    }
-
     static Chest getChestFromLoc(Location loc) {
         BlockState bl = loc.getBlock().getState();
         return bl instanceof Chest ? (Chest) bl : null;
@@ -56,8 +47,8 @@ class speedsign extends SignAction {
 
     static Location getActualRefPos(Location loc) {
         int[] blkoffset = new int[]{0, 0, 0};
-        if (isLocOfSign(loc)) {
-            Sign sign = (Sign) Objects.requireNonNull(loc.getWorld()).getBlockAt(loc).getState();
+        Sign sign = getSignFromLoc(loc);
+        if (sign != null) {
             if (sign instanceof WallSign) {
                 blkoffset[1] = 1;
                 WallSign ws = (WallSign) sign;
@@ -78,22 +69,19 @@ class speedsign extends SignAction {
             } else {
                 blkoffset[1] = 2;
             }
-            do {
-                boolean railsuccess = false;
-                for (Material mat : new Material[]{Material.RAIL, Material.ACTIVATOR_RAIL, Material.DETECTOR_RAIL, Material.POWERED_RAIL}) {
-                    if (sign.getWorld().getBlockAt(loc.getBlockX() + blkoffset[0], loc.getBlockY() + blkoffset[1], loc.getBlockZ() + blkoffset[2]).getType().equals(mat)) {
-                        railsuccess = true;
-                        break;
-                    }
-                }
-                if (!railsuccess) break;
-                blkoffset[1]++;
-                // Anti over height limit / finding rail failed
-                if (loc.getY() + blkoffset[1] > 320) {
-                    blkoffset[1] = 1;
+            int tempyoffset = blkoffset[1];
+            while (true) {
+                List<Material> railmateriallist = Arrays.asList(Material.RAIL, Material.ACTIVATOR_RAIL, Material.DETECTOR_RAIL, Material.POWERED_RAIL);
+                if (railmateriallist.contains(sign.getWorld().getBlockAt(loc.getBlockX() + blkoffset[0], loc.getBlockY() + tempyoffset, loc.getBlockZ() + blkoffset[2]).getType())) {
+                    blkoffset[1] = tempyoffset;
                     break;
                 }
-            } while (true);
+                tempyoffset++;
+                // Anti over height limit / finding rail failed
+                if (loc.getY() + blkoffset[1] > 320) {
+                    break;
+                }
+            }
         }
         return new Location(loc.getWorld(), loc.getX() + blkoffset[0], loc.getY() + blkoffset[1] + CART_Y_POS_DIFF, loc.getZ() + blkoffset[2]);
     }

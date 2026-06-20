@@ -24,7 +24,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;

@@ -25,8 +25,8 @@ import java.util.List;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.cmds.noPerm;
 import static me.fiveave.untenshi.main.*;
-import static me.fiveave.untenshi.speedsign.getSignFromLoc;
-import static me.fiveave.untenshi.speedsign.isLocOfSign;
+import static me.fiveave.untenshi.signcache.getSignFromLoc;
+import static me.fiveave.untenshi.signcache.isLocOfSign;
 import static me.fiveave.untenshi.utscmduser.initCmdUser;
 
 class signtool implements CommandExecutor, TabCompleter, Listener {

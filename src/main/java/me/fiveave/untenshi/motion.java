@@ -32,6 +32,7 @@ import static me.fiveave.untenshi.events.toB8;
 import static me.fiveave.untenshi.events.trainSound;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.signalsign.*;
+import static me.fiveave.untenshi.signcache.*;
 import static me.fiveave.untenshi.speedsign.*;
 
 class motion {
@@ -257,88 +258,31 @@ class motion {
            no worries for direct collision as if rs exists, train will be blocked;
            if rs does not exist (by interlock del), there must be another location */
         int searchstart = 0;
-        for (int i = 0; i < oldposlist.length; i++) {
-            if (isLocOfSign(oldposlist[i])) {
-                searchstart = i;
-                break;
-            }
-        }
+        searchstart = getSearchstart(oldposlist, searchstart);
         // mg2: other trains
         for (MinecartGroup mg2 : vehicle.keySet()) {
             if (!mg2.equals(lv.getTrain())) {
                 utsvehicle lv2 = vehicle.get(mg2);
                 if (lv2 != null) {
-                    // Check resettable sign of other trains
-                    Location[] rssign2locs = lv2.getRsposlist();
-                    if (rssign2locs != null) {
-                        SignalOrderPtnResult result2 = getSignalOrderPtnResult(lv2);
-                        // Create a map for O(n) lookups with index
-                        Map<String, Integer> locmap = new HashMap<>();
-                        for (int j = 0; j < rssign2locs.length; j++) {
-                            locmap.put(rssign2locs[j].getBlockX() + "," + rssign2locs[j].getBlockY() + "," + rssign2locs[j].getBlockZ(), j);
-                        }
-                        for (int i = oldposlist.length - 1; i >= 0; i--) {
-                            String key = oldposlist[i].getBlockX() + "," + oldposlist[i].getBlockY() + "," + oldposlist[i].getBlockZ();
-                            if (locmap.containsKey(key)) {
-                                int j = locmap.get(key);
-                                int minno = Math.min(result2.halfptnlen - 1, Math.max(0, j - lv2.getRsoccupiedpos()));
-                                if (i < furthestoccupied && result2.ptnsisp[minno] == 0) {
-                                    furthestoccupied = i;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    // Check occupied interlocking path of other trains
-                    Location[] il2posoccupied = lv2.getIlposoccupied();
-                    if (il2posoccupied != null) {
-                        // Create a list for O(n) lookups
-                        List<Location> loclist = Arrays.asList(il2posoccupied);
-                        for (int i = oldposlist.length - 1; i >= 0; i--) {
-                            if (loclist.contains(oldposlist[i]) && i < furthestoccupied) {
-                                /* Note: If signal at furthestoccupied is not 0 km/h, train at back may collide with front,
-                                but if this is to be prevented, train at back can never proceed (because ilposoccupied cannot be cleared) */
-                                furthestoccupied = i;
-                                break;
-                            }
-                        }
-                    }
-                    // Check for priority
-                    // Fighting with other's unoccupied interlocking route
-                    Location[] il2poslist = lv2.getIlposlist();
-                    if (il2poslist != null) {
-                        int blocked = getIlBlocked(searchstart, oldposlist, il2poslist);
-                        if (blocked != -1) {
-                            // Sign closer to this train
-                            int firstsign = 0;
-                            for (int i = 0; i <= blocked; i++) {
-                                if (isLocOfSign(oldposlist[i])) {
-                                    firstsign = i;
-                                    break;
-                                }
-                            }
-                            // Sign closer to part being blocked
-                            int lastsign = blocked;
-                            for (int i = blocked; i >= 0; i--) {
-                                lastsign = i;
-                                // If sign is found
-                                if (isLocOfSign(oldposlist[i])) {
-                                    break;
-                                }
-                            }
-                            // firstsign == lastsign means the front sign of train is last before blocked section
-                            // Check priority
-                            if (firstsign == lastsign && lv.getIlenterqueuetime() > lv2.getIlenterqueuetime() && lv.getIlpriority() <= lv2.getIlpriority()) {
-                                // Is first priority? If yes then continue, if no then wait
-                                return;
-                            }
-                        }
-                    }
+                    furthestoccupied = getRsOccupied(lv2, oldposlist, furthestoccupied);
+                    furthestoccupied = getIlPosOccupied(lv2, oldposlist, furthestoccupied);
+                    if (isNotPriority(lv, lv2, searchstart, oldposlist)) return;
                 }
             }
         }
         // Signal setting part
         // Occupy and set signals when ok
+        InterlockUpdateSignals(lv, furthestoccupied, oldposlist);
+        // Set as occupied
+        Location[] newiloccupied = new Location[furthestoccupied];
+        // Put in ilposoccupied
+        System.arraycopy(oldposlist, 0, newiloccupied, 0, furthestoccupied);
+        lv.setIlposoccupied(newiloccupied);
+        // Delete other's resettable sign (check all locations to prevent bug)
+        Arrays.stream(newiloccupied).forEach(eachloc -> deleteOthersRs(lv, eachloc));
+    }
+
+    private static void InterlockUpdateSignals(utsvehicle lv, int furthestoccupied, Location[] oldposlist) {
         SignalOrderPtnResult result = getSignalOrderPtnResult(lv);
         int orderno = 0;
         // Set signs with new signal and speed
@@ -354,7 +298,8 @@ class motion {
             boolean firstsign = false;
             for (int signno = furthestoccupied; signno >= 0; signno--) {
                 // settable: Sign to be set
-                Sign settable = getSignFromLoc(oldposlist[signno]);
+                Location oldsignloc = oldposlist[signno];
+                Sign settable = getSignFromLoc(oldsignloc);
                 if (settable != null) {
                     try {
                         // Get settable sign data
@@ -394,7 +339,7 @@ class motion {
                         }
                         // Update only if changed
                         if (sp != currentsp) {
-                            updateSignals(settable, "set " + sistr + " " + sp);
+                            updateSignalsIfChanged(oldsignloc, "set " + sistr + " " + sp);
                         }
                         // Orderno must not exceed halfptnlen
                         if (orderno + 1 < result.halfptnlen) {
@@ -417,13 +362,92 @@ class motion {
                 }
             }
         }
-        // Set as occupied
-        Location[] newiloccupied = new Location[furthestoccupied];
-        // Put in ilposoccupied
-        System.arraycopy(oldposlist, 0, newiloccupied, 0, furthestoccupied);
-        lv.setIlposoccupied(newiloccupied);
-        // Delete other's resettable sign (check all locations to prevent bug)
-        Arrays.stream(newiloccupied).forEach(eachloc -> deleteOthersRs(lv, eachloc));
+    }
+
+    private static boolean isNotPriority(utsvehicle lv, utsvehicle lv2, int searchstart, Location[] oldposlist) {
+        // Check for priority
+        // Fighting with other's unoccupied interlocking route
+        Location[] il2poslist = lv2.getIlposlist();
+        if (il2poslist != null) {
+            int blocked = getIlBlocked(searchstart, oldposlist, il2poslist);
+            if (blocked != -1) {
+                // Sign closer to this train
+                int firstsign = 0;
+                for (int i = 0; i <= blocked; i++) {
+                    if (isLocOfSign(oldposlist[i])) {
+                        firstsign = i;
+                        break;
+                    }
+                }
+                // Sign closer to part being blocked
+                int lastsign = blocked;
+                for (int i = blocked; i >= 0; i--) {
+                    lastsign = i;
+                    // If sign is found
+                    if (isLocOfSign(oldposlist[i])) {
+                        break;
+                    }
+                }
+                // firstsign == lastsign means the front sign of train is last before blocked section
+                // Check priority
+                // Is first priority? If yes then continue, if no then wait
+                return firstsign == lastsign && lv.getIlenterqueuetime() > lv2.getIlenterqueuetime() && lv.getIlpriority() <= lv2.getIlpriority();
+            }
+        }
+        return false;
+    }
+
+    private static int getIlPosOccupied(utsvehicle lv2, Location[] oldposlist, int furthestoccupied) {
+        // Check occupied interlocking path of other trains
+        Location[] il2posoccupied = lv2.getIlposoccupied();
+        if (il2posoccupied != null) {
+            // Create a list for O(n) lookups
+            List<Location> loclist = Arrays.asList(il2posoccupied);
+            for (int i = oldposlist.length - 1; i >= 0; i--) {
+                if (loclist.contains(oldposlist[i]) && i < furthestoccupied) {
+                    /* Note: If signal at furthestoccupied is not 0 km/h, train at back may collide with front,
+                    but if this is to be prevented, train at back can never proceed (because ilposoccupied cannot be cleared) */
+                    furthestoccupied = i;
+                    break;
+                }
+            }
+        }
+        return furthestoccupied;
+    }
+
+    private static int getRsOccupied(utsvehicle lv2, Location[] oldposlist, int furthestoccupied) {
+        // Check resettable sign of other trains
+        Location[] rssign2locs = lv2.getRsposlist();
+        if (rssign2locs != null) {
+            SignalOrderPtnResult result2 = getSignalOrderPtnResult(lv2);
+            // Create a map for O(n) lookups with index
+            Map<String, Integer> locmap = new HashMap<>();
+            for (int j = 0; j < rssign2locs.length; j++) {
+                locmap.put(rssign2locs[j].getBlockX() + "," + rssign2locs[j].getBlockY() + "," + rssign2locs[j].getBlockZ(), j);
+            }
+            for (int i = oldposlist.length - 1; i >= 0; i--) {
+                String key = oldposlist[i].getBlockX() + "," + oldposlist[i].getBlockY() + "," + oldposlist[i].getBlockZ();
+                if (locmap.containsKey(key)) {
+                    int j = locmap.get(key);
+                    int minno = Math.min(result2.halfptnlen - 1, Math.max(0, j - lv2.getRsoccupiedpos()));
+                    if (i < furthestoccupied && result2.ptnsisp[minno] == 0) {
+                        furthestoccupied = i;
+                        break;
+                    }
+                }
+            }
+        }
+        return furthestoccupied;
+    }
+
+    private static int getSearchstart(Location[] oldposlist, int searchstart) {
+        for (int i = 0; i < oldposlist.length; i++) {
+            if (isLocOfSign(oldposlist[i])) {
+                searchstart = i;
+                break;
+            }
+        }
+        return searchstart;
     }
 
     private static int getIlBlocked(int searchstart, Location[] oldposlist, Location[] il2poslist) {
@@ -600,7 +624,7 @@ class motion {
                     lv.setSignallimit(warnsp);
                     Location realloc = getRealRefLoc(signalloc);
                     shiftRs(lv, realloc);
-                    updatePassedSignal(lv, getSignFromLoc(signalloc), realloc);
+                    updatePassedSignal(lv, realloc);
                 }
                 if (lv.getSafetysystype().equals("atc")) {
                     warnsp = Math.min(warnsp, lv.getSpeedlimit());
@@ -889,7 +913,7 @@ class motion {
             } else {
                 // SPAD EB on 0 km/h signal
                 lv.setAtsforced(2);
-                retdecel = ebdecel * ONE_TICK_IN_S * 45 / 7;
+                retdecel = ebdecel * 45 / 7;
             }
         }
         return retdecel - slopeaccel;

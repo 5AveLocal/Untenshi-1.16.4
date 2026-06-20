@@ -21,6 +21,8 @@ import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.signalsign.*;
+import static me.fiveave.untenshi.signcache.getSignFromLoc;
+import static me.fiveave.untenshi.signcache.updateSignalsIfChanged;
 import static me.fiveave.untenshi.speedsign.*;
 
 class signalcmd implements CommandExecutor, TabCompleter {
@@ -154,9 +156,10 @@ class signalcmd implements CommandExecutor, TabCompleter {
                         // Set line 4 of sign at (line 3 of this sign) to turn signal
                         case "sign":
                             if (isSignalType(args[4])) {
-                                Sign sign = getSignFromLoc(getFullLoc(inputpos, loc));
+                                Location fullloc = getFullLoc(inputpos, loc);
+                                Sign sign = getSignFromLoc(fullloc);
                                 if (sign != null) {
-                                    updateSignals(sign, "set " + args[4] + " " + args[5]);
+                                    updateSignalsIfChanged(loc, "set " + args[4] + " " + args[5]);
                                     generalMsg(sender, ChatColor.RESET, getLang("signal_signchange") + " (" + args[4] + " " + args[5] + ")");
                                 }
                                 break;
