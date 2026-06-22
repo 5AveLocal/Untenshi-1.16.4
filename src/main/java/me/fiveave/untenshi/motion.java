@@ -403,7 +403,7 @@ class motion {
         if (il2posoccupied != null) {
             // Create a list for O(n) lookups
             List<Location> loclist = Arrays.asList(il2posoccupied);
-            for (int i = oldposlist.length - 1; i >= 0; i--) {
+            for (int i = 0; i < oldposlist.length; i++) {
                 if (loclist.contains(oldposlist[i]) && i < furthestoccupied) {
                     /* Note: If signal at furthestoccupied is not 0 km/h, train at back may collide with front,
                     but if this is to be prevented, train at back can never proceed (because ilposoccupied cannot be cleared) */
@@ -421,12 +421,12 @@ class motion {
         if (rssign2locs != null) {
             SignalOrderPtnResult result2 = getSignalOrderPtnResult(lv2);
             // Create a map for O(n) lookups with index
-            Map<String, Integer> locmap = new HashMap<>();
+            Map<Location, Integer> locmap = new HashMap<>();
             for (int j = 0; j < rssign2locs.length; j++) {
-                locmap.put(rssign2locs[j].getBlockX() + "," + rssign2locs[j].getBlockY() + "," + rssign2locs[j].getBlockZ(), j);
+                locmap.put(rssign2locs[j], j);
             }
-            for (int i = oldposlist.length - 1; i >= 0; i--) {
-                String key = oldposlist[i].getBlockX() + "," + oldposlist[i].getBlockY() + "," + oldposlist[i].getBlockZ();
+            for (int i = 0; i < oldposlist.length; i++) {
+                Location key = oldposlist[i];
                 if (locmap.containsKey(key)) {
                     int j = locmap.get(key);
                     int minno = Math.min(result2.halfptnlen - 1, Math.max(0, j - lv2.getRsoccupiedpos()));
