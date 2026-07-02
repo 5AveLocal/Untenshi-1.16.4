@@ -305,24 +305,26 @@ class cmds implements CommandExecutor, TabCompleter {
                     {
                         MinecartGroup mg = MinecartGroupStore.get(p.getVehicle());
                         mg.forEach(mm -> {
-                            if (!mm.getEntity().getPassengers().isEmpty()) {
-                                Player p2 = (Player) mm.getEntity().getPassengers().get(0);
-                                String s;
-                                int arglength = args.length;
-                                if (arglength > 1 && args[1] != null) {
-                                    StringBuilder sBuilder = null;
-                                    for (int i = 1; i < arglength; i++) {
-                                        if (sBuilder != null) {
-                                            sBuilder.append(" ").append(args[i]);
-                                        } else {
-                                            sBuilder = new StringBuilder(args[i]);
+                            for (Entity e : mm.getEntity().getPassengers()) {
+                                if (e instanceof Player) {
+                                    Player p2 = (Player) e;
+                                    String s;
+                                    int arglength = args.length;
+                                    if (arglength > 1 && args[1] != null) {
+                                        StringBuilder sBuilder = null;
+                                        for (int i = 1; i < arglength; i++) {
+                                            if (sBuilder != null) {
+                                                sBuilder.append(" ").append(args[i]);
+                                            } else {
+                                                sBuilder = new StringBuilder(args[i]);
+                                            }
                                         }
+                                        s = sBuilder.toString();
+                                        s = ChatColor.translateAlternateColorCodes('&', s);
+                                        generalMsg(p2, ChatColor.YELLOW, getLang("help_painfo") + ": " + s);
+                                    } else {
+                                        generalMsg(p, ChatColor.RED, getLang("panoempty"));
                                     }
-                                    s = sBuilder.toString();
-                                    s = ChatColor.translateAlternateColorCodes('&', s);
-                                    generalMsg(p2, ChatColor.YELLOW, getLang("help_painfo") + ": " + s);
-                                } else {
-                                    generalMsg(p, ChatColor.RED, getLang("panoempty"));
                                 }
                             }
                         });
