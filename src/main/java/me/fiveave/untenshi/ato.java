@@ -116,8 +116,6 @@ class ato {
             }
             // Get brake distance (reqdist)
             double[] reqdist = new double[10];
-            // Potential speed after acceleration (acceleration after P5 to N)
-            double potentialspeed = getSpeedAfterPotentialAccel(lv, speed, slopeaccelnow);
             // To prevent redundant setting of mascon to N when approaching any signal
             boolean nextredlight = lastsisp == 0 && (priority == signaldistdiff || priority == singlepdistdiff);
             // tempdist is for anti-ATS-run, stop at 1 m before 0 km/h signal
@@ -128,14 +126,23 @@ class ato {
             // Actual controlling part, extra tick to prevent huge shock on stopping
             getAllReqdist(lv, speed, lowerSpeed, reqdist, slopeaccelsel, ONE_TICK_IN_S);
             // Require accel? (no need to prepare for braking for next object and ATO target destination + additional thinking distance)
-            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - speed > 5 && (lowerSpeed - speed > 5 || tempdist > div3p6(speed)) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
-                    && potentialspeed <= currentlimit // Will not go over speed limit
-                    && (potentialspeed <= lowerSpeed || tempdist > div3p6(potentialspeed)) // Will not go over target speed
-                    && lv.getDooropen() == 0 && lv.isDoorconfirm(); // Doors closed
             int targetBrake = 6;
             boolean notnearreqdist = tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed, lowerSpeed, targetBrake, slopeaccelsel, 3);
-            if (notnearreqdist && allowaccel) {
-                finalmascon = 5;
+            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - speed > 5 && (lowerSpeed - speed > 5 || tempdist > div3p6(speed)) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
+                    && lv.getDooropen() == 0 && lv.isDoorconfirm() // Doors closed
+                    && notnearreqdist; // Not near braking distance
+            // Basic accel requirements met
+            if (allowaccel) {
+                // Allow P1 - P4 for climbing slope only, other cases use P5
+                int minmascon = slopeaccelnow < 0 ? 1 : 5;
+                for (int i = 5; i >= minmascon; i--) {
+                    double potentialspeed = getSpeedAfterPotentialAccel(lv, speed, slopeaccelnow, getCurrentFromNotch(i));
+                    // If will not over speed limit / target speed then select
+                    if (potentialspeed <= currentlimit && (potentialspeed <= lowerSpeed || div3p6(potentialspeed) < tempdist)) {
+                        finalmascon = i;
+                        break;
+                    }
+                }
             }
             // Require braking? (with additional thinking time, if thinking distance is less than 1 m then consider as 1 m (prevent hard braking at low speeds))
             if (!lv.isAtoforcebrake() && tempdist < reqdist[targetBrake] + Math.max(1, 2 * ONE_TICK_IN_S * getThinkingDistance(lv, saspeed, lowerSpeed, targetBrake, slopeaccelsel, ONE_TICK_IN_S))) {

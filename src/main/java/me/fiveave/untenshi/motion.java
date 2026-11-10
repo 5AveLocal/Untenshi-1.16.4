@@ -815,8 +815,7 @@ class motion {
         }
     }
 
-    static double getSpeedAfterPotentialAccel(utsvehicle lv, double currentSpeed, double slopeaccel) {
-        double current = lv.getCurrent();
+    static double getSpeedAfterPotentialAccel(utsvehicle lv, double currentSpeed, double slopeaccel, double current) {
         // 1 tick delay for compensation for action delay
         double speed = currentSpeed + (accelSwitch(lv, currentSpeed, (int) (getNotchFromCurrent(current))) + slopeaccel) * ONE_TICK_IN_S;
         // Anti out-of-range causing GIGO
