@@ -6,7 +6,7 @@
 
     <groupId>Untenshi</groupId>
     <artifactId>Untenshi</artifactId>
-    <version>1.13.5_01</version>
+    <version>1.13.6</version>
     <packaging>jar</packaging>
 
     <name>Untenshi</name>

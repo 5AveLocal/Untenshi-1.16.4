@@ -110,17 +110,23 @@ class motion {
         MinecartGroup mg = lv.getTrain();
         TrainProperties tprop = mg.getProperties();
         // Electric current
-        double ecnow = lv.getCurrent();
+        double ecold = lv.getCurrent();
         // Set current for current mascon
         double ectarget = getCurrentFromNotch(oldmascon);
         double currentpertick = lv.getCurrentpertick();
         // Set real current
-        if (ectarget < ecnow) {
-            lv.setCurrent((ecnow - ectarget) > currentpertick ? ecnow - currentpertick : ectarget);
-            trainSound(lv, "accel_off");
-        } else if (ectarget > ecnow) {
-            lv.setCurrent((ectarget - ecnow) > currentpertick ? ecnow + currentpertick : ectarget);
-            trainSound(lv, "accel_on");
+        if (ectarget < ecold) {
+            double ecnew = (ecold - ectarget) > currentpertick ? ecold - currentpertick : ectarget;
+            lv.setCurrent(ecnew);
+            if ((int) getNotchFromCurrent(ecold) != (int) getNotchFromCurrent(ecnew)) {
+                trainSound(lv, "accel_off");
+            }
+        } else if (ectarget > ecold) {
+            double ecnew = (ectarget - ecold) > currentpertick ? ecold + currentpertick : ectarget;
+            lv.setCurrent(ecnew);
+            if ((int) getNotchFromCurrent(ecold) != (int) getNotchFromCurrent(ecnew)) {
+                trainSound(lv, "accel_on");
+            }
         }
         // Brake cylinder pressure
         double bcpnow = lv.getBcpressure();
@@ -141,7 +147,7 @@ class motion {
         HeadAndTailResult result = getHeadAndTailResult(mg);
         double slopeaccel = getSlopeAccel(result.headLoc, result.tailLoc);
         // Accel and decel
-        double accelnow = accelSwitch(lv, oldspeed, (int) (getNotchFromCurrent(ecnow)));
+        double accelnow = accelSwitch(lv, oldspeed, (int) (getNotchFromCurrent(ecold)));
         double decelnow = decelSwitch(lv, oldspeed, slopeaccel);
         if (lv.getDooropen() == 0) {
             // If door is closed
@@ -272,7 +278,7 @@ class motion {
         }
         // Signal setting part
         // Occupy and set signals when ok
-        InterlockUpdateSignals(lv, furthestoccupied, oldposlist);
+        interlockUpdateSignals(lv, furthestoccupied, oldposlist);
         // Set as occupied
         Location[] newiloccupied = new Location[furthestoccupied];
         // Put in ilposoccupied
@@ -282,7 +288,7 @@ class motion {
         Arrays.stream(newiloccupied).forEach(eachloc -> deleteOthersRs(lv, eachloc));
     }
 
-    private static void InterlockUpdateSignals(utsvehicle lv, int furthestoccupied, Location[] oldposlist) {
+    private static void interlockUpdateSignals(utsvehicle lv, int furthestoccupied, Location[] oldposlist) {
         SignalOrderPtnResult result = getSignalOrderPtnResult(lv);
         int orderno = 0;
         // Set signs with new signal and speed
@@ -813,18 +819,6 @@ class motion {
             // Thinking distance not required
             return 0;
         }
-    }
-
-    static double getSpeedAfterPotentialAccel(utsvehicle lv, double currentSpeed, double slopeaccel, double current) {
-        // 1 tick delay for compensation for action delay
-        double speed = currentSpeed + (accelSwitch(lv, currentSpeed, (int) (getNotchFromCurrent(current))) + slopeaccel) * ONE_TICK_IN_S;
-        // Anti out-of-range causing GIGO
-        // Use while loop as using formula is tedious
-        while (current > 0) {
-            speed += (accelSwitch(lv, speed, (int) (getNotchFromCurrent(current))) + slopeaccel) * ONE_TICK_IN_S;
-            current -= lv.getCurrentpertick();
-        }
-        return speed;
     }
 
     static double getCurrentFromNotch(int a) {

@@ -128,7 +128,7 @@ class ato {
             // Require accel? (no need to prepare for braking for next object and ATO target destination + additional thinking distance)
             int targetBrake = 6;
             boolean notnearreqdist = tempdist > reqdist[targetBrake] + getThinkingDistance(lv, saspeed, lowerSpeed, targetBrake, slopeaccelsel, 3);
-            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - speed > 5 && (lowerSpeed - speed > 5 || tempdist > div3p6(speed)) && lv.getBrake() == 0) // 5 km/h under speed limit / target speed or already accelerating
+            boolean allowaccel = (lv.getMascon() > 0 || currentlimit - speed > 5 && (lowerSpeed - speed > 5 || tempdist > div3p6(speed))) && lv.getBrake() == 0 // 5 km/h under speed limit / target speed or already accelerating
                     && lv.getDooropen() == 0 && lv.isDoorconfirm() // Doors closed
                     && notnearreqdist; // Not near braking distance
             // Basic accel requirements met
@@ -136,7 +136,8 @@ class ato {
                 // Allow P1 - P4 for climbing slope only, other cases use P5
                 int minmascon = slopeaccelnow < 0 ? 1 : 5;
                 for (int i = 5; i >= minmascon; i--) {
-                    double potentialspeed = getSpeedAfterPotentialAccel(lv, speed, slopeaccelnow, getCurrentFromNotch(i));
+                    // 1 tick delay for compensation for action delay
+                    double potentialspeed = getPotentialSpeed(lv, i, slopeaccelnow, currentlimit, lowerSpeed, tempdist);
                     // If will not over speed limit / target speed then select
                     if (potentialspeed <= currentlimit && (potentialspeed <= lowerSpeed || div3p6(potentialspeed) < tempdist)) {
                         finalmascon = i;
@@ -205,6 +206,27 @@ class ato {
             lv.setAtospeed(-1);
             generalMsg(lv.getLd().getP(), ChatColor.GOLD, getLang("ato_patterncancel"));
         }
+    }
+
+    private static double getPotentialSpeed(utsvehicle lv, int i, double slopeaccelnow, int currentlimit, double lowerSpeed, double tempdist) {
+        double thisspeed = lv.getSpeed();
+        double thiscurrent = getCurrentFromNotch(i);
+        double potentialspeed = thisspeed + getPotentialAccelSwitch(lv, slopeaccelnow, thisspeed, thiscurrent);
+        // Anti out-of-range causing GIGO
+        // Use while loop as using formula is tedious
+        while (thiscurrent > 0) {
+            // If at any time this notch will cause speeding
+            if (potentialspeed > currentlimit || potentialspeed > lowerSpeed && div3p6(potentialspeed) > tempdist) {
+                return Double.MAX_VALUE;
+            }
+            potentialspeed += getPotentialAccelSwitch(lv, slopeaccelnow, potentialspeed, thiscurrent);
+            thiscurrent -= lv.getCurrentpertick();
+        }
+        return potentialspeed;
+    }
+
+    private static double getPotentialAccelSwitch(utsvehicle lv, double slopeaccelnow, double thisspeed, double thiscurrent) {
+        return (accelSwitch(lv, thisspeed, (int) (getNotchFromCurrent(thiscurrent))) + slopeaccelnow) * ONE_TICK_IN_S;
     }
 
     // Reset values, open doors, reset ATO
