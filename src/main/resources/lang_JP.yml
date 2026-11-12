@@ -70,7 +70,7 @@ stoppos_reqfix: 停止位置を修正してください!
 signal_set: '信号:'
 signal_warn: '信号予告:'
 signal_change: '信号変更:'
-signal_signchange: サインの変更に成功しました。
+signal_signchange: 看板の変更に成功しました。
 signal_typewrong: 信号の種類は正確ではありません。(R / YY / Y / YG / G / ATC)
 signal_g: 進行
 signal_yg: 減速
@@ -104,19 +104,26 @@ noperm: 権限が足りません!
 panoempty: テキストを空にすることはできません!
 collidebuffer: 車止め激突
 argwrong: 引数が正しくありません。
-signimproper: このサインが正しく設定されていません。
+signimproper: この看板が正しく設定されていません。
 tcblocking: 前に塞いでいる TrainCarts のオブジェクトがあります。
 nopoints: 点数が足りないので、運転が終了しました。
 secclear: 区間が空いています。
 secnotclear: 区間が空いていません。
-signselsuccess: サインの選択が成功しました。
-signwrong: サインの選択が間違っています。
-signsetsuccess: サインの設定が成功しました。
-signset5s: 5 秒以内にサインを設定してください。
-signsettimeout: サインの設定がタイムアウトしました。
-signdirset: サインの方向を設定しました。
-signdirwrong: サインの方向が間違っています。
-signreqseldir: サインと方向を選択してください!
+signselsuccess: 看板の選択が成功しました。
+signwrong: 看板の選択が間違っています。
+signsetsuccess: 看板の設定が成功しました。
+signset5s: 5 秒以内に看板を設定してください。
+signsettimeout: 看板の設定がタイムアウトしました。
+signdirset: 看板の方向を設定しました。
+signdirwrong: 看板の方向が間違っています。
+signreqseldir: 看板の方向を選択してください!
 stoppos_autoopen_true: 次駅からドアは自動では開きます。
 stoppos_autoopen_false: 次駅からドアは自動では開きません。
 stoppos_margin: 停止許容範囲が変わりました。
+bookaddloc1: ページを追加しました。
+bookaddloc2: ページ
+bookaddlocsign: 看板
+bookaddlocother: その他の位置
+bookcombinesel1: 1つ目の本を設定しました。
+bookcombinesel2: 2つ目の本を設定しました。
+bookcombineconfirm: 本を合併しました。

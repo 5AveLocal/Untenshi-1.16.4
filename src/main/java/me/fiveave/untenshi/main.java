@@ -215,11 +215,11 @@ public final class main extends JavaPlugin implements Listener {
         Objects.requireNonNull(this.getCommand("utslogger")).setTabCompleter(new driverlog());
         Objects.requireNonNull(this.getCommand("utsdebug")).setExecutor(new debugcmd());
         Objects.requireNonNull(this.getCommand("utsdebug")).setTabCompleter(new debugcmd());
-        Objects.requireNonNull(this.getCommand("utssigntool")).setExecutor(new signtool());
-        Objects.requireNonNull(this.getCommand("utssigntool")).setTabCompleter(new signtool());
+        Objects.requireNonNull(this.getCommand("utssetuputils")).setExecutor(new setuputils());
+        Objects.requireNonNull(this.getCommand("utssetuputils")).setTabCompleter(new setuputils());
         try {
             pm.registerEvents(new events(), this);
-            pm.registerEvents(new signtool(), this);
+            pm.registerEvents(new setuputils(), this);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

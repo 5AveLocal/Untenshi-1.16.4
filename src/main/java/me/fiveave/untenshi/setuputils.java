@@ -16,11 +16,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.cmds.noPerm;
@@ -29,7 +28,10 @@ import static me.fiveave.untenshi.signcache.getSignFromLoc;
 import static me.fiveave.untenshi.signcache.isLocOfSign;
 import static me.fiveave.untenshi.utscmduser.initCmdUser;
 
-class signtool implements CommandExecutor, TabCompleter, Listener {
+class setuputils implements CommandExecutor, TabCompleter, Listener {
+
+    protected static HashMap<Player, ArrayList<String>> book1 = new HashMap<>();
+    protected static HashMap<Player, ArrayList<String>> book2 = new HashMap<>();
 
     final List<String> alldirlist = Arrays.asList("b", "backwards", "d", "downwards", "e", "east", "f", "forward",
             "l", "left", "n", "ne", "none", "north", "northeast", "northwest", "nw", "r", "right",
@@ -63,7 +65,7 @@ class signtool implements CommandExecutor, TabCompleter, Listener {
                 generalMsg(sender, ChatColor.RED, getLang("playeronlycmd"));
                 return true;
             }
-            if (!sender.hasPermission("uts.signtool") && !sender.isOp()) {
+            if (!sender.hasPermission("uts.setuputils") && !sender.isOp()) {
                 noPerm(sender);
                 return true;
             }
@@ -124,6 +126,77 @@ class signtool implements CommandExecutor, TabCompleter, Listener {
                             waitPlaceSignClock(p, 0);
                         } else {
                             generalMsg(p, ChatColor.RED, getLang("signreqseldir"));
+                        }
+                        break;
+                    case "book":
+                        switch (args[1]) {
+                            case "addloc":
+                                ItemStack book = p.getInventory().getItemInMainHand();
+                                if (book.getType().equals(Material.WRITABLE_BOOK)) {
+                                    BookMeta bm = (BookMeta) book.getItemMeta();
+                                    List<String> pages;
+                                    if (bm != null) {
+                                        pages = new ArrayList<>(bm.getPages());
+                                        Location loc2;
+                                        if (args.length == 5) {
+                                            pages.add(args[2] + " " + args[3] + " " + args[4]);
+                                            loc2 = new Location(p.getWorld(), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]));
+                                        } else {
+                                            Block bb = p.getTargetBlock(Collections.singleton(Material.AIR), 5);
+                                            pages.add(bb.getX() + " " + bb.getY() + " " + bb.getZ());
+                                            loc2 = bb.getLocation();
+                                        }
+                                        bm.setPages(pages);
+                                        book.setItemMeta(bm);
+                                        p.getInventory().setItem(p.getInventory().getHeldItemSlot(), book);
+                                        boolean isbbofsign = isLocOfSign(loc2);
+                                        p.sendMessage(UTS_HEAD + ChatColor.YELLOW + getLang("bookaddloc1")
+                                                + " (" + bm.getPageCount() + " " + getLang("bookaddloc2") + " - "
+                                                + (isbbofsign ? ChatColor.GOLD + getLang("bookaddlocsign")
+                                                : ChatColor.GREEN + getLang("bookaddlocother")) + ChatColor.YELLOW + ") ");
+                                    }
+                                }
+                                break;
+                            case "combine":
+                                switch (args[2]) {
+                                    case "sel1":
+                                        ItemStack is1 = p.getInventory().getItemInMainHand();
+                                        ItemStack selbook1;
+                                        if (is1.getType().equals(Material.WRITABLE_BOOK)) {
+                                            selbook1 = is1;
+                                            BookMeta bm = (BookMeta) selbook1.getItemMeta();
+                                            assert bm != null;
+                                            book1.put(p, new ArrayList<>(bm.getPages()));
+                                            p.sendMessage(UTS_HEAD + ChatColor.YELLOW + getLang("bookcombinesel1"));
+                                        }
+                                        break;
+                                    case "sel2":
+                                        ItemStack is2 = p.getInventory().getItemInMainHand();
+                                        ItemStack selbook2;
+                                        if (is2.getType().equals(Material.WRITABLE_BOOK)) {
+                                            selbook2 = is2;
+                                            BookMeta bm = (BookMeta) selbook2.getItemMeta();
+                                            assert bm != null;
+                                            book2.put(p, new ArrayList<>(bm.getPages()));
+                                            p.sendMessage(UTS_HEAD + ChatColor.YELLOW + getLang("bookcombinesel2"));
+                                        }
+                                        break;
+                                    case "confirm":
+                                        if (book1.containsKey(p) && book2.containsKey(p)) {
+                                            ItemStack newbook = new ItemStack(Material.WRITABLE_BOOK, 1);
+                                            BookMeta bm = (BookMeta) newbook.getItemMeta();
+                                            assert bm != null;
+                                            ArrayList<String> pages = new ArrayList<>();
+                                            pages.addAll(book1.get(p));
+                                            pages.addAll(book2.get(p));
+                                            bm.setPages(pages);
+                                            newbook.setItemMeta(bm);
+                                            p.getInventory().addItem(newbook);
+                                            p.sendMessage(UTS_HEAD + ChatColor.YELLOW + getLang("bookcombineconfirm"));
+                                        }
+                                        break;
+                                }
+                                break;
                         }
                         break;
                     default:
@@ -187,31 +260,57 @@ class signtool implements CommandExecutor, TabCompleter, Listener {
         List<String> ta = new ArrayList<>();
         List<String> result = new ArrayList<>();
         int arglength = args.length;
-        if (arglength == 1) {
-            ta.addAll(Arrays.asList("getsign", "setdir", "setsign"));
-            ta.forEach(a -> {
-                if (a.toLowerCase().startsWith(args[0].toLowerCase())) {
-                    result.add(a);
+        switch (arglength) {
+            case 1:
+                ta.addAll(Arrays.asList("getsign", "setdir", "setsign", "book"));
+                ta.forEach(a -> {
+                    if (a.toLowerCase().startsWith(args[0].toLowerCase())) {
+                        result.add(a);
+                    }
+                });
+                return result;
+            case 2:
+                switch (args[0].toLowerCase()) {
+                    case "setdir":
+                        ta.addAll(alldirlist);
+                        break;
+                    case "book":
+                        ta.addAll(Arrays.asList("addloc", "combine"));
+                        break;
+                    default:
+                        ta.add("");
+                        break;
                 }
-            });
-            return result;
-        } else if (arglength == 2) {
-            if (args[0].equalsIgnoreCase("setdir")) {
-                ta.addAll(alldirlist);
-            } else {
-                ta.add("");
-            }
-            ta.forEach(a -> {
-                if (a.toLowerCase().startsWith(args[1].toLowerCase())) {
-                    result.add(a);
+                ta.forEach(a -> {
+                    if (a.toLowerCase().startsWith(args[1].toLowerCase())) {
+                        result.add(a);
+                    }
+                });
+                return result;
+            case 3:
+                switch (args[1].toLowerCase()) {
+                    case "addloc":
+                        Player p = (Player) sender;
+                        Block block = p.getTargetBlock(Collections.singleton(Material.AIR), 5);
+                        ta.add(block.getX() + " " + block.getY() + " " + block.getZ());
+                        break;
+                    case "combine":
+                        ta.addAll(Arrays.asList("sel1", "sel2", "confirm"));
+                        break;
+                    default:
+                        ta.add("");
+                        break;
                 }
-            });
-            return result;
+                ta.forEach(a -> {
+                    if (a.toLowerCase().startsWith(args[2].toLowerCase())) {
+                        result.add(a);
+                    }
+                });
+                return result;
             // Stop spamming player names
-        } else if (arglength > 2) {
-            result.add("");
-            return result;
+            default:
+                result.add("");
+                return result;
         }
-        return null;
     }
 }

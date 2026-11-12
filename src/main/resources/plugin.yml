@@ -19,9 +19,9 @@ commands:
   utsdebug:
     description: Untenshi Debugger
     usage: /utsdebug <vehicle_name> <get/set> <variable>
-  utssigntool:
-    description: Untenshi Sign Tool
-    usage: /utssigntool <getsign/setdir/setsign> <dir>
+  utssetuputils:
+    description: Untenshi Setup Utilities
+    usage: /utssetuputils (<getsign/setdir/setsign> <dir>) / (<book> <addloc/combine>)
 permissions:
   uts.*:
     description: All Untenshi Perms
@@ -33,7 +33,7 @@ permissions:
       uts.pa: true
       uts.ato: true
       uts.debug: true
-      uts.signtool: true
+      uts.setuputils: true
     default: op
   uts.main:
     description: Allow Untenshi usage (basic perm)
@@ -56,6 +56,6 @@ permissions:
   uts.debug:
     description: Allow usage of debug mode
     default: op
-  uts.signtool:
+  uts.setuputils:
     description: Allow usage of sign tool
     default: op
