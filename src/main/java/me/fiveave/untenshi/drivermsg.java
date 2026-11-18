@@ -16,8 +16,8 @@ import org.bukkit.entity.Player;
 import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
-import static me.fiveave.untenshi.speedsign.getFullLoc;
-import static me.fiveave.untenshi.speedsign.signImproper;
+import static me.fiveave.untenshi.signcache.getFullLoc;
+import static me.fiveave.untenshi.signcache.signImproper;
 
 class drivermsg extends SignAction {
 

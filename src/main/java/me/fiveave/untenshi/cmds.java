@@ -338,6 +338,7 @@ class cmds implements CommandExecutor, TabCompleter {
                         signalorder = new absyaml(plugin, "signalorder.yml");
                         langdata = new absyaml(plugin, "lang_" + plugin.getConfig().getString("lang") + ".yml");
                         main.cacheConfigValues();
+                        signcache.clearCaches();
                         generalMsg(sender, ChatColor.YELLOW, getLang("reloaded"));
                         break;
                     default:

@@ -33,7 +33,6 @@ import static me.fiveave.untenshi.events.trainSound;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.signalsign.*;
 import static me.fiveave.untenshi.signcache.*;
-import static me.fiveave.untenshi.speedsign.*;
 
 class motion {
 

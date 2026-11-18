@@ -20,7 +20,9 @@ import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.motion.*;
 import static me.fiveave.untenshi.signalsign.signalSignInterlock;
 import static me.fiveave.untenshi.signalsign.signalSignWarn;
-import static me.fiveave.untenshi.speedsign.*;
+import static me.fiveave.untenshi.signcache.getActualRefPos;
+import static me.fiveave.untenshi.speedsign.speedSignSet;
+import static me.fiveave.untenshi.speedsign.speedSignWarn;
 import static me.fiveave.untenshi.stoppos.*;
 
 class ato {

@@ -1,6 +1,5 @@
 package me.fiveave.untenshi;
 
-import com.bergerkiller.bukkit.coasters.tracks.TrackNode;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.events.SignActionEvent;
 import com.bergerkiller.bukkit.tc.events.SignChangeActionEvent;
@@ -10,14 +9,13 @@ import com.bergerkiller.bukkit.tc.utils.SignBuildOptions;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,15 +23,14 @@ import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
-import static me.fiveave.untenshi.motion.getNearestTrackNode;
 import static me.fiveave.untenshi.motion.minSpeedLimit;
 import static me.fiveave.untenshi.signalcmd.isIlClear;
-import static me.fiveave.untenshi.signcache.getSignFromLoc;
-import static me.fiveave.untenshi.signcache.updateSignalsIfChanged;
-import static me.fiveave.untenshi.speedsign.*;
+import static me.fiveave.untenshi.signcache.*;
 import static me.fiveave.untenshi.utsvehicle.initVehicle;
 
 class signalsign extends SignAction {
+
+    private static final HashMap<String, SignalOrderPtnResult> signalorderptnmap = new HashMap<>();
 
     static void resetSignals(Location[] locs) {
         try {
@@ -143,8 +140,11 @@ class signalsign extends SignAction {
         lv.setRsposlist(newloc);
     }
 
-
     static SignalOrderPtnResult getSignalOrderPtnResult(utsvehicle lv) {
+        SignalOrderPtnResult retval = signalorderptnmap.get(lv.getSignalorderptn());
+        if (retval != null) {
+            return retval;
+        }
         // Get signal order (ptnlen: length of string, halfptnlen: actual number of signal orders)
         List<String> ptn = signalorder.dataconfig.getStringList("signal." + lv.getSignalorderptn() + ".order");
         // Format updater from old format
@@ -173,7 +173,9 @@ class signalsign extends SignAction {
         }
         // Get if signalorder uses single braking pattern
         boolean usesignlepattern = signalorder.dataconfig.getBoolean("signal." + lv.getSignalorderptn() + ".usesinglepattern");
-        return new SignalOrderPtnResult(halfptnlen, ptnsisi, ptnsisp, usesignlepattern);
+        retval = new SignalOrderPtnResult(halfptnlen, ptnsisi, ptnsisp, usesignlepattern);
+        signalorderptnmap.put(lv.getSignalorderptn(), retval);
+        return retval;
     }
 
     static void deleteOthersRs(utsvehicle lv, Location currentloc) {
@@ -340,30 +342,6 @@ class signalsign extends SignAction {
         lv.setRsposlist(newloc);
         // Make blocked section longer by 1
         lv.setRsoccupiedpos(lv.getRsoccupiedpos() + 1);
-    }
-
-    static Location getRealSignLoc(Location loc) {
-        // For Sign.getLocation() only, use getRealRefLoc() for others
-        Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
-        World w = loc.getWorld();
-        if (tcc != null && tcc.isEnabled() && w != null && !(w.getBlockAt(loc).getState() instanceof Sign)) {
-            // From cartevent to real location conversion
-            TrackNode tn = getNearestTrackNode(w, loc.getX() + 0.5, loc.getY(), loc.getZ() + 0.5);
-            return tn == null ? loc : tn.getPosition().toLocation(w);
-        }
-        return loc.add(0.5, 0, 0.5);
-    }
-
-    static Location getRealRefLoc(Location loc) {
-        // For non-Sign.getLocation(), use getRealSignLoc() for Sign.getLocation()
-        Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
-        World w = loc.getWorld();
-        if (tcc != null && tcc.isEnabled() && w != null && !(w.getBlockAt(loc).getState() instanceof Sign)) {
-            // From cartevent to real location conversion
-            TrackNode tn = getNearestTrackNode(w, loc.getX(), loc.getY(), loc.getZ());
-            return tn == null ? loc : tn.getPosition().toLocation(w);
-        }
-        return loc;
     }
 
     static void updatePassedSignal(utsvehicle lv, Location realsignloc) {

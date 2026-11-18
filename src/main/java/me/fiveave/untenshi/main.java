@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -39,6 +40,7 @@ public final class main extends JavaPlugin implements Listener {
     static final String PURE_UTS_TITLE = ChatColor.YELLOW + "[========== " + ChatColor.GREEN + "Untenshi " + ChatColor.YELLOW + "==========]\n";
     static final String UTS_HEAD = "[" + ChatColor.GREEN + "Untenshi" + ChatColor.WHITE + "] ";
     static final List<String> signalnamelist = Arrays.asList("r", "yy", "y", "yg", "g", "atc");
+    final static Plugin tcc = Bukkit.getPluginManager().getPlugin("TCCoasters");
     public static main plugin;
     static absyaml config;
     static absyaml langdata;

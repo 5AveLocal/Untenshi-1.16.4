@@ -21,9 +21,7 @@ import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.main.*;
 import static me.fiveave.untenshi.signalsign.*;
-import static me.fiveave.untenshi.signcache.getSignFromLoc;
-import static me.fiveave.untenshi.signcache.updateSignalsIfChanged;
-import static me.fiveave.untenshi.speedsign.*;
+import static me.fiveave.untenshi.signcache.*;
 
 class signalcmd implements CommandExecutor, TabCompleter {
 
