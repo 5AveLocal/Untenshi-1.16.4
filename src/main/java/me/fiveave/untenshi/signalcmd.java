@@ -12,10 +12,14 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static java.lang.Integer.parseInt;
 import static me.fiveave.untenshi.cmds.generalMsg;
@@ -40,7 +44,6 @@ class signalcmd implements CommandExecutor, TabCompleter {
     }
 
     static boolean isIlClear(ItemMeta mat, Location loc, boolean lossy) {
-        boolean isclear = true;
         if (mat instanceof BookMeta) {
             BookMeta bk = (BookMeta) mat;
             int pgcount = bk.getPageCount();
@@ -48,15 +51,18 @@ class signalcmd implements CommandExecutor, TabCompleter {
             for (int pgno = 1; pgno <= pgcount; pgno++) {
                 String str = bk.getPage(pgno);
                 String[] trysplitstr = str.split(" ", 3);
-                Location loc1 = getFullLoc(str, loc);
                 // try statement
                 if (trysplitstr[0].equals("try")) {
                     Location fullloc2 = getFullLoc(trysplitstr[2], loc);
                     Chest refchest2 = getChestFromLoc(fullloc2);
-                    isclear = tryItemIsIlClear(refchest2, loc, lossy);
+                    boolean isclear = tryItemIsIlClear(refchest2, loc, lossy, true);
+                    if (!isclear) {
+                        return false;
+                    }
                     // No reading other locations after try statement
                     break;
                 }
+                Location loc1 = getFullLoc(str, loc);
                 for (MinecartGroup mg2 : vehicle.keySet()) {
                     if (vehicle.get(mg2) != null) {
                         utsvehicle lv2 = vehicle.get(mg2);
@@ -72,8 +78,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                                     int minno = Math.min(result2.halfptnlen - 1, Math.max(0, j - lv2.getRsoccupiedpos()));
                                     // Resettable sign signal of lv2 is supposed to be 0 km/h by resettable sign
                                     if (result2.ptnsisp[minno] == 0 && loc1.equals(location)) {
-                                        isclear = false;
-                                        break;
+                                        return false;
                                     }
                                 }
                             }
@@ -83,8 +88,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                         if (il2posoccupied != null) {
                             for (Location loc2 : il2posoccupied) {
                                 if (loc1.equals(loc2)) {
-                                    isclear = false;
-                                    break;
+                                    return false;
                                 }
                             }
                         }
@@ -93,8 +97,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                         if (il2poslist != null) {
                             for (Location loc2 : il2poslist) {
                                 if (loc1.equals(loc2)) {
-                                    isclear = false;
-                                    break;
+                                    return false;
                                 }
                             }
                         }
@@ -102,22 +105,27 @@ class signalcmd implements CommandExecutor, TabCompleter {
                 }
             }
         }
-        return isclear;
+        return true;
     }
 
-    private static boolean tryItemIsIlClear(Chest refchest, Location loc, boolean lossy) {
+    private static boolean tryItemIsIlClear(Chest refchest, Location loc, boolean lossy, boolean findone) {
         boolean isclear = false;
         if (refchest != null) {
             for (int itemno = 0; itemno < 27; itemno++) {
-                ItemMeta mat = null;
-                try {
-                    mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
-                } catch (Exception ignored) {
-                }
-                isclear = isIlClear(mat, loc, lossy);
-                // If one of them is not clear then result is not clear
-                if (!isclear) {
-                    break;
+                ItemStack is = refchest.getBlockInventory().getItem(itemno);
+                if (is != null) {
+                    ItemMeta mat = is.getItemMeta();
+                    if (mat != null) {
+                        isclear = isIlClear(mat, loc, lossy);
+                        // If one of them is clear then result is clear (findone = true)
+                        if (isclear && findone) {
+                            return true;
+                        }
+                        // If one of them is not clear then result is not clear (findone = false)
+                        if (!isclear && !findone) {
+                            return false;
+                        }
+                    }
                 }
             }
         }
@@ -166,7 +174,7 @@ class signalcmd implements CommandExecutor, TabCompleter {
                         case "getilclearlossy":
                             Chest refchest = getChestFromLoc(getFullLoc(inputpos, loc));
                             boolean lossy = args[3].equals("getilclearlossy");
-                            boolean isclear = tryItemIsIlClear(refchest, loc, lossy);
+                            boolean isclear = tryItemIsIlClear(refchest, loc, lossy, false);
                             Block blk = ((BlockCommandSender) sender).getBlock();
                             if (isclear) {
                                 Bukkit.dispatchCommand(sender, String.format("data modify block %s %s %s SuccessCount set value 15", blk.getX(), blk.getY(), blk.getZ()));

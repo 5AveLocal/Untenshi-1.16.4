@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -241,25 +242,32 @@ class signalsign extends SignAction {
             ItemMeta mat;
             try {
                 Location loc = refchest.getLocation();
-                mat = Objects.requireNonNull(refchest.getBlockInventory().getItem(itemno)).getItemMeta();
-                found = isIlClear(mat, loc, false);
-                if (found) {
-                    String tagname = tagprefix + itemno;
-                    // Check for duplicated tags and time (prevent two trains occupying same path)
-                    for (MinecartGroup mg2 : vehicle.keySet()) {
-                        if (mg2.getProperties().getTags().contains(tagname)) {
-                            found = false;
+                ItemStack is = refchest.getBlockInventory().getItem(itemno);
+                if (is != null) {
+                    mat = is.getItemMeta();
+                    if (mat != null) {
+                        found = isIlClear(mat, loc, false);
+                        if (found) {
+                            String tagname = tagprefix + itemno;
+                            // Check for duplicated tags and time (prevent two trains occupying same path)
+                            // Warning: If trains need to use "try" more than once then trains that passed the first tag must clear the tag first
+                            for (MinecartGroup mg2 : vehicle.keySet()) {
+                                if (mg2.getProperties().getTags().contains(tagname)) {
+                                    found = false;
+                                }
+                            }
+                            // Tag not used then assign
+                            if (found) {
+                                readIlBook(lv, mat, loc);
+                                // Add tag for point switches
+                                lv.getTrain().getProperties().addTags(tagname);
+                                break;
+                            }
                         }
                     }
-                    // Tag not used then assign
-                    if (found) {
-                        readIlBook(lv, mat, loc);
-                        // Add tag for point switches
-                        lv.getTrain().getProperties().addTags(tagname);
-                        break;
-                    }
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                errorLog(e);
             }
         }
         // Try again 1 tick later if cannot find
