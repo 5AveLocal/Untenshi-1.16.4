@@ -127,3 +127,6 @@ bookaddlocother: 其他位置
 bookcombinesel1: 已設定第 1 本書。
 bookcombinesel2: 已設定第 2 本書。
 bookcombineconfirm: 書本已合併。
+tracebookset: 已設定位置追蹤簿。
+tracebooknull: 請先設定位置追蹤簿!
+tracebookpagenull: 未能在位置追蹤簿找到該頁數。

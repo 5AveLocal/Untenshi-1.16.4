@@ -127,3 +127,6 @@ bookaddlocother: その他の位置
 bookcombinesel1: 1つ目の本を設定しました。
 bookcombinesel2: 2つ目の本を設定しました。
 bookcombineconfirm: 本を合併しました。
+tracebookset: 位置追跡帳を設定しました。
+tracebooknull: まず位置追跡帳を設定してください!
+tracebookpagenull: 位置追跡帳にはこのページが見つかりませんでした。

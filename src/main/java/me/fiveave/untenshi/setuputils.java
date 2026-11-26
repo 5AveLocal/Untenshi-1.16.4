@@ -21,6 +21,7 @@ import org.bukkit.inventory.meta.BookMeta;
 
 import java.util.*;
 
+import static me.fiveave.untenshi.atosign.getLocFromString;
 import static me.fiveave.untenshi.cmds.generalMsg;
 import static me.fiveave.untenshi.cmds.noPerm;
 import static me.fiveave.untenshi.main.*;
@@ -32,6 +33,7 @@ class setuputils implements CommandExecutor, TabCompleter, Listener {
 
     protected static HashMap<Player, ArrayList<String>> book1 = new HashMap<>();
     protected static HashMap<Player, ArrayList<String>> book2 = new HashMap<>();
+    protected static HashMap<Player, BookMeta> tracebook = new HashMap<>();
 
     final List<String> alldirlist = Arrays.asList("b", "backwards", "d", "downwards", "e", "east", "f", "forward",
             "l", "left", "n", "ne", "none", "north", "northeast", "northwest", "nw", "r", "right",
@@ -57,6 +59,10 @@ class setuputils implements CommandExecutor, TabCompleter, Listener {
                 generalMsg(cu.getP(), ChatColor.GREEN, getLang("signsetsuccess"));
             }
         }
+    }
+
+    private static String getBookLocType(Location loc) {
+        return isLocOfSign(loc) ? ChatColor.GOLD + getLang("bookaddlocsign") : ChatColor.GREEN + getLang("bookaddlocother");
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -149,11 +155,9 @@ class setuputils implements CommandExecutor, TabCompleter, Listener {
                                         bm.setPages(pages);
                                         book.setItemMeta(bm);
                                         p.getInventory().setItem(p.getInventory().getHeldItemSlot(), book);
-                                        boolean isbbofsign = isLocOfSign(loc2);
                                         p.sendMessage(UTS_HEAD + ChatColor.YELLOW + getLang("bookaddloc1")
                                                 + " (" + bm.getPageCount() + " " + getLang("bookaddloc2") + " - "
-                                                + (isbbofsign ? ChatColor.GOLD + getLang("bookaddlocsign")
-                                                : ChatColor.GREEN + getLang("bookaddlocother")) + ChatColor.YELLOW + ") ");
+                                                + getBookLocType(loc2) + ChatColor.YELLOW + ") ");
                                     }
                                 }
                                 break;
@@ -195,6 +199,66 @@ class setuputils implements CommandExecutor, TabCompleter, Listener {
                                             p.sendMessage(UTS_HEAD + ChatColor.YELLOW + getLang("bookcombineconfirm"));
                                         }
                                         break;
+                                }
+                                break;
+                            case "trace":
+                                switch (args[2]) {
+                                    case "get":
+                                        ItemStack book2 = p.getInventory().getItemInMainHand();
+                                        if (book2.getType().equals(Material.WRITABLE_BOOK)) {
+                                            BookMeta bm = (BookMeta) book2.getItemMeta();
+                                            tracebook.put(p, bm);
+                                            generalMsg(p, ChatColor.GREEN, getLang("tracebookset"));
+                                        }
+                                        break;
+                                    case "list": {
+                                        BookMeta bm = tracebook.get(p);
+                                        if (bm != null) {
+                                            p.sendMessage(UTS_HEAD + ChatColor.YELLOW + bm.getPageCount() + " " + getLang("bookaddloc2") + ChatColor.WHITE + " =");
+                                            List<String> pages = bm.getPages();
+                                            for (int i = 0; i < pages.size(); i++) {
+                                                String s = pages.get(i);
+                                                double[] vdloc = new double[3];
+                                                getLocFromString(s, p.getLocation(), vdloc);
+                                                Location vloc = new Location(p.getWorld(), vdloc[0], vdloc[1], vdloc[2]);
+                                                p.sendMessage("" + ChatColor.AQUA + (i + 1) + ChatColor.WHITE + " @ " + ChatColor.GREEN + vdloc[0] + " " + vdloc[1] + " " + vdloc[2] + " "
+                                                        + getBookLocType(vloc));
+                                            }
+                                        } else {
+                                            generalMsg(p, ChatColor.RED, getLang("tracebooknull"));
+                                        }
+                                        break;
+                                    }
+                                    case "tp": {
+                                        if (args.length != 4) {
+                                            generalMsg(p, ChatColor.RED, getLang("tracebookpagenull"));
+                                            break;
+                                        }
+                                        BookMeta bm = tracebook.get(p);
+                                        if (bm != null) {
+                                            List<String> pages = bm.getPages();
+                                            try {
+                                                int i = Integer.parseInt(args[3]);
+                                                if (i < 1 || i > bm.getPageCount()) {
+                                                    generalMsg(p, ChatColor.RED, getLang("tracebookpagenull"));
+                                                    break;
+                                                }
+                                                String s = pages.get(i - 1);
+                                                double[] vdloc = new double[3];
+                                                getLocFromString(s, p.getLocation(), vdloc);
+                                                Location vloc = new Location(p.getWorld(), vdloc[0], vdloc[1], vdloc[2]);
+                                                p.teleport(vloc);
+                                                p.sendMessage(UTS_HEAD + ChatColor.AQUA + i + ChatColor.GRAY + "/" + bm.getPageCount()
+                                                        + ChatColor.WHITE + " @ " + ChatColor.GREEN + vdloc[0] + " " + vdloc[1] + " " + vdloc[2] + " "
+                                                        + getBookLocType(vloc));
+                                            } catch (NumberFormatException e) {
+                                                generalMsg(p, ChatColor.RED, getLang("tracebookpagenull"));
+                                            }
+                                        } else {
+                                            generalMsg(p, ChatColor.RED, getLang("tracebooknull"));
+                                        }
+                                    }
+                                    break;
                                 }
                                 break;
                         }
@@ -275,7 +339,7 @@ class setuputils implements CommandExecutor, TabCompleter, Listener {
                         ta.addAll(alldirlist);
                         break;
                     case "book":
-                        ta.addAll(Arrays.asList("addloc", "combine"));
+                        ta.addAll(Arrays.asList("addloc", "combine", "trace"));
                         break;
                     default:
                         ta.add("");
@@ -297,6 +361,9 @@ class setuputils implements CommandExecutor, TabCompleter, Listener {
                     case "combine":
                         ta.addAll(Arrays.asList("sel1", "sel2", "confirm"));
                         break;
+                    case "trace":
+                        ta.addAll(Arrays.asList("get", "list", "tp"));
+                        break;
                     default:
                         ta.add("");
                         break;
@@ -307,8 +374,8 @@ class setuputils implements CommandExecutor, TabCompleter, Listener {
                     }
                 });
                 return result;
-            // Stop spamming player names
             default:
+                // Stop spamming player names
                 result.add("");
                 return result;
         }

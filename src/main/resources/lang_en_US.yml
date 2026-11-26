@@ -127,3 +127,6 @@ bookaddlocother: Other Location
 bookcombinesel1: Book 1 set.
 bookcombinesel2: Book 2 set.
 bookcombineconfirm: Books combined.
+tracebookset: Location tracing book set.
+tracebooknull: Please set a location tracing book first!
+tracebookpagenull: Page not found in location tracing book.
