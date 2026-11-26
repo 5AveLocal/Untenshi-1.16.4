@@ -2,12 +2,11 @@ package me.fiveave.untenshi;
 
 import com.bergerkiller.bukkit.tc.attachments.animation.AnimationOptions;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
@@ -429,7 +428,7 @@ class ato {
                     lv.getTrain().playNamedAnimation(ao);
                 } else {
                     String newexecutestr = getActionCmdExecuteStr(lv, actionstrsplit, actionstr);
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), newexecutestr);
+                    runCommandAtLoc(lv.getTrain().head().getEntity().getEntity().getLocation(), newexecutestr);
                 }
                 break;
             case "set":
@@ -438,6 +437,19 @@ class ato {
                 b.getChunk().load();
                 b.setType(Material.valueOf(actionstrsplit[3].toUpperCase()));
                 break;
+        }
+    }
+
+    public static void runCommandAtLoc(Location loc, String command) {
+        World world = loc.getWorld();
+        if (world != null) {
+            // Spawns temporary command block minecart for 0 tick
+            Entity entity = world.spawnEntity(loc, EntityType.MINECART_COMMAND);
+            boolean gameRule = Boolean.TRUE.equals(world.getGameRuleValue(GameRule.SEND_COMMAND_FEEDBACK));
+            world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);
+            plugin.getServer().dispatchCommand(entity, command);
+            world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, gameRule);
+            entity.remove();
         }
     }
 
@@ -481,7 +493,7 @@ class ato {
         } else if (actionstrsplit[0].contains("utsdebug")) {
             newexecutestr = "utsdebug " + lv.getTrain().getProperties().getTrainName() + actionstr.replaceFirst("utsdebug", "");
         } else {
-            newexecutestr = "execute at " + lv.getTrain().head().getEntity().getEntity().getUniqueId() + " run " + actionstr;
+            newexecutestr = actionstr;
         }
         return newexecutestr;
     }
