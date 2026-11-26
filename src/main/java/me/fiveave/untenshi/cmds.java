@@ -8,6 +8,7 @@ import com.bergerkiller.bukkit.tc.properties.CartProperties;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import static me.fiveave.untenshi.events.*;
 import static me.fiveave.untenshi.main.*;
+import static me.fiveave.untenshi.signalsign.signalSignWarn;
 import static me.fiveave.untenshi.utsdriver.initDriver;
 import static me.fiveave.untenshi.utsvehicle.initVehicle;
 
@@ -143,12 +145,12 @@ class cmds implements CommandExecutor, TabCompleter {
                                         generalMsg(sender, ChatColor.YELLOW, getLang("activate_onalready"));
                                         return true;
                                     }
-                                    if (!p.isInsideVehicle()) {
+                                    // Get train
+                                    Entity selcart = p.getVehicle();
+                                    if (!p.isInsideVehicle() || !(selcart instanceof Minecart)) {
                                         generalMsg(sender, ChatColor.YELLOW, getLang("activate_sitincart"));
                                         return true;
                                     }
-                                    // Get train
-                                    Entity selcart = p.getVehicle();
                                     MinecartGroup mg = MinecartGroupStore.get(selcart);
                                     TrainProperties tprop = mg.getProperties();
                                     // Detect owner
@@ -156,18 +158,16 @@ class cmds implements CommandExecutor, TabCompleter {
                                         // Train settings
                                         tprop.setOwner(p.getName(), true);
                                         // Set train group for player
-                                        if (selcart instanceof Minecart) {
-                                            MinecartMember<?> mem = MinecartMemberStore.getFromEntity(selcart);
-                                            if (!selcart.getPassengers().isEmpty() && selcart.getPassengers().get(0) instanceof Player) {
-                                                Bukkit.getScheduler().runTaskLater(plugin, () -> CartProperties.setEditing((Player) selcart.getPassengers().get(0), mem.getProperties()), TICK_DELAY);
-                                            }
-                                            MinecartGroup mg2 = mem.getGroup();
-                                            initVehicle(mg2);
-                                            utsvehicle lv = vehicle.get(mg2);
-                                            ld.setLv(lv);
-                                            lv.setLd(ld);
-                                            lv.setTrain(mg2);
+                                        MinecartMember<?> mem = MinecartMemberStore.getFromEntity(selcart);
+                                        if (!selcart.getPassengers().isEmpty() && selcart.getPassengers().get(0) instanceof Player) {
+                                            Bukkit.getScheduler().runTaskLater(plugin, () -> CartProperties.setEditing((Player) selcart.getPassengers().get(0), mem.getProperties()), TICK_DELAY);
                                         }
+                                        MinecartGroup mg2 = mem.getGroup();
+                                        initVehicle(mg2);
+                                        utsvehicle lv = vehicle.get(mg2);
+                                        ld.setLv(lv);
+                                        lv.setLd(ld);
+                                        lv.setTrain(mg2);
                                         // Save inventory
                                         ItemStack[] inv = p.getInventory().getContents();
                                         // ld.setInv(inv);
@@ -189,7 +189,7 @@ class cmds implements CommandExecutor, TabCompleter {
                                         // Clear inventory
                                         p.getInventory().clear();
                                         // Set wands in place
-                                        if (ld.getLv().isTwohandled()) {
+                                        if (lv.isTwohandled()) {
                                             p.getInventory().setItem(0, downWand());
                                             p.getInventory().setItem(1, upWand());
                                             p.getInventory().setItem(2, nWand());
@@ -209,6 +209,12 @@ class cmds implements CommandExecutor, TabCompleter {
                                         motion.recursiveClockLd(ld);
                                         generalMsg(ld.getP(), ChatColor.YELLOW, getLang("activate_set"));
                                         generalMsg(ld.getP(), ChatColor.YELLOW, getLang("activate") + " " + ChatColor.GREEN + getLang("activate_on"));
+                                        // Get signal warning ahead for player (if exists)
+                                        Location lastsisign = lv.getLastsisign();
+                                        if (lastsisign != null) {
+                                            String strloc = lastsisign.getX() + " " + lastsisign.getY() + " " + lastsisign.getZ();
+                                            signalSignWarn(lv, lastsisign, strloc);
+                                        }
                                     } else {
                                         generalMsg(ld.getP(), ChatColor.RED, getLang("activate_notowner"));
                                     }

@@ -355,11 +355,7 @@ class signalsign extends SignAction {
     static void updatePassedSignal(utsvehicle lv, Location realsignloc) {
         // Update this signal
         String str = (lv.getSafetysystype().equals("atc") ? "atc" : "r") + " " + 0;
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            updateSignalsIfChanged(realsignloc, "set " + str);
-            // If location is in interlocking list, then remove location and shift list
-            iLListandOccupiedRemoveShift(lv, realsignloc, false);
-        }, 1);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> updateSignalsIfChanged(realsignloc, "set " + str), 1);
     }
 
     boolean checkType(SignActionEvent e) {
@@ -450,6 +446,8 @@ class signalsign extends SignAction {
                                 if (!lastloc.equals(realsignloc) && len > result.halfptnlen) {
                                     rsPosListRemoveShift(lv, lastloc);
                                 }
+                                // If location is in interlocking list, then remove location and shift list
+                                iLListandOccupiedRemoveShift(lv, realsignloc, false);
                                 // This signal has been updated when train touches the sign, so update next ones
                                 Location[] oldloc = lv.getRsposlist();
                                 for (int i1 = 1; i1 < oldloc.length; i1++) {
