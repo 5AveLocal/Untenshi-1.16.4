@@ -292,6 +292,7 @@ class motion {
         int orderno = 0;
         // Set signs with new signal and speed
         // Prevent repeated updating
+        Location[] rslist = lv.getRsposlist();
         if (lv.getIlposoccupied() == null || lv.getIlposoccupied().length < furthestoccupied + 1) {
             boolean usesinglepattern = result.usesinglepattern;
             // Not use single pattern then delete
@@ -304,6 +305,17 @@ class motion {
             for (int signno = furthestoccupied; signno >= 0; signno--) {
                 // settable: Sign to be set
                 Location oldsignloc = oldposlist[signno];
+                // Not update signal if in rsposlist already
+                boolean tonext = false;
+                if (rslist != null) {
+                    for (Location rs : rslist) {
+                        if (rs.equals(oldsignloc)) {
+                            tonext = true;
+                            break;
+                        }
+                    }
+                }
+                if (tonext) continue;
                 Sign settable = getSignFromLoc(oldsignloc);
                 if (settable != null) {
                     try {
